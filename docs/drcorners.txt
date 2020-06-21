@@ -1,0 +1,34 @@
+
+HELP PAGE FOR COMMAND drcorners
+
+SYNTAX
+drcorners [OPTIONS] [MOVES|$ID|@ID]
+
+DESCRIPTION
+Similar to drfinish, but only solves corners. CO must be solved. The scramble
+can be given as the last argument of the command, or it may be given as an $ID
+or @ID, or it can be typed out on the following line.
+
+OPTIONS
+from {ud|fb|rl}    Allows to specify on which axis the CO is solved. It is
+                   usually not necessary, since nissy will find a CO on any
+                   axis.
+i                  Ignores E-layer centers. By default cornersare solved
+                   relatively to centers; this options allows for solutions
+                   which solve corners relatively to each other and to the
+                   U and D sides, but not to the E layer (or any equivalent
+                   if the CO is not on U/D).
+b=N                Specify a bound for the number of moves. N must be a number.
+                   Default value: 20.
+n=N                Specify a maximum number of solutions to be output. N must
+                   be a number.
+                   Default value: 1.
+
+EXAMPLES
+drcorners n=3 R' D R2 D' R' U2 R D R' U2 R' D' R
+  Produces the following output:
+Found 3 results.
+@1:	U' F2 U R2 U2 F2 U F2 U R2 (10)
+@2:	U' F2 U R2 U2 B2 U R2 D R2 (10)
+@3:	U' F2 U R2 U2 B2 U L2 U L2 (10)
+

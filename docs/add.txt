@@ -1,0 +1,18 @@
+
+HELP PAGE FOR COMMAND add
+
+SYNTAX
+add [MOVES|$ID1|@ID1] $ID2
+
+DESCRIPTION
+Appends either MOVES, the scramble memorized under $ID1 or the output sequence
+memorized under @ID1 at the end of the scramble memorized under $ID2. If none
+of MOVES, $ID1 or @ID1 is specified, the user will be asked to type the moves.
+Menmonic: "add x to y" or just "add to y".
+
+EXAMPLES
+add $1
+  The user is required to type the moves that will be appended to $1.
+add F R B $1
+  Appends the moves F R B to scramble $1. Now scramble $1 ends with F R B.
+

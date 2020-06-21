@@ -1,0 +1,45 @@
+
+HELP PAGE FOR COMMAND dr
+
+SYNTAX
+dr [OPTIONS] [MOVES|$ID|@ID]
+
+DESCRIPTION
+Solves DR for a given scramble. A scramble can be given as last argument of the
+command, or an ID of a saved scramble can be provided. If none of the two is
+given, a prompt will ask the user to input a new scramble.
+If the option "from" is given (see below), it solves DR from an EO (if edges
+are oriented) without breaking that EO.
+The first time this command is called without the option from (and, to some
+extent, also the first time it is called with the option from), nissy loads
+some pruning tables that were not loaded on startup, causing a small but
+noticeable delay.
+
+OPTIONS
+axis={fb,rl,ud}    Specify the axis for the DR. One to three axes can be given,
+                   comma separated, no spaces.
+                   Default: DR on any of the three axis (omitting the option is
+                   the same as specifying axis=fb,rl,ud).
+b=N                Specify a bound for the number of moves. N must be a number.
+                   Default value: 20.
+h                  Show hidden DRs.
+                   Default, if an DR ending in e.g. R is shown, the equivalent
+                   one ending in R' is hidden.
+from {fb|rl|ud}    Solve DR from the specified EO, which must be solved,
+                   without breaking the EO.
+niss               Use NISS. It works only if solving DR from EO.
+                   Default: does not use NISS.
+n=N                Specify a maximum number of EOs to be output. N must be a
+                   number.
+                   Default value: 1.
+
+EXAMPLES
+dr from rl axis=ud $1
+  Finds optimal DR on ud, starting from EO on rl, for the first saved scramble.
+
+dr niss from fb n=10 m=6 F2 R L B' F D U' R2 L' F D B
+  Finds up to 10 DRs of length at most 6 from EO on fb, possibly using NISS.
+
+dr n=100 axis=ud h
+  Finds 100 DRs on ud, including "hidden" DRs.
+

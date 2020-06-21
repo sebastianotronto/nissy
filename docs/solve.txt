@@ -1,0 +1,33 @@
+
+HELP PAGE FOR COMMAND solve
+
+SYNTAX
+solve [MOVES|$ID|@ID]
+
+DESCRIPTION
+Solves the given scramble, which can be given as a sequence of moves or as $ID
+or @ID. If none is given, the user can type it on the next line.
+The algorithm first tries to find a short (<=10 moves) solution, and then
+switches to a 2-step algorithm (unless the option "o" is specified, in which
+case it keeps looking for an optimal solution).
+The first time it uses the 2-step algorithm it needs to load some tables, which
+can take a few seconds. It runs much faster after that. If the option "o" is
+specified, the first time it loads some large tables, which can take a minute
+or two.
+
+OPTIONS
+b=N                Only looks for solutions up to N moves.
+n=N                Tries to find multiple solutions, at most N. Multiple
+                   Solutions will only be found if they are <=10 moves.
+o                  Looks for optimal solution.
+
+
+EXAMPLES
+solve R' U' F
+  Solves the scramble R' U' F.
+solve o b=14 $1
+  Tries to solve the scramble $1 optimally, but stops if no solution of 14
+  moves or shorter is found.
+solve n=16 R L' U2 R' L F2
+  Finds the 16 shortest solutions for the scramble above.
+

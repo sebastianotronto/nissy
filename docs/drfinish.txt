@@ -1,0 +1,29 @@
+
+HELP PAGE FOR COMMAND drfinish
+
+SYNTAX
+drfinish [OPTIONS] [MOVES|$ID|@ID]
+
+DESCRIPTION
+Solves the given scramble using the DR moveset. DR must be solved. The scramble
+can be given as the last argument of the command, or it may be given as an $ID
+or @ID, or it can be typed out on the following line.
+
+OPTIONS
+from {ud|fb|rl}    Allows to specify on which axis the DR is solved. It is
+                   usually not necessary, since nissy will find a DR on any
+                   axis, but it can be useful if one want to e.g. solve an HTR
+                   state allowing quarter-turns from a specific DR.
+b=N                Specify a bound for the number of moves. N must be a number.
+                   Default value: 20.
+n=N                Specify a maximum number of solutions to be output. N must
+                   be a number.
+                   Default value: 1.
+
+EXAMPLES
+dr from ud R L' U2 R' L F2
+  Solves the given scramble using the moveset <U,D,R2,L2,F2,B2>. In this case:
+@1:	U2 R2 F2 R2 U2 R2 F2 R2 (8)
+drfinish b=7 n=10 $1
+  Finds (at most) 10 solutions of length at most 7 for the scramble $1.
+

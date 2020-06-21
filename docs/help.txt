@@ -1,0 +1,15 @@
+
+HELP PAGE FOR COMMAND help
+
+SYNTAX
+help [nissy|COMMAND]
+
+DESCRIPTION
+'help nissy' prints a general user manual. 'help COMMAND' prints a detailed
+help page for the command COMMAND, if it exists. 'help' prints a list of all
+available commands a short description for each.
+
+EXAMPLES
+help help
+  Prints this help page.
+

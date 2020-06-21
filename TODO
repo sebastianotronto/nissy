@@ -1,0 +1,13 @@
+NEXT VERSION:
+- solver: improve logic. check after each dr?
+- add checks for sequences >255 moves
+- cat!
+- niss for direct DR
+  - prune for CO using CO+CP state
+- Option: exactly N moves (or lower bound); exactly optimal?
+- CO (also from EO), direct corners solve
+- scramble shortner (solve + invert)
+- RUF-ify
+
+FUTURE IDEAS:
+- sort before branching dfs

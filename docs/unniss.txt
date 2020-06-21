@@ -1,0 +1,14 @@
+
+HELP PAGE FOR COMMAND unniss
+
+SYNTAX
+unniss [MOVES|$ID|@ID]
+
+DESCRIPTION
+Removes NISS from a sequence of moves, which can be given also as $ID or @ID.
+A sequence of the form A (B) is translated to B' A.
+
+EXAMPLES
+invert F R (D' L2)
+  Prints L2 D F R
+

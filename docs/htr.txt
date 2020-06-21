@@ -1,0 +1,30 @@
+
+HELP PAGE FOR COMMAND htr
+
+SYNTAX
+htr [OPTIONS] [MOVES|$ID|@ID]
+
+DESCRIPTION
+Finds HTR for a given scramble. DR must be solved. A scramble can be given as
+last argument of the command, or an ID of a saved scramble can be provided. If
+none of the two is given, a prompt will ask the user to input a new scramble.
+
+OPTIONS
+from {ud|fb|rl}    Allows to specify on which axis the DR is. This is usually
+                   not needed, since nissy will automatically find it out.
+b=N                Specify a bound for the number of moves. N must be a number.
+                   Default value: 20.
+h                  Show hidden HTRs.
+                   Default, if an HTR ending in e.g. R is shown, the equivalent
+                   one ending in R' is hidden.
+niss               Use NISS.
+                   Default: does not use NISS.
+n=N                Specify a maximum number of HTRs to be output. N must be a
+                   number.
+                   Default value: 1.
+
+EXAMPLES
+eo n=10 b=7 niss $1
+  Finds up to 100 HTRs of lenth at most 7, possibly using NISS, including
+  "hidden" HTRs, for scramble $1. DR must be solved.
+

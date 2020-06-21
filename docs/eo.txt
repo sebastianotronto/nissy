@@ -1,0 +1,38 @@
+
+HELP PAGE FOR COMMAND eo
+
+SYNTAX
+eo [OPTIONS] [MOVES|$ID|@ID]
+
+DESCRIPTION
+Solves EO for a given scramble. A scramble can be given as last argument of the
+command, or an ID of a saved scramble can be provided. If none of the two is
+given, a prompt will ask the user to input a new scramble.
+
+OPTIONS
+axis={fb,rl,ud}    Specify the axis for the EO. One to three axes can be given,
+                   comma separated, no spaces.
+                   Default: EO on any of the three axis (omitting the option is
+                   the same as specifying axis=fb,rl,ud).
+b=N                Specify a bound for the number of moves. N must be a number.
+                   Default value: 20.
+h                  Show hidden EOs.
+                   Default, if an EO ending in e.g. F is shown, the equivalent
+                   one ending in F' is hidden.
+niss               Use NISS.
+                   Default: does not use NISS.
+n=N                Specify a maximum number of EOs to be output. N must be a
+                   number.
+                   Default value: 1.
+
+EXAMPLES
+eo axis=fb $1
+  Finds one optimal EO on fb for the first saved scramble.
+
+eo n=5 b=4 U R F  
+  Finds up to 5 EOs of length at most 4 for scramble U R F.
+
+eo n=100 b=5 niss axis=fb,ud h  R' U' F L R'U'F
+  Finds up to 100 EOs of lenth at most 4, possibly using NISS, including
+  "hidden" EOs, excluding the rl axis.
+

@@ -1,0 +1,9 @@
+
+HELP PAGE FOR COMMAND quit
+
+SYNTAX
+quit
+
+DESCRIPTION
+Exits nissy.
+
