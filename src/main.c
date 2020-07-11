@@ -68,7 +68,7 @@ int read_moves_from_argument(int n, char tok[][100], int *dst) {
   return  (r != -1) ? r : read_moves_from_tok(n, tok, dst);
 }
 
-void print_results(int n, int res[][21]) {
+void print_results(int n, int res[][30]) {
   if (n == -1)
     printf("Pre-conditions not satisfied (or other error).\n");
 
@@ -314,7 +314,7 @@ void pic_cmd(int n, char cmdtok[][100]) {
 }
 
 void solve_cmd(int n, char cmdtok[][100]) {
-  int m = 1, b = 20, optimal = 0;
+  int m = 1, b = 25, optimal = 0;
   int scram[255] = {[0] = 0};
   int scram_unnissed[255];
 
@@ -349,7 +349,7 @@ void solve_cmd(int n, char cmdtok[][100]) {
 
   /* Call solver and print results */
   unniss(scram, scram_unnissed);
-  int sol[m+2][21];
+  int sol[m+2][30];
   int s = solve_scram(scram_unnissed, sol, m, b, optimal);
   print_results(s, sol);
 }
@@ -382,7 +382,7 @@ void replace_cmd(int n, char cmdtok[][100]) {
 
   unniss(scram, scram_unnissed);
   int l = len(scram_unnissed);
-  int aux1[255], aux2[15][21], aux3[21];
+  int aux1[255], aux2[15][30], aux3[30];
   for (int i = 0; i < l; i++) {
     for (int j = 2; j <= m && i + j <= l; j++) {
       copy_moves(scram_unnissed+i, aux1);
@@ -459,7 +459,7 @@ void eo_cmd(int n, char cmdtok[][100]) {
   unniss(scram, scram_unnissed);
 
   /* Call solver and print results */
-  int eo_list[m+5][21];
+  int eo_list[m+5][30];
   int neo = eo_scram_spam(scram_unnissed, eo_list, fb, rl, ud, m, b, niss,
                           hide);
   print_results(neo, eo_list);
@@ -531,7 +531,7 @@ void dr_cmd(int n, char cmdtok[][100]) {
   unniss(scram, scram_unnissed);
 
   /* Call solver */
-  int dr_list[m+5][21], ndr;
+  int dr_list[m+5][30], ndr;
   if (from) {
     ndr = drfrom_scram_spam(scram_unnissed, dr_list, from, fb, rl, ud,
                                 m, b, niss, hide);
@@ -600,7 +600,7 @@ void htr_cmd(int n, char cmdtok[][100]) {
   unniss(scram, scram_unnissed);
 
   /* Call solver */
-  int htr_list[m+5][21], nhtr;
+  int htr_list[m+5][30], nhtr;
   nhtr = htr_scram_spam(scram_unnissed, htr_list, from, m, b, niss, hide);
   print_results(nhtr, htr_list);
 }
@@ -652,7 +652,7 @@ void drfinish_cmd(int n, char cmdtok[][100]) {
   unniss(scram, scram_unnissed);
   
   /* Call solver */
-  int c_list[m+5][21], nc;
+  int c_list[m+5][30], nc;
   nc = dr_finish_scram_spam(scram_unnissed, c_list, from, m, b);
   print_results(nc, c_list);
 }
@@ -693,7 +693,7 @@ void htrfinish_cmd(int n, char cmdtok[][100]) {
   unniss(scram, scram_unnissed);
   
   /* Call solver */
-  int c_list[m+5][21], nc;
+  int c_list[m+5][30], nc;
   nc = htr_finish_scram_spam(scram_unnissed, c_list, m, b);
   print_results(nc, c_list);
 }
@@ -747,7 +747,7 @@ void drcorners_cmd(int n, char cmdtok[][100]) {
   unniss(scram, scram_unnissed);
   
   /* Call solver */
-  int c_list[m+5][21], nc;
+  int c_list[m+5][30], nc;
   nc = dr_corners_scram_spam(scram_unnissed, c_list, from, m, b, ignore);
   print_results(nc, c_list);
 }

@@ -9,7 +9,7 @@
 
 /* Applies inverse of moves, inverse of prev_moves and then inverse of scramble
  * and returns a coordinate determined by t_table. */
-int premoves_inverse(int moves[21], int scramble[], int prev_moves[21],
+int premoves_inverse(int moves[30], int scramble[], int prev_moves[30],
                      int t_table[][19]) {
   int nprevmoves, nmoves, nscramble, coord = 0;
 
@@ -31,7 +31,7 @@ int premoves_inverse(int moves[21], int scramble[], int prev_moves[21],
 /******/
 /* EO */
 /******/
-void niss_eo_dfs(int eo, int scramble[], int eo_list[][21], int *eo_count,
+void niss_eo_dfs(int eo, int scramble[], int eo_list[][30], int *eo_count,
                  int t_table[pow2to11][19], int p_table[pow2to11], 
                  int last1, int last2, int moves, int m, int d, int niss,
                  int can_use_niss, int hide) {
@@ -80,7 +80,7 @@ void niss_eo_dfs(int eo, int scramble[], int eo_list[][21], int *eo_count,
   }
 }
 
-int eo_scram_spam(int scram[], int eo_list[][21], int fb, int rl, int ud,
+int eo_scram_spam(int scram[], int eo_list[][30], int fb, int rl, int ud,
                   int m, int b, int niss, int h) {
   
   init_small_pruning_tables();
@@ -112,8 +112,8 @@ int eo_scram_spam(int scram[], int eo_list[][21], int fb, int rl, int ud,
 
 
 /* Scramble includes premoves for previous EO */
-void niss_dr_from_eo_dfs(int co, int epos, int scramble[], int eo_moves[21],
-                         int dr_list[][21], int *dr_count,
+void niss_dr_from_eo_dfs(int co, int epos, int scramble[], int eo_moves[30],
+                         int dr_list[][30], int *dr_count,
                          int co_t_table[pow3to7][19],
                          int epos_t_table[binom12on4][19],
                          int8_t p_table[pow3to7][binom12on4], int mask,
@@ -169,7 +169,7 @@ void niss_dr_from_eo_dfs(int co, int epos, int scramble[], int eo_moves[21],
                         moves, m, d, 1, can_use_niss, hide);
 }
 
-int drfrom_scram_spam(int scram[], int dr_list[][21], int from, int fb,
+int drfrom_scram_spam(int scram[], int dr_list[][30], int from, int fb,
                       int rl, int ud, int m, int b, int niss, int hide) {
 
   init_drfromeo_pruning_tables();
@@ -252,8 +252,8 @@ int drfrom_scram_spam(int scram[], int dr_list[][21], int from, int fb,
 /***************/
 
 /* Scramble includes premoves for previous DR */
-void niss_htr_from_dr_dfs(int cp, int eo3, int scramble[], int eodr_moves[21],
-                          int htr_list[][21], int *htr_count,
+void niss_htr_from_dr_dfs(int cp, int eo3, int scramble[], int eodr_moves[30],
+                          int htr_list[][30], int *htr_count,
                           int eo3_t_table[pow2to11][19],
                           int cp_to_htr_pruning_table[factorial8],
                           int cp_htr_pruning_table[factorial8],
@@ -314,7 +314,7 @@ void niss_htr_from_dr_dfs(int cp, int eo3, int scramble[], int eodr_moves[21],
                          0, 0, moves, m, d, 1, can_use_niss, hide);
 }
 
-int htr_scram_spam(int scram[], int htr_list[][21], int from,
+int htr_scram_spam(int scram[], int htr_list[][30], int from,
                    int m, int b, int niss, int hide) {
 
   init_small_pruning_tables();
@@ -370,7 +370,7 @@ int htr_scram_spam(int scram[], int htr_list[][21], int from,
 /* Direct DR (no NISS) */
 /***********************/
 void dr_dfs(int eo, int eo2, int eslice, int co,
-            int dr_list[][21], int *dr_count,
+            int dr_list[][30], int *dr_count,
             int eo_t_table[pow2to11][19], int eo2_t_table[pow2to11][19],
             int eslice_t_table[binom12on4][19], int co_t_table[pow3to7][19],
             int8_t eo_eslice_p_table[pow2to11][binom12on4],
@@ -411,7 +411,7 @@ void dr_dfs(int eo, int eo2, int eslice, int co,
   }
 }
 
-int dr_scram_spam(int scram[], int dr_list[][21], int fb, int rl, int ud,
+int dr_scram_spam(int scram[], int dr_list[][30], int fb, int rl, int ud,
                   int m, int b, int h) {
 
   init_directdr_pruning_tables();
@@ -462,7 +462,7 @@ int dr_scram_spam(int scram[], int dr_list[][21], int fb, int rl, int ud,
 /*************/
 /* DR finish */
 /*************/
-void dr_finish_dfs(int cp, int ep8, int ep4, int sol[][21], int *sol_count,
+void dr_finish_dfs(int cp, int ep8, int ep4, int sol[][30], int *sol_count,
                   int ep8_t_table[factorial8][19],
                   int ep4_t_table[factorial4][19],
                   int cp_p_table[factorial8],
@@ -500,7 +500,7 @@ void dr_finish_dfs(int cp, int ep8, int ep4, int sol[][21], int *sol_count,
   return;
 }
 
-int dr_finish_scram_spam(int scram[], int sol[][21], int from, int m, int b) {
+int dr_finish_scram_spam(int scram[], int sol[][30], int from, int m, int b) {
   
   init_small_pruning_tables();
 
@@ -551,7 +551,7 @@ int dr_finish_scram_spam(int scram[], int sol[][21], int from, int m, int b) {
   return n;
 }
 
-int htr_finish_scram_spam(int scram[], int sol[][21], int m, int b) {
+int htr_finish_scram_spam(int scram[], int sol[][30], int m, int b) {
 
   init_small_pruning_tables();
 
@@ -588,7 +588,7 @@ int htr_finish_scram_spam(int scram[], int sol[][21], int m, int b) {
 /**************/
 /* DR corners */
 /**************/
-void dr_corners_dfs(int cp, int sol[][21], int *sol_count,
+void dr_corners_dfs(int cp, int sol[][30], int *sol_count,
                     int cp_p_table[factorial8], int mask, int last1, int last2,
                     int moves, int m, int d, int ignore) {
 
@@ -621,7 +621,7 @@ void dr_corners_dfs(int cp, int sol[][21], int *sol_count,
   }
 }
 
-int dr_corners_scram_spam(int scram[], int sol[][21], int from, int m, int b,
+int dr_corners_scram_spam(int scram[], int sol[][30], int from, int m, int b,
                           int ignore) {
 
   init_small_pruning_tables();
@@ -666,7 +666,7 @@ int dr_corners_scram_spam(int scram[], int sol[][21], int from, int m, int b,
 /* Full solver */
 /***************/
 
-int is_ep_solved(int ep, int moves[21]) {
+int is_ep_solved(int ep, int moves[30]) {
   int ep_arr[12];
   ep_int_to_array(ep, ep_arr);
   for (int i = 0; moves[i]; i++)
@@ -677,7 +677,7 @@ int is_ep_solved(int ep, int moves[21]) {
 /* Solves directly using only small tables. Suitable for short solutions. */
 void small_optimal_dfs(int eofb, int eorl, int eoud, int ep,
                        int coud, int cofb, int corl, int cp,
-                       int sol[][21], int *sol_count, int last1, int last2,
+                       int sol[][30], int *sol_count, int last1, int last2,
                        int moves, int m, int d) {
   if (moves + eofb_pruning_table[eofb] > d ||
       moves + eorl_pruning_table[eorl] > d ||
@@ -721,7 +721,7 @@ void small_optimal_dfs(int eofb, int eorl, int eoud, int ep,
 void medium_optimal_dfs(int eofb, int eorl, int eoud,
                         int epose, int eposs, int eposm, int ep,
                         int coud, int cofb, int corl, int cp,
-                        int sol[][21], int *sol_count, int last1, int last2,
+                        int sol[][30], int *sol_count, int last1, int last2,
                         int moves, int m, int d) {
   if (moves + eofb_epose_pruning_table[eofb][epose] > d ||
       moves + eorl_eposs_pruning_table[eorl][eposs] > d ||
@@ -769,7 +769,7 @@ void medium_optimal_dfs(int eofb, int eorl, int eoud,
       
 /* Uses huge tables */
 int optimal_dfs(int ep, int cp, int eo, int co, int emslices,
-                int sol[][21], int last1, int last2, int moves, int d) {
+                int sol[][30], int last1, int last2, int moves, int d) {
   if (moves + cp_co_pruning_table[cp][co] > d ||
       moves + triple_eo_pruning_table[eo][emslices] > d)
     return 0;
@@ -795,7 +795,7 @@ int optimal_dfs(int ep, int cp, int eo, int co, int emslices,
   return 0;
 }
 
-int solve_scram(int scram[], int sol[][21], int m, int b, int optimal) {
+int solve_scram(int scram[], int sol[][30], int m, int b, int optimal) {
  
   /* Initialize pieces. */ 
   int eofb = 0, eorl = 0, eoud = 0, ep = 0;
@@ -850,10 +850,10 @@ int solve_scram(int scram[], int sol[][21], int m, int b, int optimal) {
     return n;
 
   /* Then we try a 2-step solver */
-  int max_step1 = 5000;
-  int db = 14;
-  int step1[max_step1+10][21];
-  int ss[300], step2[2][21];
+  int max_step1 = 100;
+  int db = 12;
+  int step1[max_step1+10][30];
+  int ss[300], step2[2][30];
   int best = b+1;
 
   /* TODO maybe: for now, multiple solutions can be found only using the
