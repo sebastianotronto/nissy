@@ -11,3 +11,4 @@ int dr_corners_scram_spam(int scram[], int sol[][30], int from, int m, int b,
 int dr_finish_scram_spam(int scram[], int sol[][30], int from, int m, int b);
 int htr_finish_scram_spam(int scram[], int sol[][30], int m, int b);
 int solve_scram(int scram[], int sol[][30], int m, int b, int optimal);
+int reach_state(int eofb, int coud, int ep, int cp, int sol[][30]);

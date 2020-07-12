@@ -65,6 +65,23 @@ void index_to_perm(int p, int n, int *r) {
   }
 }
 
+
+int perm_sign_array(int a[], int n) {
+  int ret = 0;
+  for (int i = 0; i < n; i++)
+    for (int j = i+1; j < n; j++)
+      if (a[i]>a[j])
+        ret++;
+  return ret % 2;
+}
+
+int perm_sign_int(int p, int n) {
+  int a[n];
+  index_to_perm(p, n, a);
+  return perm_sign_array(a, n);
+}
+
+
 /* Converts a k-element subset of a set with an element from an array of n
  * elements, of which k are 1 (or just non-zero) and n-k are 0, to its index
  * in the sorted list of all such subsets.

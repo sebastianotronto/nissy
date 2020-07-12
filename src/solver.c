@@ -463,11 +463,11 @@ int dr_scram_spam(int scram[], int dr_list[][30], int fb, int rl, int ud,
 /* DR finish */
 /*************/
 void dr_finish_dfs(int cp, int ep8, int ep4, int sol[][30], int *sol_count,
-                  int ep8_t_table[factorial8][19],
-                  int ep4_t_table[factorial4][19],
-                  int cp_p_table[factorial8],
-                  int ep8_p_table[factorial8],
-                  int mask, int last1, int last2, int moves, int m, int d) {
+                   int ep8_t_table[factorial8][19],
+                   int ep4_t_table[factorial4][19],
+                   int cp_p_table[factorial8],
+                   int ep8_p_table[factorial8],
+                   int mask, int last1, int last2, int moves, int m, int d) {
 
 
   if (*sol_count >= m || moves + cp_p_table[cp] > d ||
@@ -717,7 +717,7 @@ void small_optimal_dfs(int eofb, int eorl, int eoud, int ep,
   }
 }
 
-/* Solves directly using only medium tables. Suitable for short solutions. */
+/* Solves directly using only medium tables. Suitable for short solutions.
 void medium_optimal_dfs(int eofb, int eorl, int eoud,
                         int epose, int eposs, int eposm, int ep,
                         int coud, int cofb, int corl, int cp,
@@ -766,6 +766,7 @@ void medium_optimal_dfs(int eofb, int eorl, int eoud,
     }
   }
 }
+*/
       
 /* Uses huge tables */
 int optimal_dfs(int ep, int cp, int eo, int co, int emslices,
@@ -836,14 +837,6 @@ int solve_scram(int scram[], int sol[][30], int m, int b, int optimal) {
   if (n >= m || b <= 10)
     return n;
 
-  /* Then we try a slightly larger optimal solver */
-  /* 
-  int max_medium = 11;
-  init_directdr_pruning_tables();
-  for (int i = 0; i <= min(b, max_medium); i++)
-    medium_optimal_dfs(eofb, eorl, eoud, epose, eposs, eposm, ep,
-                       coud, cofb, corl, cp, sol, &n, 0, 0, 0, m, i);
-  */
 
   /* If we found at least a solution, we return */
   if (n > 0)
@@ -890,4 +883,83 @@ int solve_scram(int scram[], int sol[][30], int m, int b, int optimal) {
     }
   }
   return best > b ? 0 : 1;
+}
+
+/* Given eofb, coud, ep and cp it finds a scramble that reaches that state.
+ * It uses a simple 3-step solver to find a preliminary "solution", and then
+ * gives this solutions as a scramble to a better solver (see above). */
+int reach_state(int eofb, int coud, int ep, int cp, int sol[][30]) {
+  
+  int fake_count = 0, fake_scram[30];
+  int eo_list[2][30], dr_list[2][30], finish_list[2][30];
+
+  /* Convert ep to array */
+  int ep_arr[12];
+  ep_int_to_array(ep, ep_arr);
+
+  /* Find EO */
+  init_small_pruning_tables();
+  for (int d = 0; d < 10; d++) {
+    niss_eo_dfs(eofb, fake_scram, eo_list, &fake_count, eofb_transition_table,
+                eofb_pruning_table, 0, 0, 0, 1, d, 0, 0, 0);
+    if (fake_count) {
+      fake_count = 0;
+      break;
+    }
+  }
+
+  /* Apply moves found, find epose */
+  for (int i = 0; eo_list[0][i]; i++) {
+    coud = coud_transition_table[coud][eo_list[0][i]];
+    cp   = cp_transition_table[cp][eo_list[0][i]];
+    apply_move_ep_array(eo_list[0][i], ep_arr);
+  }
+  int epose = epose_array_to_int(ep_arr);
+
+  /* Find DR */
+  init_drfromeo_pruning_tables();
+  for (int d = 0; d < 16; d++) {
+    niss_dr_from_eo_dfs(coud, epose, fake_scram, fake_scram, dr_list,
+                        &fake_count, coud_transition_table,
+                        epose_transition_table,
+                        coud_epose_from_eofb_pruning_table, move_mask_eofb,
+                        0, 0, 0, 0, 0, 1, d, 0, 0, 0);
+    if (fake_count) {
+      fake_count = 0;
+      break;
+    }
+  }
+
+  /* Apply moves found, find epud and epe */
+  for (int i = 0; dr_list[0][i]; i++) {
+    cp   = cp_transition_table[cp][dr_list[0][i]];
+    apply_move_ep_array(dr_list[0][i], ep_arr);
+  }
+  int epud = epud_array_to_int(ep_arr);
+  int epe  = epe_array_to_int(ep_arr);
+
+  /* Find finish */
+  init_small_pruning_tables();
+  for (int d = 0; d < 16; d++) {
+    dr_finish_dfs(cp, epud, epe, finish_list, &fake_count,
+                  epud_transition_table, epe_transition_table,
+                  cp_drud_pruning_table, epud_pruning_table, move_mask_drud,
+                  0, 0, 0, 1, d);
+    if (fake_count) {
+      fake_count = 0;
+      break;
+    }
+  }
+
+  int scram[50];
+
+  /* Debug */
+  /*print_moves(eo_list[0]); printf("\n");
+  print_moves(dr_list[0]); printf("\n");
+  print_moves(finish_list[0]); printf("\n");*/
+  
+  copy_moves(eo_list[0], scram);
+  append_moves(dr_list[0], scram);
+  append_moves(finish_list[0], scram);
+  return solve_scram(scram, sol, 1, 25, 0);
 }

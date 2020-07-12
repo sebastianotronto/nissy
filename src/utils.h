@@ -36,6 +36,10 @@ int perm_to_index(int *a, int n);
  * (see perm_to_index) and saves the result to r. */
 void index_to_perm(int p, int n, int *r);
 
+/* Determine the sign of a permutation, either in integer or array format. */
+int perm_sign_array(int a[], int n);
+int perm_sign_int(int p, int n);
+
 /* Converts a k-element subset of a set with an element from an array of n
  * elements, of which k are 1 and n-k are 0, to its index in the sorted list
  * of all such subsets.

@@ -1,6 +1,7 @@
 /* blabla */
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include "utils.h"
 #include "coordinates.h"
 #include "io.h"
@@ -11,6 +12,8 @@
 char *commands[][10] = {
   {"help", "[COMMAND]",
    "Print this help, or a help page for COMMAND."},
+  {"scramble", "",
+   "Prints a random-state scramble"},
   {"save", "[MOVES|@ID|$ID]",
    "Save or copy a scramble."},
   {"change", "$ID1 [MOVES|$ID2|@ID2]",
@@ -139,6 +142,28 @@ void help_cmd(int n, char cmdtok[][100]) {
   } else {
     printf("help: wrong syntax.\n");
   }
+}
+
+void scramble_cmd(int n, char cmdtok[][100]) {
+  if (n > 1 || cmdtok[0][0] != 's') { /* Second case avoids warning */
+    printf("scramble: wrong syntax\n");
+    return;
+  }
+
+  srand(time(NULL));
+  int eofb = rand() % pow2to11;
+  int coud = rand() % pow3to7;
+  int ep   = rand() % factorial12;
+  int cp   = rand() % factorial8;
+  while (perm_sign_int(ep, 12) != perm_sign_int(cp, 8))
+    ep = (ep+1) % factorial12;
+
+  /* Debug */
+  /* printf("State: %d %d %d %d\n", eofb, coud, ep, cp); */
+
+  int scram[2][30];
+  reach_state(eofb, coud, ep, cp, scram);
+  print_results(1, scram);
 }
 
 void save_cmd(int n, char cmdtok[][100]) {
@@ -534,7 +559,7 @@ void dr_cmd(int n, char cmdtok[][100]) {
   int dr_list[m+5][30], ndr;
   if (from) {
     ndr = drfrom_scram_spam(scram_unnissed, dr_list, from, fb, rl, ud,
-                                m, b, niss, hide);
+                            m, b, niss, hide);
     if (ndr == -1) {
       printf("dr: from given, but EO not found (possibly other error).\n");
       return;
@@ -761,7 +786,7 @@ void exit_quit_cmd(int n, char cmdtok[][100]) {
 }
 
 void (*cmd_list[])(int n, char cmdtok[][100]) = {
-  help_cmd, save_cmd, change_cmd, print_cmd,
+  help_cmd, scramble_cmd, save_cmd, change_cmd, print_cmd,
   add_cmd, invert_cmd, unniss_cmd, pic_cmd,
   solve_cmd, replace_cmd,
   eo_cmd, dr_cmd, htr_cmd,
