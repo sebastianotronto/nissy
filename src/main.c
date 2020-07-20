@@ -12,8 +12,8 @@
 char *commands[][10] = {
   {"help", "[COMMAND]",
    "Print this help, or a help page for COMMAND."},
-  {"scramble", "",
-   "Prints a random-state scramble"},
+  {"scramble", "[OPTIONS]",
+   "Prints a random-state scramble."},
   {"save", "[MOVES|@ID|$ID]",
    "Save or copy a scramble."},
   {"change", "$ID1 [MOVES|$ID2|@ID2]",
@@ -124,7 +124,7 @@ void help_cmd(int n, char cmdtok[][100]) {
   if (n == 1) {
     printf("\n");
     for (int i = 0; commands[i][0][0]; i++)
-      printf("%-10s%-20s%s\n", commands[i][0], commands[i][1], commands[i][2]);
+      printf("%-10s%-25s%s\n", commands[i][0], commands[i][1], commands[i][2]);
     printf("\n");
     printf("Type \'help\' followed by a command for a detailed help page.\n");
     printf("Type \'help nissy\' for a general user guide.\n");
@@ -145,24 +145,54 @@ void help_cmd(int n, char cmdtok[][100]) {
 }
 
 void scramble_cmd(int n, char cmdtok[][100]) {
-  if (n > 1 || cmdtok[0][0] != 's') { /* Second case avoids warning */
+  int c = 0, e = 0, dr = 0;
+
+  if (n > 2 || cmdtok[0][0] != 's') { /* Second case avoids warning */
     printf("scramble: wrong syntax\n");
     return;
+  } else if (n == 2) {
+    if (!strcmp(cmdtok[1], "c")) {
+      c = 1;
+    } else if (!strcmp(cmdtok[1], "e")) {
+      e = 1;
+    } else if (!strcmp(cmdtok[1], "dr")) {
+      dr = 1;
+    } else {
+      printf("scramble: wrong syntax\n");
+      return;
+    }
   }
 
+  int scram[2][30];
+  
   srand(time(NULL));
   int eofb = rand() % pow2to11;
   int coud = rand() % pow3to7;
   int ep   = rand() % factorial12;
   int cp   = rand() % factorial8;
-  while (perm_sign_int(ep, 12) != perm_sign_int(cp, 8))
-    ep = (ep+1) % factorial12;
+  
+  if (c) {
+    eofb = ep = 0;
+  } else if (e) {
+    coud = cp = 0;
+  } else if (dr) {
+    eofb = coud = 0;
+    int epud = rand() % factorial8;
+    int epe  = rand() % factorial4;
+    int ep_arr[12];
+    epud_int_to_array(epud, ep_arr);
+    epe_int_to_array(epe, ep_arr);
+    ep = ep_array_to_int(ep_arr);
+    while (perm_sign_int(ep, 12) != perm_sign_int(cp, 8))
+      cp = (cp+1) % factorial8;
+  } else {
+    while (perm_sign_int(ep, 12) != perm_sign_int(cp, 8))
+      cp = (cp+1) % factorial8;
+  }
 
+  reach_state(eofb, coud, ep, cp, scram);
   /* Debug */
   /* printf("State: %d %d %d %d\n", eofb, coud, ep, cp); */
-
-  int scram[2][30];
-  reach_state(eofb, coud, ep, cp, scram);
   print_results(1, scram);
 }
 

@@ -25,13 +25,12 @@ compiler to use the [C99 standard](https://en.wikipedia.org/wiki/C99). For
 example, on a Linux system with GCC installed:
 
 ```
-cd path/to/nissy/src
-gcc -O3 -std=c99 -o ../nissy *.c
-cd ..
+cd path/to/nissy
+gcc -O3 -std=c99 -o nissy ./src/*.c
 ./nissy
 ```
 
-You can also use the script compile.sh in the src folder, which executes that
+You can also use the script compile.sh, which executes that
 gcc line (with a few extra options).
 
 ## Tips

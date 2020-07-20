@@ -1,0 +1,22 @@
+
+HELP PAGE FOR COMMAND scramble
+
+SYNTAX
+scramble [OPTIONS]
+
+DESCRIPTION
+Produces a random-state scramble. There are options to get a corners-only,
+edges-only or dr-state scramble.
+
+OPTIONS
+c                  Scrambles corners only (edges are solved).
+e                  Scrambles edges only (corners are solved).
+dr                 DR-state scramble. The DR is always on the U/D axis.
+
+
+EXAMPLES
+scramble
+  Gives a random-state scramble
+scramble dr
+  Gives a random-DR-state scramble
+
