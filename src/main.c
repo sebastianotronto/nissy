@@ -32,6 +32,8 @@ char *commands[][10] = {
    "Solves a scramble."},
   {"replace", "[MOVES|$ID|@ID]",
    "Find non-optimal subsequences."},
+  {"clear", "",
+   "Delete saved scrambles and output sequences."},
   {"eo", "[MOVES|$ID|@ID]",
    "Solves EO."},
   {"dr", "[MOVES|$ID|@ID]",
@@ -459,6 +461,14 @@ void replace_cmd(int n, char cmdtok[][100]) {
   }
 }     
 
+void clear_cmd(int n, char cmdtok[][100]) {
+  if (n > 1 || cmdtok[0][0] != 'c') {  /* Avoid unused variable warning */
+    printf("clear: syntax error.\n");
+    return;
+  }
+  scr_count = tmp_count = 1;
+}
+
 void eo_cmd(int n, char cmdtok[][100]) {
   
   /* Default values */
@@ -818,7 +828,7 @@ void exit_quit_cmd(int n, char cmdtok[][100]) {
 void (*cmd_list[])(int n, char cmdtok[][100]) = {
   help_cmd, scramble_cmd, save_cmd, change_cmd, print_cmd,
   add_cmd, invert_cmd, unniss_cmd, pic_cmd,
-  solve_cmd, replace_cmd,
+  solve_cmd, replace_cmd, clear_cmd,
   eo_cmd, dr_cmd, htr_cmd,
   drfinish_cmd, htrfinish_cmd, drcorners_cmd,
   exit_quit_cmd, exit_quit_cmd, NULL

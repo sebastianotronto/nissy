@@ -1,0 +1,9 @@
+
+HELP PAGE FOR COMMAND clear
+
+SYNTAX
+clear
+
+DESCRIPTION
+Resets all saved scrambles and output sequences.
+
