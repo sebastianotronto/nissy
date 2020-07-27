@@ -66,6 +66,8 @@ void niss_eo_dfs(int eo, int scramble[], int eo_list[][30], int *eo_count,
     }
   }
   
+  if (*eo_count >= m)
+    return;
   eo_list[*eo_count][moves] = 0; 
 
   /* If not nissing already and we either have not done any move yet or
@@ -152,6 +154,8 @@ void niss_dr_from_eo_dfs(int co, int epos, int scramble[], int eo_moves[30],
     }
   }
   
+  if (*dr_count >= m)
+    return;
   dr_list[*dr_count][moves] = 0; 
 
   /* If not nissing already and we either have not done any move yet or
@@ -296,13 +300,15 @@ void niss_htr_from_dr_dfs(int cp, int eo3, int scramble[], int eodr_moves[30],
     }
   }
   
+  if (*htr_count >= m)
+    return;
   htr_list[*htr_count][moves] = 0; 
 
   /* If not nissing already and we either have not done any move yet or
    * the last move was a quarter turn and I am allowed to niss, try niss! */
   if (!niss && last1 % 3 != 2 && can_use_niss && 
       !(hide && moves > 0 &&
-         (last1 % 3 == 0 || (parallel(last1, last2) && last2 % 3 == 0)))) 
+         (last1 % 3 == 0 || (parallel(last1, last2) && last2 % 3 == 0))))
     niss_htr_from_dr_dfs(premoves_inverse(htr_list[*htr_count], scramble,
                                           eodr_moves, cp_transition_table),
                          premoves_inverse(htr_list[*htr_count], scramble,
