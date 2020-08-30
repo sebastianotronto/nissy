@@ -1,1 +1,1 @@
-gcc -Wall -Wextra -O3 -std=c99 -o nissy -g ./src/*.c
+gcc -Wall -Wextra -O2 -std=c99 -o nissy -g ./src/*.c
