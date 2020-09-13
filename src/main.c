@@ -1,4 +1,3 @@
-/* blabla */
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -8,6 +7,7 @@
 #include "moves.h"
 #include "solver.h"
 #include "string.h"
+#include "helppages.h"
 
 char *commands[][10] = {
   {"help", "[COMMAND]",
@@ -130,17 +130,15 @@ void help_cmd(int n, char cmdtok[][100]) {
     printf("\n");
     printf("Type \'help\' followed by a command for a detailed help page.\n");
     printf("Type \'help nissy\' for a general user guide.\n");
-  } else if (n == 2) {
-    char fname[255], line[255] = "";
-    FILE *file;
-    sprintf(fname, "docs/%s.txt", cmdtok[1]);
-    file = fopen(fname, "r");
-    if (file == NULL) {
-      printf("No help file for %s.\n", cmdtok[1]);
-      return;
+  } else if (n == 2) {  
+    for (int i = 0; i < Npages; i++) {
+      if (!strcmp(helppages[i][0], cmdtok[1])) {
+        printf("%s", helppages[i][1]);
+        return;
+      }
     }
-    while (fgets(line, 255, file) != NULL)
-      printf("%s", line);
+    printf("No help page for %s.\n", cmdtok[1]);
+    return;
   } else {
     printf("help: wrong syntax.\n");
   }

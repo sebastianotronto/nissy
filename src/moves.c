@@ -1,8 +1,3 @@
-/* This is a simple program to solve the Rubik's Cube.
- * No idea how many features I am going to implement.
- * Open source license and whatnot.
- * I am trying to follow the C99 standard. */
-
 /* This file contains the definitions of the basic moves of the cube.
  * There is no object or type representing the cube.
  * Data about the cube can be represented by arrays (describing the position
