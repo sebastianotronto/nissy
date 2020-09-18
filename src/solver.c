@@ -36,6 +36,7 @@ void niss_eo_dfs(int eo, int scramble[], int eo_list[][30], int *eo_count,
                  int last1, int last2, int moves, int m, int d, int niss,
                  int can_use_niss, int hide) {
 
+
   if (*eo_count >= m || moves > d ||
      ((!can_use_niss || niss) && moves + p_table[eo] > d))
     return;
@@ -55,17 +56,15 @@ void niss_eo_dfs(int eo, int scramble[], int eo_list[][30], int *eo_count,
     return;
   }
 
-  if (moves + p_table[eo] <= d) {
-    for (int i = 1; i < 19; i++) {
-      if (possible_next[last1][last2] & (1 << i)) {
-        eo_list[*eo_count][moves] = niss ? -i : i;
-        niss_eo_dfs(t_table[eo][i], scramble, eo_list, eo_count, t_table,
-                    p_table, i, last1, moves+1, m, d, niss,
-                    can_use_niss, hide);
-      }
+  for (int i = 1; i < 19; i++) {
+    if (possible_next[last1][last2] & (1 << i)) {
+      eo_list[*eo_count][moves] = niss ? -i : i;
+      niss_eo_dfs(t_table[eo][i], scramble, eo_list, eo_count, t_table,
+                  p_table, i, last1, moves+1, m, d, niss,
+                  can_use_niss, hide);
     }
   }
-  
+    
   if (*eo_count >= m)
     return;
   eo_list[*eo_count][moves] = 0; 
@@ -141,16 +140,14 @@ void niss_dr_from_eo_dfs(int co, int epos, int scramble[], int eo_moves[30],
     return;
   }
 
-  if (moves + p_table[co][epos] <= d) {
-    for (int i = 1; i < 19; i++) {
-      if (possible_next[last1][last2] & (1 << i) & mask) {
-        dr_list[*dr_count][moves] = niss ? -i : i;
-        niss_dr_from_eo_dfs(co_t_table[co][i], epos_t_table[epos][i],
-                            scramble, eo_moves, dr_list, dr_count,
-                            co_t_table, epos_t_table, p_table, mask,
-                            i, last1, last1_inv, last2_inv,
-                            moves+1, m, d, niss, can_use_niss, hide);
-      }
+  for (int i = 1; i < 19; i++) {
+    if (possible_next[last1][last2] & (1 << i) & mask) {
+      dr_list[*dr_count][moves] = niss ? -i : i;
+      niss_dr_from_eo_dfs(co_t_table[co][i], epos_t_table[epos][i],
+                          scramble, eo_moves, dr_list, dr_count,
+                          co_t_table, epos_t_table, p_table, mask,
+                          i, last1, last1_inv, last2_inv,
+                          moves+1, m, d, niss, can_use_niss, hide);
     }
   }
   
@@ -286,17 +283,15 @@ void niss_htr_from_dr_dfs(int cp, int eo3, int scramble[], int eodr_moves[30],
     return;
   }
 
-  if (moves + cp_htr_pruning_table[cp] <= d) {
-    for (int i = 1; i < 19; i++) {
-      if (possible_next[last1][last2] & (1 << i) & mask) {
-        htr_list[*htr_count][moves] = niss ? -i : i;
-        niss_htr_from_dr_dfs(cp_transition_table[cp][i], eo3_t_table[eo3][i],
-                             scramble, eodr_moves, htr_list, htr_count,
-                             eo3_t_table, cp_to_htr_pruning_table,
-                             cp_htr_pruning_table, cp_finish_pruning_table,
-                             mask, i, last1, last1_inv, last2_inv,
-                             moves+1, m, d, niss, can_use_niss, hide);
-      }
+  for (int i = 1; i < 19; i++) {
+    if (possible_next[last1][last2] & (1 << i) & mask) {
+      htr_list[*htr_count][moves] = niss ? -i : i;
+      niss_htr_from_dr_dfs(cp_transition_table[cp][i], eo3_t_table[eo3][i],
+                           scramble, eodr_moves, htr_list, htr_count,
+                           eo3_t_table, cp_to_htr_pruning_table,
+                           cp_htr_pruning_table, cp_finish_pruning_table,
+                           mask, i, last1, last1_inv, last2_inv,
+                           moves+1, m, d, niss, can_use_niss, hide);
     }
   }
   
