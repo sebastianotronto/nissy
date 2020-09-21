@@ -1,0 +1,39 @@
+
+HELP PAGE FOR COMMAND co
+
+SYNTAX
+co [OPTIONS] [MOVES|$ID|@ID]
+
+DESCRIPTION
+Solves CO for a given scramble. A scramble can be given as last argument of the
+command, or an ID of a saved scramble can be provided. If none of the two is
+given, a prompt will ask the user to input a new scramble.
+
+OPTIONS
+axis={fb,rl,ud}    Specify the axis for the CO. One to three axes can be given,
+                   comma separated, no spaces.
+                   Default: CO on any of the three axis (omitting the option is
+                   the same as specifying axis=fb,rl,ud).
+b=N                Specify a bound for the number of moves. N must be a number.
+                   Default value: 20.
+h                  Show hidden COs.
+                   Default, if an CO ending in e.g. F is shown, the equivalent
+                   one ending in F' is hidden.
+i                  Ignore centers. By default the CO is aligned with centers.
+niss               Use NISS.
+                   Default: does not use NISS.
+n=N                Specify a maximum number of COs to be output. N must be a
+                   number.
+                   Default value: 1.
+
+EXAMPLES
+co axis=fb $1
+  Finds one optimal CO on fb for the first saved scramble.
+
+co n=5 b=4 U R F  
+  Finds up to 5 COs of length at most 4 for scramble U R F.
+
+co n=100 b=5 niss axis=fb,ud h  R' U' F L R'U'F
+  Finds up to 100 COs of lenth at most 4, possibly using NISS, including
+  "hidden" COs, excluding the rl axis.
+

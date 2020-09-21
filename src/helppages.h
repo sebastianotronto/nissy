@@ -1,6 +1,6 @@
 /* To generate this help page, use the script makedoc.sh */
 
-int Npages = 21;
+int Npages = 22;
 
 char *helppages[][10] = {
 
@@ -63,6 +63,50 @@ clear\n\
 \n\
 DESCRIPTION\n\
 Resets all saved scrambles and output sequences.\n\
+\n\
+"
+},
+
+{ "co",
+"\
+\n\
+HELP PAGE FOR COMMAND co\n\
+\n\
+SYNTAX\n\
+co [OPTIONS] [MOVES|$ID|@ID]\n\
+\n\
+DESCRIPTION\n\
+Solves CO for a given scramble. A scramble can be given as last argument of the\n\
+command, or an ID of a saved scramble can be provided. If none of the two is\n\
+given, a prompt will ask the user to input a new scramble.\n\
+\n\
+OPTIONS\n\
+axis={fb,rl,ud}    Specify the axis for the CO. One to three axes can be given,\n\
+                   comma separated, no spaces.\n\
+                   Default: CO on any of the three axis (omitting the option is\n\
+                   the same as specifying axis=fb,rl,ud).\n\
+b=N                Specify a bound for the number of moves. N must be a number.\n\
+                   Default value: 20.\n\
+h                  Show hidden COs.\n\
+                   Default, if an CO ending in e.g. F is shown, the equivalent\n\
+                   one ending in F' is hidden.\n\
+i                  Ignore centers. By default the CO is aligned with centers.\n\
+niss               Use NISS.\n\
+                   Default: does not use NISS.\n\
+n=N                Specify a maximum number of COs to be output. N must be a\n\
+                   number.\n\
+                   Default value: 1.\n\
+\n\
+EXAMPLES\n\
+co axis=fb $1\n\
+  Finds one optimal CO on fb for the first saved scramble.\n\
+\n\
+co n=5 b=4 U R F  \n\
+  Finds up to 5 COs of length at most 4 for scramble U R F.\n\
+\n\
+co n=100 b=5 niss axis=fb,ud h  R' U' F L R'U'F\n\
+  Finds up to 100 COs of lenth at most 4, possibly using NISS, including\n\
+  \"hidden\" COs, excluding the rl axis.\n\
 \n\
 "
 },

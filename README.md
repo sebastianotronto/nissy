@@ -26,7 +26,7 @@ example, on a Linux system with GCC installed:
 
 ```
 cd path/to/nissy
-gcc -O3 -std=c99 -o nissy ./src/*.c
+gcc -O2 -std=c99 -o nissy ./src/*.c
 ./nissy
 ```
 

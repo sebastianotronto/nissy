@@ -1,5 +1,7 @@
 int eo_scram_spam(int scram[], int eo_list[][30], int fb, int rl, int ud,
                   int m, int b, int niss, int h);
+int co_scram_spam(int scram[], int co_list[][30], int fb, int rl, int ud,
+                  int m, int b, int niss, int h, int i);
 int dr_scram_spam(int scram[], int dr_list[][30], int fb, int rl, int ud,
                   int m, int b, int h);
 int drfrom_scram_spam(int scram[], int dr_list[][30], int from, int fb,

@@ -8,51 +8,6 @@
 #include "solver.h"
 #include "string.h"
 #include "helppages.h"
-
-char *commands[][10] = {
-  {"help", "[COMMAND]",
-   "Print this help, or a help page for COMMAND."},
-  {"scramble", "[OPTIONS]",
-   "Prints a random-state scramble."},
-  {"save", "[MOVES|@ID|$ID]",
-   "Save or copy a scramble."},
-  {"change", "$ID1 [MOVES|$ID2|@ID2]",
-   "Change a memorized scramble."},
-  {"print", "[$ID|@ID]",
-   "Print memorized sequences."},
-  {"add", "[MOVES|$ID1|@ID1] $ID2",
-   "Add moves at the end of a memorized scramble."},
-  {"invert", "[MOVES|$ID|@ID]",
-   "Inverts the given sequence of moves."},
-  {"unniss", "[MOVES|$ID|@ID]}",
-   "Removes NISS: A (B) -> B\' A."},
-  {"pic",   "[MOVES|$ID|@ID]",
-   "Show a text description of the scrambled cube."},
-  {"solve", "[MOVES|$ID|@ID]",
-   "Solves a scramble."},
-  {"replace", "[MOVES|$ID|@ID]",
-   "Find non-optimal subsequences."},
-  {"clear", "",
-   "Delete saved scrambles and output sequences."},
-  {"eo", "[MOVES|$ID|@ID]",
-   "Solves EO."},
-  {"dr", "[MOVES|$ID|@ID]",
-   "Solves DR, either directly or from eo."},
-  {"htr", "[MOVES|$ID|@ID]",
-   "Solves HTR from DR."},
-  {"drfinish", "[MOVES|$ID|@ID]",
-   "Solves the cube after DR."},
-  {"htrfinish", "[MOVES|$ID|@ID]",
-   "Solves the cube using only half turns."},
-  {"drcorners", "[MOVES|$ID|@ID]",
-   "Solves corners after DR."},
-  {"exit", "",
-   "Exit nissy."},
-  {"quit", "",
-   "Exit nissy."},
-  {"", "", ""}
-};
-
 /* Saved sequences of moves */
 int scr_count=1, tmp_count=1, max_tmp=999;
 int scrambles[255][255], tmp[1000][255];
@@ -120,28 +75,6 @@ int parsecmd(char *cmd, char cmdtok[][100])  {
     s = strtok(NULL, " ");
   }
   return n;
-}
-
-void help_cmd(int n, char cmdtok[][100]) {
-  if (n == 1) {
-    printf("\n");
-    for (int i = 0; commands[i][0][0]; i++)
-      printf("%-10s%-25s%s\n", commands[i][0], commands[i][1], commands[i][2]);
-    printf("\n");
-    printf("Type \'help\' followed by a command for a detailed help page.\n");
-    printf("Type \'help nissy\' for a general user guide.\n");
-  } else if (n == 2) {  
-    for (int i = 0; i < Npages; i++) {
-      if (!strcmp(helppages[i][0], cmdtok[1])) {
-        printf("%s", helppages[i][1]);
-        return;
-      }
-    }
-    printf("No help page for %s.\n", cmdtok[1]);
-    return;
-  } else {
-    printf("help: wrong syntax.\n");
-  }
 }
 
 void scramble_cmd(int n, char cmdtok[][100]) {
@@ -528,6 +461,69 @@ void eo_cmd(int n, char cmdtok[][100]) {
   print_results(neo, eo_list);
 }
 
+void co_cmd(int n, char cmdtok[][100]) {
+  
+  /* Default values */
+  int m = 1, b = 20, ignore = 0;
+  int niss = 0, hide = 1;
+  int fb = 1, rl = 1, ud = 1;
+  int scram[255] = {[0] = 0};
+  int scram_unnissed[255];
+  
+  /* Parse options */
+  for (int i = 1; i < n && scram[0] == 0; i++) {
+    if (!strcmp(cmdtok[i], "h")) {
+      hide = 0;
+    } else if (!strcmp(cmdtok[i], "niss")) {
+      niss = 1;
+    } else if (!strcmp(cmdtok[i], "i")) {
+      ignore = 1;
+    } else if (!strncmp(cmdtok[i], "axis=", 5)) {
+      fb = rl = ud = 0;
+      if (strstr(cmdtok[i], "fb") != NULL)
+        fb = 1;
+      if (strstr(cmdtok[i], "rl") != NULL)
+        rl = 1;
+      if (strstr(cmdtok[i], "ud") != NULL)
+        ud = 1;
+      if (fb + rl + ud == 0) {
+        printf("co: bad axis option.\n");
+        return;
+      }
+    } else if (!strncmp(cmdtok[i], "n=", 2)) {
+      m = atoi(cmdtok[i]+2);
+      if (m <= 0) {
+        printf("co: bad option n.\n");
+        return;
+      }
+    } else if (!strncmp(cmdtok[i], "b=", 2)) {
+      b = atoi(cmdtok[i]+2);
+      if (b <= 0) {
+        printf("co: bad option b.\n");
+        return;
+      }
+    } else if (read_moves_from_argument(n-i, cmdtok+i, scram) == -1) {
+      printf("co: error reading moves or ID.\n");
+      return;
+    }
+  }
+
+  if (scram[0] == 0) {
+    if (read_moves_from_prompt(scram) == -1) {
+      printf("co: error reading moves.\n");
+      return;
+    }
+  }
+
+  unniss(scram, scram_unnissed);
+
+  /* Call solver and print results */
+  int co_list[m+5][30];
+  int nco = co_scram_spam(scram_unnissed, co_list, fb, rl, ud, m, b, niss,
+                          hide, ignore);
+  print_results(nco, co_list);
+}
+
 void dr_cmd(int n, char cmdtok[][100]) {
   
   /* Default values */
@@ -763,7 +759,7 @@ void htrfinish_cmd(int n, char cmdtok[][100]) {
 
 void drcorners_cmd(int n, char cmdtok[][100]) {
   /* Default values */
-  int m = 1, b = 20, ignore=0;
+  int m = 1, b = 20, ignore = 0;
   int from = 0; /* 0: unspecified; {1,2,3}: from {ud,fb,rl} */
   int scram[255] = {[0] = 0};
   int scram_unnissed[255];
@@ -823,14 +819,88 @@ void exit_quit_cmd(int n, char cmdtok[][100]) {
     printf("%s: wrong synstax.\n", cmdtok[0]);
 }
 
+/***************************************************************/
+/* List of all commands                                        */
+/* Important: they must be in the same order in the two arrays */
+/***************************************************************/
+
+char *commands[][10] = {
+  {"help", "[COMMAND]",
+   "Print this help, or a help page for COMMAND."},
+  {"scramble", "[OPTIONS]",
+   "Prints a random-state scramble."},
+  {"save", "[MOVES|@ID|$ID]",
+   "Save or copy a scramble."},
+  {"change", "$ID1 [MOVES|$ID2|@ID2]",
+   "Change a memorized scramble."},
+  {"print", "[$ID|@ID]",
+   "Print memorized sequences."},
+  {"add", "[MOVES|$ID1|@ID1] $ID2",
+   "Add moves at the end of a memorized scramble."},
+  {"invert", "[MOVES|$ID|@ID]",
+   "Inverts the given sequence of moves."},
+  {"unniss", "[MOVES|$ID|@ID]}",
+   "Removes NISS: A (B) -> B\' A."},
+  {"pic",   "[MOVES|$ID|@ID]",
+   "Show a text description of the scrambled cube."},
+  {"solve", "[MOVES|$ID|@ID]",
+   "Solves a scramble."},
+  {"replace", "[MOVES|$ID|@ID]",
+   "Find non-optimal subsequences."},
+  {"clear", "",
+   "Delete saved scrambles and output sequences."},
+  {"eo", "[MOVES|$ID|@ID]",
+   "Solves EO."},
+  {"co", "[MOVES|$ID|@ID]",
+   "Solves CO."},
+  {"dr", "[MOVES|$ID|@ID]",
+   "Solves DR, either directly or from eo."},
+  {"htr", "[MOVES|$ID|@ID]",
+   "Solves HTR from DR."},
+  {"drfinish", "[MOVES|$ID|@ID]",
+   "Solves the cube after DR."},
+  {"htrfinish", "[MOVES|$ID|@ID]",
+   "Solves the cube using only half turns."},
+  {"drcorners", "[MOVES|$ID|@ID]",
+   "Solves corners after DR."},
+  {"exit", "",
+   "Exit nissy."},
+  {"quit", "",
+   "Exit nissy."},
+  {"", "", ""}
+};
+
+void help_cmd(int n, char cmdtok[][100]) {
+  if (n == 1) {
+    printf("\n");
+    for (int i = 0; commands[i][0][0]; i++)
+      printf("%-10s%-25s%s\n", commands[i][0], commands[i][1], commands[i][2]);
+    printf("\n");
+    printf("Type \'help\' followed by a command for a detailed help page.\n");
+    printf("Type \'help nissy\' for a general user guide.\n");
+  } else if (n == 2) {  
+    for (int i = 0; i < Npages; i++) {
+      if (!strcmp(helppages[i][0], cmdtok[1])) {
+        printf("%s", helppages[i][1]);
+        return;
+      }
+    }
+    printf("No help page for %s.\n", cmdtok[1]);
+    return;
+  } else {
+    printf("help: wrong syntax.\n");
+  }
+}
+
 void (*cmd_list[])(int n, char cmdtok[][100]) = {
   help_cmd, scramble_cmd, save_cmd, change_cmd, print_cmd,
   add_cmd, invert_cmd, unniss_cmd, pic_cmd,
   solve_cmd, replace_cmd, clear_cmd,
-  eo_cmd, dr_cmd, htr_cmd,
+  eo_cmd, co_cmd, dr_cmd, htr_cmd,
   drfinish_cmd, htrfinish_cmd, drcorners_cmd,
   exit_quit_cmd, exit_quit_cmd, NULL
 };
+
 
 void execcmd(int n, char cmdtok[][100]) {
   int i = 0;
@@ -841,6 +911,9 @@ void execcmd(int n, char cmdtok[][100]) {
   else
     printf("%s: not a command.\n", cmdtok[0]);
 }
+
+
+/* Main loop */
 
 int main() {
   init_transition_table();

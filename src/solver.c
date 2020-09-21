@@ -107,6 +107,88 @@ int eo_scram_spam(int scram[], int eo_list[][30], int fb, int rl, int ud,
 }     
 
 
+/******/
+/* CO */
+/******/
+void niss_co_dfs(int co, int scramble[], int co_list[][30], int *co_count,
+                 int t_table[pow3to7][19], int p_table[pow3to7], 
+                 int last1, int last2, int moves, int m, int d, int niss,
+                 int can_use_niss, int hide, int ignore) {
+
+
+  if (*co_count >= m || moves > d ||
+     ((!can_use_niss || niss) && ((!ignore && moves + p_table[co] > d) ||
+                                  ( ignore && moves + p_table[co] - 2 > d))))
+    return;
+
+  co_list[*co_count][moves] = 0;
+
+  if (co == 0 || (ignore && ( t_table[t_table[co][F]][B] == 0 ||
+                              t_table[t_table[co][R]][L] == 0 ||
+                              t_table[t_table[co][U]][D] == 0 ))) {
+    /* If an early CO is found, or if "case F2 B", or if hide is on. */
+    if (moves != d || (parallel(last1, last2) && last2 % 3 == 2) || 
+       (hide && moves > 0 &&
+         (last1 % 3 == 0 || (parallel(last1, last2) && last2 % 3 == 0))))
+      return;
+    /* Copy moves for the next solution */
+    if (*co_count < m - 1)
+      copy_moves(co_list[*co_count], co_list[(*co_count)+1]);
+    (*co_count)++;
+    return;
+  }
+
+  for (int i = 1; i < 19; i++) {
+    if (possible_next[last1][last2] & (1 << i)) {
+      co_list[*co_count][moves] = niss ? -i : i;
+      niss_co_dfs(t_table[co][i], scramble, co_list, co_count, t_table,
+                  p_table, i, last1, moves+1, m, d, niss,
+                  can_use_niss, hide, ignore);
+    }
+  }
+    
+  if (*co_count >= m)
+    return;
+  co_list[*co_count][moves] = 0; 
+
+  /* If not nissing already and we either have not done any move yet or
+   * the last move was F/F' etc, and if I am allowed to niss, try niss! */
+  if (!niss && (last1 == 0 || t_table[0][last1] != 0) && can_use_niss &&
+      !(hide && moves > 0 &&
+         (last1 % 3 == 0 || (parallel(last1, last2) && last2 % 3 == 0)))) {
+    int aux[] = {0,0};
+    niss_co_dfs(premoves_inverse(co_list[*co_count], scramble, aux, t_table),
+                scramble, co_list, co_count, t_table, p_table,
+                0, 0, moves, m, d, 1, can_use_niss, hide, ignore);
+  }
+}
+
+int co_scram_spam(int scram[], int co_list[][30], int fb, int rl, int ud,
+                  int m, int b, int niss, int h, int ignore) {
+  
+  init_small_pruning_tables();
+
+  int n = 0, cofb = 0, corl = 0, coud = 0;
+  for (int i = 0; scram[i]; i++) {
+    cofb = cofb_transition_table[cofb][scram[i]];
+    corl = corl_transition_table[corl][scram[i]];
+    coud = coud_transition_table[coud][scram[i]];
+  }
+  for (int i = 0; i <= b; i++) {
+    if (fb)
+      niss_co_dfs(cofb, scram, co_list, &n, cofb_transition_table,
+                  cofb_pruning_table, 0, 0, 0, m, i, 0, niss, h, ignore);
+    if (rl)
+      niss_co_dfs(corl, scram, co_list, &n, corl_transition_table,
+                  corl_pruning_table, 0, 0, 0, m, i, 0, niss, h, ignore);
+    if (ud)
+      niss_co_dfs(coud, scram, co_list, &n, coud_transition_table,
+                  coud_pruning_table, 0, 0, 0, m, i, 0, niss, h, ignore);
+  }
+  return n;
+}
+
+
 /**************/
 /* DR from EO */
 /**************/
@@ -600,10 +682,20 @@ void dr_corners_dfs(int cp, int sol[][30], int *sol_count,
 
   sol[*sol_count][moves] = 0;
 
-  if (cp == 0 || (ignore && 
+  if (cp == 0 ||
+       (ignore && mask == move_mask_drud &&
           (cp_transition_table[cp_transition_table[cp][U]][D3]  == 0 ||
            cp_transition_table[cp_transition_table[cp][U2]][D2] == 0 ||
-           cp_transition_table[cp_transition_table[cp][U3]][D]  == 0 ))) {
+           cp_transition_table[cp_transition_table[cp][U3]][D]  == 0 )) ||
+       (ignore && mask == move_mask_drfb &&
+          (cp_transition_table[cp_transition_table[cp][F]][B3]  == 0 ||
+           cp_transition_table[cp_transition_table[cp][F2]][B2] == 0 ||
+           cp_transition_table[cp_transition_table[cp][F3]][B]  == 0 )) ||
+       (ignore && mask == move_mask_drrl &&
+          (cp_transition_table[cp_transition_table[cp][R]][L3]  == 0 ||
+           cp_transition_table[cp_transition_table[cp][R2]][L2] == 0 ||
+           cp_transition_table[cp_transition_table[cp][R3]][L]  == 0 ))
+      ) {
     if (moves != d)
       return;
     /* Copy moves for the next solution */
