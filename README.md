@@ -13,6 +13,9 @@ combined with [NISS](https://www.speedsolving.com/wiki/index.php/Fewest_Moves_te
 or what was the optimal way to solve a certain substep at a given point, and so on.
 
 ## How to use it
+**Update:** the file nissy-win.exe should work as a Windows executable, but
+I have not tested it (I don't have a Windows machine).
+
 Check out the help pages in the docs folder. They are also available from
 within nissy with the command "help".
 
