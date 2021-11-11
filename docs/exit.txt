@@ -1,9 +1,0 @@
-
-HELP PAGE FOR COMMAND exit
-
-SYNTAX
-exit
-
-DESCRIPTION
-Exits nissy.
-

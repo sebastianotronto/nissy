@@ -1,0 +1,27 @@
+# Requirements
+
+A full installation of nissy requires about 1.8Gb of space, of which 1.6Gb are
+occupied by the huge pruning table for optimal solving, and running it requires
+the same amount of RAM.
+One can choose to never use the optimal solver and not to install the relative
+pruning table. If so, about 200Mb should be enough.
+
+# Installation
+
+## On a UNIX system:
+
+Edit the Makefile to match your local configuration (usually not necessary, but you
+may want to change the PREFIX variable) and run make, followed by make install.
+After that, you need to download some files and manually save them to your NISSYDATA
+folder (se manual page, ENVIRONMENT section). If you don't do it nissy can compute
+these files when needed and save them in the correct folders, but some of them
+take hours to generate even for a powerful computer (for reference, the huge pruning
+table takes about 20 hours on my laptop).
+Choose one of the following:
+	https://math.uni.lu/tronto/nissy/nissy-tables-full.zip
+	https://math.uni.lu/tronto/nissy/nissy-tables-full.tar.gz
+	https://math.uni.lu/tronto/nissy/nissy-tables-nohuge.zip
+	https://math.uni.lu/tronto/nissy/nissy-tables-nohuge.tar.gz
+extract the archive and copy the tables folder into NISSIDATA (paste there
+the whole folder, not file by file). The "nohuge" files are much smaller and do not
+contain the huge pruning table for the optimal solver.
