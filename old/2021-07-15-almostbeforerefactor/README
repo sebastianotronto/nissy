@@ -1,3 +1,0 @@
-I started refactorig (splitting code into more files) before realizing I had no backup of
-the fast version that works.
-Take some stuff from alg.h back into cube.h, remove alg.* ad it should be ok.
