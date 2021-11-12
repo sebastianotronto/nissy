@@ -153,6 +153,9 @@ genptable_branch(PruneData *pd, uint64_t ind, int d, Move *ms)
 	 * fields in struct cube are 32 bit ints that would take 88 times the
 	 * memory of the table to be generated, more than 120Gb for
 	 * ptable_khuge for example!
+	 *
+	 * TODO: it would be nice to get rid of this...
+	 *
 	 */
 	ci = pd->coord->cube(ind);
 

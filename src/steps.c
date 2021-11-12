@@ -376,7 +376,7 @@ dr_eorl = {
 Step
 dr_eoud = {
 	.shortname = "dr-eoud",
-	.name      = "DR on R/L or F/B without breaking EO on U/R",
+	.name      = "DR on R/L or F/B without breaking EO on U/D",
 
 	.estimate  = estimate_dr_eofb,
 	.ready     = check_eofb,
