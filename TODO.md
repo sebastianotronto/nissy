@@ -40,6 +40,10 @@ It's more of a personal reminder than anything else.
 
 ## Technical stuff
 
+### Code simplification
+* Remove anti-indeces. I think I can do this by using an iterative deepening
+  dfs method for generating pruning tables, like I do in solve()
+
 ### Memory management
 * fail gracefully when there is not enough memory to load a large table
 * free tables from memory when not used
