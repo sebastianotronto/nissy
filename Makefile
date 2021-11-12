@@ -37,7 +37,7 @@ dist: clean
 	gzip nissy-${VERSION}.tar
 	rm -rf nissy-${VERSION}
 
-install: nissy
+install: nissy.o
 	mkdir -p ${DESTDIR}${PREFIX}/bin
 	cp -f nissy.o ${DESTDIR}${PREFIX}/bin/nissy
 	chmod 755 ${DESTDIR}${PREFIX}/bin/nissy
