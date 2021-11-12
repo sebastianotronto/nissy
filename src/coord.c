@@ -153,7 +153,13 @@ coord_drud_eofb = {
 static Cube
 antindex_eofb(uint64_t ind)
 {
-	return (Cube){ .eofb = ind, .eorl = ind, .eoud = ind };
+	Cube ret = {0};
+
+	ret.eofb = ind;
+	ret.eorl = ind;
+	ret.eoud = ind;
+
+	return ret;
 }
 
 static Cube
@@ -161,8 +167,29 @@ antindex_eofbepos(uint64_t ind)
 {
 	Cube ret = {0};
 
+	/* We need eorl for sym16 coordinate */
+	static int initialized = false;
+	static uint64_t eorl_aux[POW2TO11][BINOM12ON4];
+	static int eo_aux[12], ep_aux[12];
+	unsigned int i, j, k;
+
+	if (!initialized) {
+		for (i = 0; i < POW2TO11; i++) {
+			for (j = 0; j < BINOM12ON4; j++) {
+				int_to_sum_zero_array(i, 2, 12, eo_aux);
+				index_to_subset(j, 12, 4, ep_aux);
+				for (k = 0; k < 12; k++)
+					if (ep_aux[k])
+						eo_aux[k] = 1 - eo_aux[k];
+			}
+		}
+
+		initialized = true;
+	}
+
 	ret.eofb = ind % POW2TO11;
 	ret.epose = (ind / POW2TO11) * 24;
+	ret.eorl = eorl_aux[ret.eofb][ret.epose/24];
 
 	return ret;
 }
