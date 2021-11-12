@@ -171,7 +171,7 @@ antindex_eofbepos(uint64_t ind)
 
 	/* We need eorl for sym16 coordinate */
 	static int initialized = false;
-	static uint64_t eorl_aux[POW2TO11][BINOM12ON4];
+	static uint64_t eorl_a[POW2TO11][BINOM12ON4];
 	static int eo_aux[12], ep_aux[12];
 	unsigned int i, j, k;
 
@@ -181,8 +181,10 @@ antindex_eofbepos(uint64_t ind)
 				int_to_sum_zero_array(i, 2, 12, eo_aux);
 				index_to_subset(j, 12, 4, ep_aux);
 				for (k = 0; k < 12; k++)
-					if (ep_aux[k])
+					if ((ep_aux[k] && k <  FR) ||
+					   (!ep_aux[k] && k >= FR))
 						eo_aux[k] = 1 - eo_aux[k];
+				eorl_a[i][j] = digit_array_to_int(eo_aux,11,2);
 			}
 		}
 
@@ -191,7 +193,7 @@ antindex_eofbepos(uint64_t ind)
 
 	ret.eofb = ind % POW2TO11;
 	ret.epose = (ind / POW2TO11) * 24;
-	ret.eorl = eorl_aux[ret.eofb][ret.epose/24];
+	ret.eorl = eorl_a[ret.eofb][ret.epose/24];
 
 	return ret;
 }

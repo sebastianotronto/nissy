@@ -109,8 +109,9 @@ table to solving EO with HTM moveset and this coordinate would have values 0 (fo
 There is one caveat: each coordinates also needs an inverse function that takes a
 coordinate value and returns a cube which has that coordinate. This is in general
 more complicated, but luckily the cube does not need to be fully built or consistent.
-This inverse-coordinate is used only in one specific step when building pruning tables
-to avoid using up hundreds of Gb of memory.
+This inverse-coordinate is used only in one specific step when generating symmetry
+data, and I don't know if it is possible to avoid it (maybe it is). It is also used
+when building pruning tables, but in that case it is avoidable.
 
 Note: this part is different from what Cube Explorer does. Overall I think it is
 conceptually easier, although in practice it was still hard to implement.

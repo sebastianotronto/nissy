@@ -213,6 +213,7 @@ dfsdata
 	Alg *           current_alg;
 	Move            sorted_moves[NMOVES];
 	int             move_position[NMOVES];
+	uint8_t *       visited;
 };
 
 struct
