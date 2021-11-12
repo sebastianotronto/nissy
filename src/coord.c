@@ -148,11 +148,12 @@ coord_drud_eofb = {
 	.ntrans = 1,
 };
 
-/* Functions *****************************************************************/
+/* Antindexers ***************************************************************/
 
 static Cube
 antindex_eofb(uint64_t ind)
 {
+	/* The returned cube is consistent */
 	Cube ret = {0};
 
 	ret.eofb = ind;
@@ -165,6 +166,7 @@ antindex_eofb(uint64_t ind)
 static Cube
 antindex_eofbepos(uint64_t ind)
 {
+	/* The returned cube is NOT consistent: eoud can be wrong */
 	Cube ret = {0};
 
 	/* We need eorl for sym16 coordinate */
@@ -197,6 +199,7 @@ antindex_eofbepos(uint64_t ind)
 static Cube
 antindex_epud(uint64_t ind)
 {
+	/* The returned cube is consistent */
 	static bool initialized = false;
 	static Cube epud_aux[FACTORIAL8];
 	int a[12];
@@ -223,77 +226,105 @@ antindex_epud(uint64_t ind)
 static Cube
 antindex_coud(uint64_t ind)
 {
-	return (Cube){ .coud = ind, .corl = ind, .cofb = ind };
+	/* The returned cube is consistent */
+	Cube ret = {0};
+
+	ret.coud = ind;
+	ret.corl = ind;
+	ret.cofb = ind;
+
+	return ret;
 }
 
 static Cube
 antindex_corners(uint64_t ind)
 {
-	Cube c = {0};
+	/* The returned cube is NOT consistent: corl and cofb can be wrong   */
+	/* TODO: remember to make this consistent if I use this for symcoord */
+	Cube ret = {0};
 
-	c.coud = ind / FACTORIAL8;
-	c.cp   = ind % FACTORIAL8;
+	ret.coud = ind / FACTORIAL8;
+	ret.cp   = ind % FACTORIAL8;
 
-	return c;
+	return ret;
 }
 
 static Cube
 antindex_cp(uint64_t ind)
 {
-	Cube c = {0};
+	/* The returned cube is NOT consistent: co can be wrong in all axes */
+	Cube ret = {0};
 
-	c.cp = ind;
+	ret.cp = ind;
 
-	return c;
+	return ret;
 }
 
 static Cube
 antindex_cphtr(uint64_t ind)
 {
-	return (Cube) { .cp = cphtr_right_rep[ind] };
+	/* The returned cube is NOT consistent: co can be wrong in all axes */
+	Cube ret = {0};
+
+	ret.cp = cphtr_right_rep[ind];
+
+	return ret;
 }
 
 static Cube
 antindex_cornershtr(uint64_t ind)
 {
-	Cube c = antindex_cphtr(ind % (BINOM8ON4 * 6));
+	/* The returned cube is NOT consistent: corl and cofb can be wrong */
+	Cube ret = antindex_cphtr(ind % (BINOM8ON4 * 6));
 
-	c.coud = ind / (BINOM8ON4 * 6);
+	ret.coud = ind / (BINOM8ON4 * 6);
 
-	return c;
+	return ret;
 }
 
 static Cube
 antindex_cornershtrfin(uint64_t ind)
 {
-	return (Cube){ .cp = cornershtrfin_ant[ind] };
+	/* The returned cube is consistent */
+	Cube ret = {0};
+
+	ret.cp = cornershtrfin_ant[ind];
+
+	return ret;
 }
 
 static Cube
 antindex_drud(uint64_t ind)
 {
+	/* The returned cube is NOT consistent in the same way as eofbepos */
+	/* (see above). It works with sym16 coordinates                    */
 	uint64_t epos, eofb;
-	Cube c;
+	Cube ret = {0};
 
 	eofb = ind % POW2TO11;
 	epos = ind / (POW2TO11 * POW3TO7);
-	c = antindex_eofbepos(eofb + POW2TO11 * epos);
+	ret  = antindex_eofbepos(eofb + POW2TO11 * epos);
 
-	c.coud  = (ind / POW2TO11) % POW3TO7;
+	ret.coud = (ind / POW2TO11) % POW3TO7;
+	ret.corl = ret.coud;
+	ret.cofb = ret.coud;
 
-	return c;
+	return ret;
 }
 
 static Cube
 antindex_drud_eofb(uint64_t ind)
 {
+	/* The returned cube is NOT consistent (see antindex_drud) */
 	return antindex_drud(ind * POW2TO11);
 }
 
 static Cube
 antindex_htr_drud(uint64_t ind)
 {
-	Cube ret;
+	/* The returned cube is NOT consistent: corl and cofb can be wrong */
+	/* (see cphtr) and eposm can be wrong too (not epose because dr).  */
+	Cube ret = {0};
 
 	ret       = antindex_cphtr(ind / BINOM8ON4);
 	ret.eposs = (ind % BINOM8ON4) * FACTORIAL4;
@@ -304,7 +335,8 @@ antindex_htr_drud(uint64_t ind)
 static Cube
 antindex_htrfin(uint64_t ind)
 {
-	Cube ret;
+	/* The returned cube is consistent */
+	Cube ret = {0};
 
 	ret = antindex_cornershtrfin(ind/(24*24*24));
 
@@ -316,6 +348,8 @@ antindex_htrfin(uint64_t ind)
 
 	return ret;
 }
+
+/* Indexers ******************************************************************/
 
 static uint64_t
 index_eofb(Cube cube)
