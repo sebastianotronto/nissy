@@ -8,6 +8,7 @@
 #include "utils.h"
 
 Cube        admissible_ep(Cube cube, PieceFilter f);
+int         array_ep_to_epos(int *ep, int *eps_solved);
 Cube        arrays_to_cube(CubeArray *arr, PieceFilter f);
 Cube        compose(Cube c2, Cube c1); /* Use c2 as an alg on c1 */
 Cube        compose_filtered(Cube c2, Cube c1, PieceFilter f);

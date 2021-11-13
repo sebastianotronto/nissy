@@ -1,13 +1,8 @@
 #include "cube.h"
 
-/* Local functions **********************************************************/
+/* Public functions implementation *******************************************/
 
-static int         array_ep_to_epos(int *ep, int *eps_solved);
-static int         epos_from_arrays(int *epos, int *ep);
-
-/* Local functions implementation ********************************************/
-
-static int
+int
 array_ep_to_epos(int *ep, int *ss)
 {
 	int epos[12] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -26,16 +21,8 @@ array_ep_to_epos(int *ep, int *ss)
 	for (i = 0; i < 4; i++)
 		swap(&epos[ss[i]], &epos[i+8]);
 
-	return epos_from_arrays(epos, eps);
+	return 24 * subset_to_index(epos, 12, 4) + perm_to_index(eps, 4);
 }
-
-static int
-epos_from_arrays(int *epos, int *ep)
-{
-	return FACTORIAL4 * subset_to_index(epos,12,4) + perm_to_index(ep,4);
-}
-
-/* Public functions implementation *******************************************/
 
 Cube
 arrays_to_cube(CubeArray *arr, PieceFilter f)

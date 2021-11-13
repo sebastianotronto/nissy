@@ -178,6 +178,7 @@ genptable(PruneData *pd)
 			d+1, pd->n - oldn, pd->n, pd->coord->max);
 		oldn = pd->n;
 	}
+	fprintf(stderr, "Pruning table generated!\n");
 
 	if (!write_ptable_file(pd))
 		fprintf(stderr, "Error writing ptable file\n");

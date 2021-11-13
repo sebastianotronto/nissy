@@ -327,9 +327,27 @@ antindex_htr_drud(uint64_t ind)
 	/* The returned cube is NOT consistent: corl and cofb can be wrong */
 	/* (see cphtr) and eposm can be wrong too (not epose because dr).  */
 	Cube ret = {0};
+	static bool initialized = false;
+	static int aux[BINOM8ON4], ep[12], ep2[12];
+	static int eps_solved[4] = {UL, UR, DL, DR};
+	unsigned int i, j, k;
+
+	if (!initialized) {
+		for (i = 0; i < BINOM8ON4; i++) {
+			for (j = 0; j < 12; j++)
+				ep[j] = ep2[j] = 0;
+			index_to_subset(i, 8, 4, ep);
+			for (j = 0, k = 0; j < 8; j++)
+				ep2[j] = ep[j/2+4*(j%2)] ? eps_solved[k++] : 0;
+			aux[i] = array_ep_to_epos(ep2, eps_solved);
+		}
+
+		initialized = true;
+	}
 
 	ret       = antindex_cphtr(ind / BINOM8ON4);
-	ret.eposs = (ind % BINOM8ON4) * FACTORIAL4;
+	ret.epose = 0;
+	ret.eposs = aux[ind % BINOM8ON4];
 
 	return ret;
 }
@@ -437,8 +455,25 @@ index_drud_eofb(Cube cube)
 static uint64_t
 index_htr_drud(Cube cube)
 {
-	return index_cphtr(cube) * BINOM8ON4 +
-	       (cube.eposs / FACTORIAL4) % BINOM8ON4;
+	static bool initialized = false;
+	static int aux[BINOM12ON4], ep[12], ep2[12];
+	static int eps_solved[4] = {UL, UR, DL, DR};
+	unsigned int i, j;
+
+	if (!initialized) {
+		for (i = 0; i < BINOM12ON4; i++) {
+			for (j = 0; j < 12; j++)
+				ep[j] = ep2[j] = 0;
+			epos_to_partial_ep(i*24, ep, eps_solved);
+			for (j = 0; j < 8; j++)
+				ep2[j/2 + 4*(j%2)] = ep[j] ? 1 : 0;
+			aux[i] = subset_to_index(ep2, 8, 4);
+		}
+
+		initialized = true;
+	}
+
+	return index_cphtr(cube) * BINOM8ON4 + aux[cube.eposs/24];
 }
 
 static uint64_t
