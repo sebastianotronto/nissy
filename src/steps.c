@@ -56,6 +56,9 @@ optimal_HTM = {
 	.moveset   = moveset_HTM,
 
 	.pre_trans = uf,
+
+	.tables    = {&pd_khuge_HTM, &pd_corners_HTM},
+	.ntables   = 2,
 };
 
 /* EO steps **************************/
@@ -71,6 +74,9 @@ eoany_HTM = {
 	.moveset   = moveset_HTM,
 
 	.pre_trans = uf,
+
+	.tables    = {&pd_eofb_HTM},
+	.ntables   = 1,
 };
 
 Step
@@ -85,6 +91,9 @@ eofb_HTM = {
 	.moveset   = moveset_HTM,
 
 	.pre_trans = uf,
+
+	.tables    = {&pd_eofb_HTM},
+	.ntables   = 1,
 };
 
 Step
@@ -99,6 +108,9 @@ eorl_HTM = {
 	.moveset   = moveset_HTM,
 
 	.pre_trans = ur,
+
+	.tables    = {&pd_eofb_HTM},
+	.ntables   = 1,
 };
 
 Step
@@ -113,6 +125,9 @@ eoud_HTM = {
 	.moveset   = moveset_HTM,
 
 	.pre_trans = fd,
+
+	.tables    = {&pd_eofb_HTM},
+	.ntables   = 1,
 };
 
 /* CO steps **************************/
@@ -127,6 +142,9 @@ coany_HTM = {
 	.moveset   = moveset_HTM,
 
 	.pre_trans = uf,
+
+	.tables    = {&pd_coud_HTM},
+	.ntables   = 1,
 };
 
 Step
@@ -140,6 +158,9 @@ coud_HTM = {
 	.moveset   = moveset_HTM,
 
 	.pre_trans = uf,
+
+	.tables    = {&pd_coud_HTM},
+	.ntables   = 1,
 };
 
 Step
@@ -153,6 +174,9 @@ corl_HTM = {
 	.moveset   = moveset_HTM,
 
 	.pre_trans = rf,
+
+	.tables    = {&pd_coud_HTM},
+	.ntables   = 1,
 };
 
 Step
@@ -166,6 +190,9 @@ cofb_HTM = {
 	.moveset   = moveset_HTM,
 
 	.pre_trans = fd,
+
+	.tables    = {&pd_coud_HTM},
+	.ntables   = 1,
 };
 
 Step
@@ -179,6 +206,9 @@ coany_URF = {
 	.moveset   = moveset_URF,
 
 	.pre_trans = uf,
+
+	.tables    = {&pd_coud_HTM},
+	.ntables   = 1,
 };
 
 Step
@@ -192,6 +222,9 @@ coud_URF = {
 	.moveset   = moveset_URF,
 
 	.pre_trans = uf,
+
+	.tables    = {&pd_coud_HTM},
+	.ntables   = 1,
 };
 
 Step
@@ -205,6 +238,9 @@ corl_URF = {
 	.moveset   = moveset_URF,
 
 	.pre_trans = rf,
+
+	.tables    = {&pd_coud_HTM},
+	.ntables   = 1,
 };
 
 Step
@@ -218,6 +254,9 @@ cofb_URF = {
 	.moveset   = moveset_URF,
 
 	.pre_trans = fd,
+
+	.tables    = {&pd_coud_HTM},
+	.ntables   = 1,
 };
 
 /* Misc corner steps *****************/
@@ -232,6 +271,9 @@ cornershtr_HTM = {
 	.moveset   = moveset_HTM,
 
 	.pre_trans = uf,
+
+	.tables    = {&pd_cornershtr_HTM},
+	.ntables   = 1,
 };
 
 Step
@@ -245,6 +287,9 @@ cornershtr_URF = {
 	.moveset   = moveset_URF,
 
 	.pre_trans = uf,
+
+	.tables    = {&pd_cornershtr_HTM},
+	.ntables   = 1,
 };
 
 Step
@@ -258,6 +303,9 @@ corners_HTM = {
 	.moveset   = moveset_HTM,
 
 	.pre_trans = uf,
+
+	.tables    = {&pd_corners_HTM},
+	.ntables   = 1,
 };
 
 Step
@@ -271,6 +319,9 @@ corners_URF = {
 	.moveset   = moveset_URF,
 
 	.pre_trans = uf,
+
+	.tables    = {&pd_corners_HTM},
+	.ntables   = 1,
 };
 
 /* DR steps **************************/
@@ -286,6 +337,9 @@ drany_HTM = {
 	.moveset   = moveset_HTM,
 
 	.pre_trans = uf,
+
+	.tables    = {&pd_drud_sym16_HTM},
+	.ntables   = 1,
 };
 
 Step
@@ -300,6 +354,9 @@ drud_HTM = {
 	.moveset   = moveset_HTM,
 
 	.pre_trans = uf,
+
+	.tables    = {&pd_drud_sym16_HTM},
+	.ntables   = 1,
 };
 
 Step
@@ -314,6 +371,9 @@ drrl_HTM = {
 	.moveset   = moveset_HTM,
 
 	.pre_trans = rf,
+
+	.tables    = {&pd_drud_sym16_HTM},
+	.ntables   = 1,
 };
 
 Step
@@ -328,6 +388,9 @@ drfb_HTM = {
 	.moveset   = moveset_HTM,
 
 	.pre_trans = fd,
+
+	.tables    = {&pd_drud_sym16_HTM},
+	.ntables   = 1,
 };
 
 /* DR from EO */
@@ -343,6 +406,9 @@ dr_eo = {
 	.moveset   = moveset_eofb,
 
 	.detect    = detect_pretrans_eofb,
+
+	.tables    = {&pd_drud_eofb},
+	.ntables   = 1,
 };
 
 Step
@@ -357,6 +423,9 @@ dr_eofb = {
 	.moveset   = moveset_eofb,
 
 	.pre_trans = uf,
+
+	.tables    = {&pd_drud_eofb},
+	.ntables   = 1,
 };
 
 Step
@@ -371,6 +440,9 @@ dr_eorl = {
 	.moveset   = moveset_eofb,
 
 	.pre_trans = ur,
+
+	.tables    = {&pd_drud_eofb},
+	.ntables   = 1,
 };
 
 Step
@@ -385,6 +457,9 @@ dr_eoud = {
 	.moveset   = moveset_eofb,
 
 	.pre_trans = fd,
+
+	.tables    = {&pd_drud_eofb},
+	.ntables   = 1,
 };
 
 Step
@@ -399,6 +474,9 @@ drud_eofb = {
 	.moveset   = moveset_eofb,
 
 	.pre_trans = uf,
+
+	.tables    = {&pd_drud_eofb},
+	.ntables   = 1,
 };
 
 Step
@@ -413,6 +491,9 @@ drrl_eofb = {
 	.moveset   = moveset_eofb,
 
 	.pre_trans = rf,
+
+	.tables    = {&pd_drud_eofb},
+	.ntables   = 1,
 };
 
 Step
@@ -427,6 +508,9 @@ drud_eorl = {
 	.moveset   = moveset_eofb,
 
 	.pre_trans = ur,
+
+	.tables    = {&pd_drud_eofb},
+	.ntables   = 1,
 };
 
 Step
@@ -441,6 +525,9 @@ drfb_eorl = {
 	.moveset   = moveset_eofb,
 
 	.pre_trans = fr,
+
+	.tables    = {&pd_drud_eofb},
+	.ntables   = 1,
 };
 
 Step
@@ -455,6 +542,9 @@ drfb_eoud = {
 	.moveset   = moveset_eofb,
 
 	.pre_trans = fd,
+
+	.tables    = {&pd_drud_eofb},
+	.ntables   = 1,
 };
 
 Step
@@ -469,6 +559,9 @@ drrl_eoud = {
 	.moveset   = moveset_eofb,
 
 	.pre_trans = rd,
+
+	.tables    = {&pd_drud_eofb},
+	.ntables   = 1,
 };
 
 /* DR finish steps */
@@ -484,6 +577,9 @@ dranyfin_DR = {
 	.moveset   = moveset_drud,
 
 	.detect    = detect_pretrans_drud,
+
+	.tables    = {&pd_drudfin_noE_sym16_drud},
+	.ntables   = 1,
 };
 
 Step
@@ -498,6 +594,9 @@ drudfin_drud = {
 	.moveset   = moveset_drud,
 
 	.pre_trans = uf,
+
+	.tables    = {&pd_drudfin_noE_sym16_drud},
+	.ntables   = 1,
 };
 
 Step
@@ -512,6 +611,9 @@ drrlfin_drrl = {
 	.moveset   = moveset_drud,
 
 	.pre_trans = rf,
+
+	.tables    = {&pd_drudfin_noE_sym16_drud},
+	.ntables   = 1,
 };
 
 Step
@@ -526,6 +628,9 @@ drfbfin_drfb = {
 	.moveset   = moveset_drud,
 
 	.pre_trans = fd,
+
+	.tables    = {&pd_drudfin_noE_sym16_drud},
+	.ntables   = 1,
 };
 
 /* HTR from DR */
@@ -541,6 +646,9 @@ htr_any = {
 	.moveset   = moveset_drud,
 
 	.detect    = detect_pretrans_drud,
+
+	.tables    = {&pd_htr_drud},
+	.ntables   = 1,
 };
 
 Step
@@ -555,6 +663,9 @@ htr_drud = {
 	.moveset   = moveset_drud,
 
 	.pre_trans = uf,
+
+	.tables    = {&pd_htr_drud},
+	.ntables   = 1,
 };
 
 Step
@@ -569,6 +680,9 @@ htr_drrl = {
 	.moveset   = moveset_drud,
 
 	.pre_trans = rf,
+
+	.tables    = {&pd_htr_drud},
+	.ntables   = 1,
 };
 
 Step
@@ -583,6 +697,9 @@ htr_drfb = {
 	.moveset   = moveset_drud,
 
 	.pre_trans = fd,
+
+	.tables    = {&pd_htr_drud},
+	.ntables   = 1,
 };
 
 /* HTR finish */
@@ -598,6 +715,9 @@ htrfin_htr = {
 	.moveset   = moveset_htr,
 
 	.pre_trans = uf,
+
+	.tables    = {&pd_htrfin_htr},
+	.ntables   = 1,
 };
 
 Step *steps[NSTEPS] = {
@@ -938,4 +1058,26 @@ detect_pretrans_drud(Cube cube)
 			return i;
 
 	return 0;
+}
+
+/* Public functions **********************************************************/
+
+void
+prepare_step(Step *step, DfsData *dd)
+{
+	int i;
+
+	dd->m           = 0;
+	dd->niss        = false;
+	dd->lb          = -1;
+	dd->last1       = NULLMOVE;
+	dd->last2       = NULLMOVE;
+	dd->sols        = new_alglist();
+	dd->current_alg = new_alg("");
+
+	moveset_to_list(step->moveset, dd->sorted_moves);
+	movelist_to_position(dd->sorted_moves, dd->move_position);
+
+	for (i = 0; i < step->ntables; i++)
+		genptable(step->tables[i]);
 }

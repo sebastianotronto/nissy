@@ -268,6 +268,8 @@ step
 	Moveset         moveset;
 	Trans           pre_trans;
 	TransDetector   detect;
+	int             ntables;
+	PruneData *     tables[10];
 };
 
 struct

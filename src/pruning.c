@@ -338,8 +338,13 @@ ptableval(PruneData *pd, Cube cube)
 static int
 ptableval_index(PruneData *pd, uint64_t ind)
 {
-	if (!pd->generated)
+	if (!pd->generated) {
+		fprintf(stderr, "Warning: request pruning table value"
+			" for uninitialized table %s.\n It's fine, but it"
+			" should not happen. Please report bug.\n",
+			pd->filename);
 		genptable(pd);
+	}
 
 	return (ind % 2) ? pd->ptable[ind/2] / 16 : pd->ptable[ind/2] % 16;
 }

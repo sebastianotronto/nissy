@@ -7,4 +7,6 @@
 
 extern Step *           steps[NSTEPS];
 
+void                    prepare_step(Step *step, DfsData *dd);
+
 #endif

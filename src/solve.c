@@ -127,47 +127,36 @@ AlgList *
 solve(Cube cube, Step *step, SolveOptions *opts)
 {
 	AlgListNode *node;
-	AlgList *sols = new_alglist();
+	DfsData dd;
 	Cube c;
+
+	prepare_step(step, &dd);
 
 	if (step->detect != NULL)
 		step->pre_trans = step->detect(cube);
 	c = apply_trans(step->pre_trans, cube);
 
-	DfsData dd = {
-		.m           = 0,
-		.niss        = false,
-		.lb          = -1,
-		.last1       = NULLMOVE,
-		.last2       = NULLMOVE,
-		.sols        = sols,
-		.current_alg = new_alg("")
-	};
-
 	if (step->ready != NULL && !step->ready(c)) {
 		fprintf(stderr, "Cube not ready for solving step: ");
 		fprintf(stderr, "%s\n", step->ready_msg);
-		return sols;
+		return dd.sols;
 	}
-
-	moveset_to_list(step->moveset, dd.sorted_moves);
-	movelist_to_position(dd.sorted_moves, dd.move_position);
 
 	for (dd.d = opts->min_moves;
 	     dd.d <= opts->max_moves &&
-	         !(sols->len && opts->optimal_only) &&
-		 sols->len < opts->max_solutions;
+	         !(dd.sols->len && opts->optimal_only) &&
+		 dd.sols->len < opts->max_solutions;
 	     dd.d++) {
 		if (opts->verbose)
 			fprintf(stderr,
 				"Found %d solutions, searching depth %d...\n",
-				sols->len, dd.d);
+				dd.sols->len, dd.d);
 		dfs(c, step, opts, &dd);
 	}
 
-	for (node = sols->first; node != NULL; node = node->next)
+	for (node = dd.sols->first; node != NULL; node = node->next)
 		transform_alg(inverse_trans(step->pre_trans), node->alg);
 
 	free_alg(dd.current_alg);
-	return sols;
+	return dd.sols;
 }
