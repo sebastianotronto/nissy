@@ -159,12 +159,16 @@ is_perm(int *a, int n)
 {
 	int *aux = malloc(n * sizeof(int));
 	int i;
-	
+
 	for (i = 0; i < n; i++)
+		aux[i] = 0;
+	
+	for (i = 0; i < n; i++) {
 		if (a[i] < 0 || a[i] >= n)
 			return false;
 		else
 			aux[a[i]] = 1;
+	}
 
 	for (i = 0; i < n; i++)
 		if (!aux[i])
