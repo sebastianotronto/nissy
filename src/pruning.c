@@ -127,7 +127,8 @@ genptable(PruneData *pd)
 		for (j = 0; j < pd->coord->max; j++)
 			dfs_set_visited_index(&dd, j, false);
 		genptable_dfs((Cube){0}, pd, &dd);
-		fprintf(stderr, "Depth %d done, generated %lu\t(%lu/%lu)\n",
+		fprintf(stderr, "Depth %d done, generated %"
+			PRIu64 "\t(%" PRIu64 "/%" PRIu64 ")\n",
 			dd.d+1, pd->n - oldn, pd->n, pd->coord->max);
 		oldn = pd->n;
 	}
@@ -169,12 +170,14 @@ genptable(PruneData *pd)
 	ptable_update(pd, (Cube){0}, 0);
 	pd->n = 1;
 	oldn = 0;
-	fprintf(stderr, "Depth %d done, generated %lu\t(%lu/%lu)\n",
+	fprintf(stderr, "Depth %d done, generated %"
+		PRIu64 "\t(%" PRIu64 "/%" PRIu64 ")\n",
 		0, pd->n - oldn, pd->n, pd->coord->max);
 	oldn = 1;
 	for (d = 0; d < 15 && pd->n < pd->coord->max; d++) {
 		genptable_bfs(pd, d, ms);
-		fprintf(stderr, "Depth %d done, generated %lu\t(%lu/%lu)\n",
+		fprintf(stderr, "Depth %d done, generated %"
+			PRIu64 "\t(%" PRIu64 "/%" PRIu64 ")\n",
 			d+1, pd->n - oldn, pd->n, pd->coord->max);
 		oldn = pd->n;
 	}
@@ -193,11 +196,6 @@ genptable_dfs(Cube c, PruneData *pd, DfsData *dd)
 	Move mm;
 	Cube cc;
 
-	if (pd->coord->index(c) > 2*ptablesize(pd)) {
-		printf("error! %lu > %lu\n", pd->coord->index(c), 2*ptablesize(pd));
-		print_cube(c);
-		exit(1);
-	}
 	pv = ptableval(pd, c);
 
 	if (pv < dd->m || dd->m > dd->d)
@@ -303,7 +301,7 @@ print_ptable(PruneData *pd)
 		
 	fprintf(stderr, "Values for table %s\n", pd->filename);
 	for (i = 0; i < 16; i++)
-		printf("%2lu\t%10lu\n", i, a[i]);
+		printf("%2" PRIu64 "\t%10" PRIu64 "\n", i, a[i]);
 }
 
 uint64_t

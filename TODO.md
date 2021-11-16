@@ -34,11 +34,17 @@ It's more of a personal reminder than anything else.
 
 * make env.c compatible with Windows (and check that it works with
   BSD/MacOS)
+* default to current directory for tables; this will work on any OS, up to
+  using the correct #ifdef guards to avoid checking for posix directories
+  in non-posix systems
 * better internal help page for each command (take it from man page)
 * better man page
 * find a better way to distribute the large tables, especially khuge
 
 ## Technical stuff
+
+### Small fixes
+* printf with stdint.h: use proper macros instead of %llu
 
 ### Better pruning tables
 * Use pruning values mod 4 instead of mod 16

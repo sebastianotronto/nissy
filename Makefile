@@ -6,8 +6,8 @@ PREFIX = /usr/local
 MANPREFIX = ${PREFIX}/share/man
 
 CPPFLAGS = -DVERSION=\"${VERSION}\"
-CFLAGS   = -pedantic -Wall -Wextra -Wno-unused-parameter -O3 ${CPPFLAGS}
-DBGFLAGS = -pedantic -Wall -Wextra -Wno-unused-parameter -g ${CPPFLAGS}
+CFLAGS   = -std=c99 -pedantic -Wall -Wextra -Wno-unused-parameter -O3 ${CPPFLAGS}
+DBGFLAGS = -std=c99 -pedantic -Wall -Wextra -Wno-unused-parameter -g ${CPPFLAGS}
 
 CC = cc
 

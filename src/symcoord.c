@@ -286,7 +286,7 @@ gensym(SymData *sd)
 	sd->rep            = realloc(sd->rep, nreps * sizeof(Cube));
 	sd->generated      = true;
 
-	fprintf(stderr, "Found %lu classes\n", nreps);
+	fprintf(stderr, "Found %" PRIu64 " classes\n", nreps);
 
 	if (!write_symdata_file(sd))
 		fprintf(stderr, "Error writing SymData file\n");

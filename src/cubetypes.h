@@ -2,7 +2,7 @@
 #define CUBETYPES_H
 
 #include <stdbool.h>
-#include <stdint.h>
+#include <inttypes.h>
 
 #define NMOVES               55 /* Actually 55, but one is NULLMOVE */
 #define NTRANS               48
