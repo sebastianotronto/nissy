@@ -1,13 +1,13 @@
 # See LICENSE file for copyright and license details.
 
-VERSION = 2.0beta2
+VERSION = 2.0beta3
 
 PREFIX = /usr/local
 MANPREFIX = ${PREFIX}/share/man
 
 CPPFLAGS = -DVERSION=\"${VERSION}\"
-CFLAGS   = -std=c99 -pedantic -Wall -Wextra -Wno-unused-parameter -O3 ${CPPFLAGS}
-DBGFLAGS = -std=c99 -pedantic -Wall -Wextra -Wno-unused-parameter -g ${CPPFLAGS}
+CFLAGS   = -std=c99 -pthread -pedantic -Wall -Wextra -Wno-unused-parameter -O3 ${CPPFLAGS}
+DBGFLAGS = -std=c99 -pthread -pedantic -Wall -Wextra -Wno-unused-parameter -g ${CPPFLAGS}
 
 CC = cc
 

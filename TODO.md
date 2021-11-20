@@ -3,6 +3,9 @@
 This is a list of things that I would like to add or change at some point.
 It's more of a personal reminder than anything else.
 
+## Bugs
+* Segfault on "nissy solve -s 10U" (no space between 10 and U)
+
 ## Commands
 
 ### Commands that are available in nissy 1.0, but not in this version (yet):
@@ -37,21 +40,13 @@ It's more of a personal reminder than anything else.
 * default to current directory for tables; this will work on any OS, up to
   using the correct #ifdef guards to avoid checking for posix directories
   in non-posix systems
-* better internal help page for each command (take it from man page)
 * better man page
 * find a better way to distribute the large tables, especially khuge
 
 ## Technical stuff
 
-### Small fixes
-* printf with stdint.h: use proper macros instead of %llu
-
 ### Better pruning tables
 * Use pruning values mod 4 instead of mod 16
-
-### Code simplification
-* Remove anti-indeces. I think I can do this by using an iterative deepening
-  dfs method for generating pruning tables, like I do in solve()
 
 ### Memory management
 * fail gracefully when there is not enough memory to load a large table

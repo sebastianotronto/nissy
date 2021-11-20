@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <inttypes.h>
+#include <pthread.h>
 
 #define NMOVES               55 /* Actually 55, but one is NULLMOVE */
 #define NTRANS               48
@@ -87,6 +88,7 @@ typedef struct prunedata     PruneData;
 typedef struct solveoptions  SolveOptions;
 typedef struct step          Step;
 typedef struct symdata       SymData;
+typedef struct threaddata    ThreadData;
 
 typedef Cube                 (*AntiIndexer)      (uint64_t);
 typedef bool                 (*Checker)          (Cube);
@@ -104,186 +106,205 @@ typedef Trans                (*TransDetector)    (Cube);
 struct
 alg
 {
-	Move *          move;
-	bool *          inv;
-	int             len;
-	int             allocated;
+	Move *            move;
+	bool *            inv;
+	int               len;
+	int               allocated;
 };
 
 struct
 alglist
 {
-	AlgListNode *   first;
-	AlgListNode *   last;
-	int             len;
+	AlgListNode *     first;
+	AlgListNode *     last;
+	int               len;
 };
 
 struct
 alglistnode
 {
-	Alg *           alg;
-	AlgListNode *   next;
+	Alg *             alg;
+	AlgListNode *     next;
 };
 
 struct
 block
 {
-	bool            edge[12];
-	bool            corner[8];
-	bool            center[6];
+	bool              edge[12];
+	bool              corner[8];
+	bool              center[6];
 };
 
 struct
 command
 {
-	char *          name;
-	char *          usage;
-	char *          description;
-	ArgParser       parse_args;
-	Exec            exec;
+	char *            name;
+	char *            usage;
+	char *            description;
+	ArgParser         parse_args;
+	Exec              exec;
 };
 
 struct
 commandargs
 {
-	bool            success;
-	Alg *           scramble;
-	SolveOptions *  opts;
-	Step *          step;
-	Command *       command; /* For help */
+	bool              success;
+	Alg *             scramble;
+	SolveOptions *    opts;
+	Step *            step;
+	Command *         command; /* For help */
 };
 
 struct
 coordinate
 {
-	Indexer         index;
-	AntiIndexer     cube;
-	uint64_t        max;
-	int             ntrans;
-	Trans *         trans;
+	Indexer           index;
+	AntiIndexer       cube;
+	uint64_t          max;
+	int               ntrans;
+	Trans *           trans;
 };
 
 struct
 cube
 {
-	int             epose;
-	int             eposs;
-	int             eposm;
-	int             eofb;
-	int             eorl;
-	int             eoud;
-	int             cp;
-	int             coud;
-	int             cofb;
-	int             corl;
-	int             cpos;
+	int               epose;
+	int               eposs;
+	int               eposm;
+	int               eofb;
+	int               eorl;
+	int               eoud;
+	int               cp;
+	int               coud;
+	int               cofb;
+	int               corl;
+	int               cpos;
 };
 
 struct
 cubearray
 {
-	int *           ep;
-	int *           eofb;
-	int *           eorl;
-	int *           eoud;
-	int *           cp;
-	int *           coud;
-	int *           corl;
-	int *           cofb;
-	int *           cpos;
+	int *             ep;
+	int *             eofb;
+	int *             eorl;
+	int *             eoud;
+	int *             cp;
+	int *             coud;
+	int *             corl;
+	int *             cofb;
+	int *             cpos;
 };
 
 struct
 cubetarget
 {
-	Cube            cube;
-	int             target;
+	Cube              cube;
+	int               target;
 };
 
 struct
 dfsdata
 {
-	int             d;
-	int             m;
-	int             lb;
-	bool            niss;
-	Move            last1;
-	Move            last2;
-	AlgList *       sols;
-	Alg *           current_alg;
-	Move            sorted_moves[NMOVES];
-	int             move_position[NMOVES];
-	uint8_t *       visited;
+	int               d;
+	int               m;
+	int               lb;
+	bool              niss;
+	Move              last1;
+	Move              last2;
+	AlgList *         sols;
+	pthread_mutex_t * sols_mutex;
+	Alg *             current_alg;
+	Move *            sorted_moves;
+	int *             move_position;
+	uint8_t *         visited;
 };
 
 struct
 piecefilter
 {
-	bool            epose;
-	bool            eposs;
-	bool            eposm;
-	bool            eofb;
-	bool            eorl;
-	bool            eoud;
-	bool            cp;
-	bool            coud;
-	bool            cofb;
-	bool            corl;
-	bool            cpos;
+	bool              epose;
+	bool              eposs;
+	bool              eposm;
+	bool              eofb;
+	bool              eorl;
+	bool              eoud;
+	bool              cp;
+	bool              coud;
+	bool              cofb;
+	bool              corl;
+	bool              cpos;
 };
 
 struct
 prunedata
 {
-	char *          filename;
-	uint8_t *       ptable;
-	bool            generated;
-	uint64_t        n;
-	Coordinate *    coord;
-	Moveset         moveset;
+	char *            filename;
+	uint8_t *         ptable;
+	bool              generated;
+	uint64_t          n;
+	Coordinate *      coord;
+	Moveset           moveset;
 };
 
 struct
 solveoptions
 {
-	int             min_moves;
-	int             max_moves;
-	int             max_solutions;
-	bool            optimal_only;
-	bool            can_niss;
-	bool            verbose;
-	bool            all;
-	bool            print_number;
+	int               min_moves;
+	int               max_moves;
+	int               max_solutions;
+	int               nthreads;
+	bool              optimal_only;
+	bool              can_niss;
+	bool              verbose;
+	bool              all;
+	bool              print_number;
 };
 
 struct
 step
 {
-	char *          shortname;
-	char *          name;
-	Estimator       estimate;
-	Checker         ready;
-	char *          ready_msg;
-	Validator       is_valid;
-	Moveset         moveset;
-	Trans           pre_trans;
-	TransDetector   detect;
-	int             ntables;
-	PruneData *     tables[10];
+	char *            shortname;
+	char *            name;
+	Estimator         estimate;
+	Checker           ready;
+	char *            ready_msg;
+	Validator         is_valid;
+	Moveset           moveset;
+	Trans             pre_trans;
+	TransDetector     detect;
+	int               ntables;
+	PruneData *       tables[10];
 };
 
 struct
 symdata
 {
-	char *          filename;
-	bool            generated;
-	Coordinate *    coord;
-	Coordinate *    sym_coord;
-	int             ntrans;
-	Trans *         trans;
-	uint64_t *      class;
-	Cube *          rep;
-	Trans *         transtorep;
+	char *            filename;
+	bool              generated;
+	Coordinate *      coord;
+	Coordinate *      sym_coord;
+	int               ntrans;
+	Trans *           trans;
+	uint64_t *        class;
+	Cube *            rep;
+	Trans *           transtorep;
+};
+
+struct
+threaddata
+{
+	int               thid;
+	Cube              cube;
+	Step *            step;
+	int               depth;
+	Move *            sorted_moves;
+	int *             move_position;
+	SolveOptions *    opts;
+	AlgList *         start;
+	AlgListNode **    node;
+	AlgList *         sols;
+	pthread_mutex_t * start_mutex;
+	pthread_mutex_t * sols_mutex;
 };
 
 #endif

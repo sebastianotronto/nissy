@@ -95,7 +95,7 @@ pd_khuge_HTM = {
 void
 genptable(PruneData *pd)
 {
-	Move ms[NMOVES];
+	Move *ms;
 	uint64_t j, oldn;
 	DfsData dd;
 
@@ -112,6 +112,7 @@ genptable(PruneData *pd)
 
 	fprintf(stderr, "Cannot load %s, generating it\n", pd->filename); 
 
+	ms = malloc(NMOVES * sizeof(Move));
 	moveset_to_list(pd->moveset, ms);
 
 	for (j = 0; j < pd->coord->max; j++)
@@ -119,6 +120,7 @@ genptable(PruneData *pd)
 
 	dd = (DfsData) { .m = 0 };
 	dd.visited = malloc((ptablesize(pd)/4 + 1) * sizeof(uint8_t));
+	dd.sorted_moves = malloc(NMOVES * sizeof(Move));
 	moveset_to_list(pd->moveset, dd.sorted_moves);
 	oldn = 0;
 	pd->n = 0;
@@ -136,14 +138,16 @@ genptable(PruneData *pd)
 	if (!write_ptable_file(pd))
 		fprintf(stderr, "Error writing ptable file\n");
 
+	free(ms);
 	free(dd.visited);
+	free(dd.sorted_moves);
 }
 */
 
 void
 genptable(PruneData *pd)
 {
-	Move ms[NMOVES];
+	Move *ms;
 	int d;
 	uint64_t j, oldn;
 
@@ -161,6 +165,7 @@ genptable(PruneData *pd)
 
 	fprintf(stderr, "Cannot load %s, generating it\n", pd->filename); 
 
+	ms = malloc(NMOVES * sizeof(Move));
 	moveset_to_list(pd->moveset, ms);
 
 	/* We use 4 bits per value, so any distance >= 15 is set to 15 */
@@ -186,6 +191,7 @@ genptable(PruneData *pd)
 	if (!write_ptable_file(pd))
 		fprintf(stderr, "Error writing ptable file\n");
 
+	free(ms);
 }
 
 /*

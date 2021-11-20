@@ -1063,20 +1063,9 @@ detect_pretrans_drud(Cube cube)
 /* Public functions **********************************************************/
 
 void
-prepare_step(Step *step, DfsData *dd)
+prepare_step(Step *step)
 {
 	int i;
-
-	dd->m           = 0;
-	dd->niss        = false;
-	dd->lb          = -1;
-	dd->last1       = NULLMOVE;
-	dd->last2       = NULLMOVE;
-	dd->sols        = new_alglist();
-	dd->current_alg = new_alg("");
-
-	moveset_to_list(step->moveset, dd->sorted_moves);
-	movelist_to_position(dd->sorted_moves, dd->move_position);
 
 	for (i = 0; i < step->ntables; i++)
 		genptable(step->tables[i]);

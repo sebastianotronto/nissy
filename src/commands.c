@@ -28,7 +28,7 @@ Command
 solve_cmd = {
 	.name        = "solve",
 	.usage       = "solve STEP [OPTIONS] SCRAMBLE",
-	.description = "Solve a step",
+	.description = "Solve a step; see command steps for a list of steps",
 	.parse_args  = solve_parse_args,
 	.exec        = solve_exec
 };
@@ -116,6 +116,7 @@ solve_parse_args(int c, char **v)
 	a->opts->min_moves     = 0;
 	a->opts->max_moves     = 20;
 	a->opts->max_solutions = 1;
+	a->opts->nthreads      = 1;
 	a->opts->optimal_only  = false;
 	a->opts->can_niss      = false;
 	a->opts->verbose       = false;
@@ -127,7 +128,8 @@ solve_parse_args(int c, char **v)
 			val = strtol(v[++i], NULL, 10);
 			if (val < 0 || val > 100) {
 				fprintf(stderr,
-					"Invalid min number of moves.\n");
+					"Invalid min number of moves"
+					"(0 <= m <= 100).\n");
 				return a;
 			}
 			a->opts->min_moves = val;
@@ -135,10 +137,20 @@ solve_parse_args(int c, char **v)
 			val = strtol(v[++i], NULL, 10);
 			if (val < 0 || val > 100) {
 				fprintf(stderr,
-					"Invalid max number of moves.\n");
+					"Invalid max number of moves"
+					"(0 <= M <= 100).\n");
 				return a;
 			}
 			a->opts->max_moves = val;
+		} else if (!strcmp(v[i], "-t")) {
+			val = strtol(v[++i], NULL, 10);
+			if (val < 1 || val > 64) {
+				fprintf(stderr,
+					"Invalid number of threads."
+					"1 <= t <= 64\n");
+				return a;
+			}
+			a->opts->nthreads = val;
 		} else if (!strcmp(v[i], "-s")) {
 			val = strtol(v[++i], NULL, 10);
 			if (val < 1 || val > 1000000) {
@@ -255,11 +267,19 @@ print_exec(CommandArgs *args)
 static void
 help_exec(CommandArgs *args)
 {
-	/* TODO: print full nissy manpage */
 	if (args->command == NULL) {
-		printf("Type help COMMAND for information on a ");
-		printf("specific command.\n");
-		printf("A more complete manual page is work in progress.\n");
+		printf(
+		       "Use the nissy command \"help COMMAND\" for a short "
+		       "description of a specific command.\n"
+		       "Use the nissy command \"commands\" for a list of "
+		       "available commands.\n"
+		       "See the manual page for more details. The manual"
+		       " page is available with \"man nissy\" on a UNIX"
+		       " system (such a Linux or MacOS) or in pdf and html"
+		       " format in the docs folder.\n"
+		       "Nissy is available for free at "
+		       "https://github.com/sebastianotronto/nissy"
+		      );
 	} else {
 		printf("Command %s: %s\nusage: %s\n", args->command->name,
 		       args->command->description, args->command->usage);

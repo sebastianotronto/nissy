@@ -93,6 +93,14 @@ Only find solutions that require the minimum number of moves.
 .It Fl p
 Plain style: do not print the number of moves.
 .
+.It Fl t Ar n
+Use
+.Ar n
+CPU threads. By default nissy uses only 1 thread. Using more than one
+thread will improve performance, but the optimal number depends on your
+machine and operating system. Generally, using one less than the number
+of threads of your CPU works quite well.
+.
 .It Fl v
 Verbose mode: print some information during the search and print each solution
 as it is found instead of only printing them all together at the end.
