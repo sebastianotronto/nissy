@@ -3,9 +3,6 @@
 This is a list of things that I would like to add or change at some point.
 It's more of a personal reminder than anything else.
 
-## Bugs
-* Segfault on "nissy solve -s 10U" (no space between 10 and U)
-
 ## Commands
 
 ### Commands that are available in nissy 1.0, but not in this version (yet):

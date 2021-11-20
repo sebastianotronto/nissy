@@ -231,7 +231,7 @@ new_alg(char *str)
 		}
 
 		move_read = false;
-		for (j = 0; j < NMOVES; j++) {
+		for (j = U; j < NMOVES; j++) {
 			if (str[i] == move_string(j)[0] ||
 			    (str[i] >= 'a' && str[i] <= 'z' &&
 			     str[i] == move_string(j)[0]-('A'-'a') && j<=B)) {

@@ -322,8 +322,8 @@ read_scramble(int c, char **v, CommandArgs *args)
 	unsigned int j;
 	char *algstr;
 
-	if (new_alg(v[0])->len == 0) {
-		fprintf(stderr, "%s: moves or option unrecognized\n", v[0]);
+	if (c < 1 || new_alg(v[0])->len == 0) {
+		fprintf(stderr, "Error reading scramble\n");
 		return false;
 	}
 
