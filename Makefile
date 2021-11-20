@@ -22,6 +22,9 @@ options:
 nissy:
 	${CC} ${CFLAGS} -o nissy.o src/*.c
 
+win:
+	x86_64-w64-mingw32-gcc ${CFLAGS} -static -o nissy.exe src/*.c
+
 debug:
 	${CC} ${DBGFLAGS} -o nissy.o src/*.c
 
@@ -50,5 +53,5 @@ uninstall:
 	rm -rf ${DESTDIR}${PREFIX}/bin/nissy ${DESTDIR}${MANPREFIX}/man1/nissy.1
 	for s in ${SCRIPTS}; do rm -rf ${DESTDIR}${PREFIX}/bin/$$s; done
 
-.PHONY: all options nissy debug clean dist install uninstall
+.PHONY: all options nissy win debug clean dist install uninstall
 

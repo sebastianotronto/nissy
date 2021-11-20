@@ -8,6 +8,16 @@ pruning table. If so, about 200Mb should be enough.
 
 # Installation
 
+## On Windows
+
+Try downloading and executing in a terminal the file nissy.exe, then
+follow the instructions in the UNIX section below for downloading and
+installing the pruning tables.
+If nissy.exe does not work, you can try following the UNIX instructions
+in WSL (Windows Subsystem for Linux) or in a similar environment.
+
+Sorry for the inconvenience, I don't have a Windows machine to test this on.
+
 ## On a UNIX system:
 
 Edit the Makefile to match your local configuration (usually not necessary, but you
