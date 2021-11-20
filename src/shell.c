@@ -64,8 +64,9 @@ launch()
 	for (i = 0; i < MAXNTOKENS; i++)
 		shell_argv[i] = malloc((MAXTOKENLEN+1) * sizeof(char));
 
-	fprintf(stderr, "Welcome to Nissy "VERSION".\n");
-	fprintf(stderr, "Type 'help' for a list.\n");
+	fprintf(stderr, "Welcome to Nissy "VERSION".\n"
+	                "Type \"commands\" for a list of commands.\n"
+	       );
 
 	while (true) {
 		fprintf(stderr, "nissy-# ");
