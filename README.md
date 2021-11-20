@@ -1,8 +1,11 @@
 # Nissy
 
-A Rubik's cube solver and FMC assistant. For optimal HTM solving nissy is about as
-fast as Herbert Kociemba's [Cube Explorer](http://kociemba.org/cube.htm), and it
-uses the same method. Nissy can also solve many different substeps of
+A Rubik's cube solver and FMC assistant.
+For optimal HTM solving nissy uses the same method as Herbert Kociemba's
+[Cube Explorer](http://kociemba.org/cube.htm). When using a single CPU thread
+its performance are comparable, but nissy is much faster when using multiple
+threads (with the -t option for the solve command). 
+issy can also solve many different substeps of
 Thistlethwaite's algorithm (DR/HTR), and can use NISS (Normal-Inverse Scramble Switch).
 
 It can be useful to analyze your DR solves (and more, once I implement more features).
@@ -24,6 +27,16 @@ One can choose to never use the optimal solver and not to install the relative
 pruning table. If so, about 200Mb should be enough.
 
 ## Installation
+
+### On Windows
+
+Try downloading and executing in a terminal the file nissy.exe, then
+follow the instructions in the UNIX section below for downloading and
+installing the pruning tables.
+If nissy.exe does not work, you can try following the UNIX instructions
+in WSL (Windows Subsystem for Linux) or in a similar environment.
+
+Sorry for the inconvenience, I don't have a Windows machine to test this on.
 
 ### On a UNIX system:
 
@@ -48,10 +61,6 @@ Choose one of the following:
 extract the archive and copy the `tables` folder into `NISSIDATA` (paste there
 the whole folder, not the single files). The `nohuge` files are much smaller and
 do not contain the huge pruning table for the optimal solver.
-
-### On Windows
-
-Coming soon.
 
 ## Structure of the code
 
