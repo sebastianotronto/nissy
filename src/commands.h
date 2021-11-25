@@ -7,6 +7,7 @@
 #define NCOMMANDS       10
 
 void                    free_args(CommandArgs *args);
+CommandArgs *           new_args();
 
 extern Command *        commands[NCOMMANDS];
 

@@ -105,13 +105,7 @@ solve_parse_args(int c, char **v)
 	int i;
 	long val;
 
-	CommandArgs *a = malloc(sizeof(CommandArgs));
-
-	a->success  = false;
-	a->opts     = malloc(sizeof(SolveOptions));
-	a->step     = steps[0];
-	a->command  = NULL;
-	a->scramble = NULL;
+	CommandArgs *a = new_args();
 
 	a->opts->min_moves     = 0;
 	a->opts->max_moves     = 20;
@@ -182,12 +176,7 @@ CommandArgs *
 help_parse_args(int c, char **v)
 {
 	int i;
-	CommandArgs *a = malloc(sizeof(CommandArgs));
-
-	a->scramble = NULL;
-	a->opts     = NULL;
-	a->step     = NULL;
-	a->command  = NULL;
+	CommandArgs *a = new_args();
 
 	if (c == 1) {
 		for (i = 0; i < NCOMMANDS; i++)
@@ -205,9 +194,9 @@ help_parse_args(int c, char **v)
 CommandArgs *
 parse_no_arg(int c, char **v)
 {
-	CommandArgs *a = malloc(sizeof(CommandArgs));
+	CommandArgs *a = new_args();
 
-	a->success  = true;
+	a->success = true;
 
 	return a;
 }
@@ -215,9 +204,10 @@ parse_no_arg(int c, char **v)
 CommandArgs *
 print_parse_args(int c, char **v)
 {
-	CommandArgs *a = malloc(sizeof(CommandArgs));
+	CommandArgs *a = new_args();
 
 	a->success = read_scramble(c, v, a);
+
 	return a;
 }
 
@@ -363,4 +353,20 @@ free_args(CommandArgs *args)
 	/* step and command must not be freed, they are static! */
 
 	free(args);
+}
+
+CommandArgs *
+new_args()
+{
+	CommandArgs *args = malloc(sizeof(CommandArgs));
+
+	args->success = false;
+	args->scramble = NULL; /* initialized in read_scramble */
+	args->opts = malloc(sizeof(SolveOptions));
+
+	/* step and command are static */
+	args->step = NULL;
+	args->command = NULL;
+
+	return args;
 }
