@@ -39,11 +39,13 @@ It's more of a personal reminder than anything else.
   in non-posix systems
 * better man page
 * find a better way to distribute the large tables, especially khuge
+* webapp (cgi)
 
 ## Technical stuff
 
 ### Better pruning tables
-* Use pruning values mod 4 instead of mod 16
+* Use pruning values mod 4 instead of mod 16 (or maybe not, I like the
+current system)
 
 ### Memory management
 * fail gracefully when there is not enough memory to load a large table
