@@ -268,7 +268,7 @@ help_exec(CommandArgs *args)
 		       " system (such a Linux or MacOS) or in pdf and html"
 		       " format in the docs folder.\n"
 		       "Nissy is available for free at "
-		       "https://github.com/sebastianotronto/nissy"
+		       "https://github.com/sebastianotronto/nissy\n"
 		      );
 	} else {
 		printf("Command %s: %s\nusage: %s\n", args->command->name,
@@ -365,7 +365,7 @@ new_args()
 	args->opts = malloc(sizeof(SolveOptions));
 
 	/* step and command are static */
-	args->step = NULL;
+	args->step = steps[0]; /* default: first step in list */
 	args->command = NULL;
 
 	return args;

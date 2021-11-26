@@ -69,7 +69,7 @@ launch()
 	       );
 
 	while (true) {
-		fprintf(stderr, "nissy-# ");
+		fprintf(stdout, "nissy-# ");
 		if (fgets(line, MAXLINELEN, stdin) == NULL)
 			break;
 		shell_argc = parseline(line, shell_argv);
