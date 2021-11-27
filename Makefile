@@ -6,8 +6,10 @@ PREFIX = /usr/local
 MANPREFIX = ${PREFIX}/share/man
 
 CPPFLAGS = -DVERSION=\"${VERSION}\"
-CFLAGS   = -std=c99 -pthread -pedantic -Wall -Wextra -Wno-unused-parameter -O3 ${CPPFLAGS}
-DBGFLAGS = -std=c99 -pthread -pedantic -Wall -Wextra -Wno-unused-parameter -g ${CPPFLAGS}
+CFLAGS   = -std=c99 -static -pthread -pedantic -Wall -Wextra \
+	   -Wno-unused-parameter -O3 ${CPPFLAGS}
+DBGFLAGS = -std=c99 -static -pthread -pedantic -Wall -Wextra \
+           -Wno-unused-parameter -g ${CPPFLAGS}
 
 CC = cc
 
@@ -23,7 +25,7 @@ nissy:
 	${CC} ${CFLAGS} -o nissy.o src/*.c
 
 win:
-	x86_64-w64-mingw32-gcc ${CFLAGS} -static -o nissy.exe src/*.c
+	x86_64-w64-mingw32-gcc ${CFLAGS} -o nissy.exe src/*.c
 
 debug:
 	${CC} ${DBGFLAGS} -o nissy.o src/*.c
