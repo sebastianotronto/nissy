@@ -230,6 +230,17 @@ new_alg(char *str)
 			continue;
 		}
 
+		/* Single slash for comments */
+		if (str[i] == '/') {
+			while (str[i] && str[i] != '\n')
+				i++;
+
+			if (!str[i])
+				i--;
+
+			continue;
+		}
+
 		move_read = false;
 		for (j = U; j < NMOVES; j++) {
 			if (str[i] == move_string(j)[0] ||
@@ -270,8 +281,8 @@ new_alg(char *str)
 		}
 
 		if (!move_read) {
-			alg = new_alg("");
-			return alg;
+			free(alg);
+			return new_alg("");
 		}
 	}
 
