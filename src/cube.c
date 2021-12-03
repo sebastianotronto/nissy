@@ -5,7 +5,7 @@
 int
 array_ep_to_epos(int *ep, int *ss)
 {
-	int epos[12] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	int epos[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	int eps[4];
 	int i, j, is;
 
@@ -287,10 +287,14 @@ equal(Cube c1, Cube c2)
 Cube
 inverse_cube(Cube cube)
 {
-	CubeArray *arr = new_cubearray(cube, pf_all);
-	CubeArray *inv = new_cubearray((Cube){0}, pf_all);
+	CubeArray *arr, *inv;
 	Cube ret;
 	int i;
+
+	arr = new_cubearray((Cube){0}, pf_all);
+	inv = new_cubearray((Cube){0}, pf_all);
+
+	cube_to_arrays(cube, arr, pf_all);
 
 	for (i = 0; i < 12; i++) {
 		inv->ep[arr->ep[i]]   = i;
@@ -317,8 +321,8 @@ inverse_cube(Cube cube)
 }
 
 bool
-is_admissible(Cube cube)
-{
+is_admissible(Cube cube) {
+
 	/* TODO: this should check consistency of different orientations */
 	/* check also that centers are opposite and admissible */
 

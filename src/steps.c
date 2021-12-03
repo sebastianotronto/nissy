@@ -979,29 +979,42 @@ static int
 estimate_optimal_HTM(CubeTarget ct)
 {
 	int dr1, dr2, dr3, cor, ret;
-	Cube cube = ct.cube;
+	Cube inv;
 
-	dr1 = ptableval(&pd_khuge_HTM, cube);
+	dr1 = ptableval(&pd_khuge_HTM, ct.cube);
 	cor = estimate_corners_HTM(ct);
 	ret = MAX(dr1, cor);
-
 	if (ret > ct.target)
 		return ret;
 
-	cube = apply_trans(rf, ct.cube);
-	dr2 = ptableval(&pd_khuge_HTM, cube);
+	dr2 = ptableval(&pd_khuge_HTM, apply_trans(rf, ct.cube));
 	ret = MAX(ret, dr2);
-
 	if (ret > ct.target)
 		return ret;
 
-	cube = apply_trans(fd, ct.cube);
-	dr3 = ptableval(&pd_khuge_HTM, cube);
-
-	/* Michiel de Bondt's trick */
+	dr3 = ptableval(&pd_khuge_HTM, apply_trans(fd, ct.cube));
 	if (dr1 == dr2 && dr2 == dr3 && dr1 != 0)
 		dr3++;
+	ret = MAX(ret, dr3);
+	if (ret > ct.target || ret == 0)
+		return ret;
 
+	/* Inverse cube probing */
+
+	inv = inverse_cube(ct.cube);
+	dr1 = ptableval(&pd_khuge_HTM, inv);
+	ret = MAX(ret, dr1);
+	if (ret > ct.target)
+		return ret;
+
+	dr2 = ptableval(&pd_khuge_HTM, apply_trans(rf, inv));
+	ret = MAX(ret, dr2);
+	if (ret > ct.target)
+		return ret;
+	
+	dr3 = ptableval(&pd_khuge_HTM, apply_trans(fd, inv));
+	if (dr1 == dr2 && dr2 == dr3 && dr1 != 0)
+		dr3++;
 	return MAX(ret, dr3);
 }
 
