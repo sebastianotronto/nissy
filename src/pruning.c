@@ -91,59 +91,6 @@ pd_khuge_HTM = {
 	.moveset  = moveset_HTM,
 };
 
-/*
-void
-genptable(PruneData *pd)
-{
-	Move *ms;
-	uint64_t j, oldn;
-	DfsData dd;
-
-	if (pd->generated)
-		return;
-
-	pd->ptable = malloc(ptablesize(pd) * sizeof(uint8_t));
-
-	if (read_ptable_file(pd)) {
-		pd->generated = true;
-		return;
-	}
-	pd->generated = true;
-
-	fprintf(stderr, "Cannot load %s, generating it\n", pd->filename); 
-
-	ms = malloc(NMOVES * sizeof(Move));
-	moveset_to_list(pd->moveset, ms);
-
-	for (j = 0; j < pd->coord->max; j++)
-		ptable_update_index(pd, j, 15);
-
-	dd = (DfsData) { .m = 0 };
-	dd.visited = malloc((ptablesize(pd)/4 + 1) * sizeof(uint8_t));
-	dd.sorted_moves = malloc(NMOVES * sizeof(Move));
-	moveset_to_list(pd->moveset, dd.sorted_moves);
-	oldn = 0;
-	pd->n = 0;
-
-	for (dd.d = 0; dd.d < 15 && pd->n < pd->coord->max; dd.d++) {
-		for (j = 0; j < pd->coord->max; j++)
-			dfs_set_visited_index(&dd, j, false);
-		genptable_dfs((Cube){0}, pd, &dd);
-		fprintf(stderr, "Depth %d done, generated %"
-			PRIu64 "\t(%" PRIu64 "/%" PRIu64 ")\n",
-			dd.d+1, pd->n - oldn, pd->n, pd->coord->max);
-		oldn = pd->n;
-	}
-
-	if (!write_ptable_file(pd))
-		fprintf(stderr, "Error writing ptable file\n");
-
-	free(ms);
-	free(dd.visited);
-	free(dd.sorted_moves);
-}
-*/
-
 void
 genptable(PruneData *pd)
 {
@@ -193,74 +140,6 @@ genptable(PruneData *pd)
 
 	free(ms);
 }
-
-/*
-static void
-genptable_dfs(Cube c, PruneData *pd, DfsData *dd)
-{
-	int i, j, pv;
-	Move mm;
-	Cube cc;
-
-	pv = ptableval(pd, c);
-
-	if (pv < dd->m || dd->m > dd->d)
-		return;
-
-	if (dfs_get_visited(pd, dd, c))
-		return;
-	dfs_set_visited(pd, dd, c, true);
-
-	if (pv != dd->m)
-		ptable_update(pd, c, dd->m);
-
-	for (i = 0; i < pd->coord->ntrans; i++) {
-		cc = i == 0 ? c :
-			      apply_trans(pd->coord->trans[i], c);
-		for (j = 0; dd->sorted_moves[j] != NULLMOVE; j++) {
-			mm = dd->sorted_moves[j];
-			dd->m++;
-			genptable_dfs(apply_move(mm, cc), pd, dd);
-			dd->m--;
-		}
-	}
-}
-*/
-
-/*
-static bool
-dfs_get_visited(PruneData *pd, DfsData *dd, Cube c)
-{
-	return dfs_get_visited_index(dd, pd->coord->index(c));
-}
-*/
-
-/*
-static bool
-dfs_get_visited_index(DfsData *dd, uint64_t ind)
-{
-	return dd->visited[ind/8] & ((uint8_t)1 << (ind % 8));
-}
-*/
-
-/*
-static void
-dfs_set_visited(PruneData *pd, DfsData *dd, Cube c, bool b)
-{
-	dfs_set_visited_index(dd, pd->coord->index(c), b);
-}
-*/
-
-/*
-static void
-dfs_set_visited_index(DfsData *dd, uint64_t ind, bool b)
-{
-	if (b)
-		dd->visited[ind/8] |= ((uint8_t)1 << (ind % 8));
-	else
-		dd->visited[ind/8] &= ~((uint8_t)1 << (ind % 8));
-}
-*/
 
 static void
 genptable_bfs(PruneData *pd, int d, Move *ms)
@@ -397,3 +276,119 @@ write_ptable_file(PruneData *pd)
 	return written == ptablesize(pd);
 }
 
+/*
+   I'll put here all the leftover code from the genptable-dfs attempt.
+   Might be useful in the future.
+*/
+
+/*
+void
+genptable(PruneData *pd)
+{
+	Move *ms;
+	uint64_t j, oldn;
+	DfsData dd;
+
+	if (pd->generated)
+		return;
+
+	pd->ptable = malloc(ptablesize(pd) * sizeof(uint8_t));
+
+	if (read_ptable_file(pd)) {
+		pd->generated = true;
+		return;
+	}
+	pd->generated = true;
+
+	fprintf(stderr, "Cannot load %s, generating it\n", pd->filename); 
+
+	ms = malloc(NMOVES * sizeof(Move));
+	moveset_to_list(pd->moveset, ms);
+
+	for (j = 0; j < pd->coord->max; j++)
+		ptable_update_index(pd, j, 15);
+
+	dd = (DfsData) { .m = 0 };
+	dd.visited = malloc((ptablesize(pd)/4 + 1) * sizeof(uint8_t));
+	dd.sorted_moves = malloc(NMOVES * sizeof(Move));
+	moveset_to_list(pd->moveset, dd.sorted_moves);
+	oldn = 0;
+	pd->n = 0;
+
+	for (dd.d = 0; dd.d < 15 && pd->n < pd->coord->max; dd.d++) {
+		for (j = 0; j < pd->coord->max; j++)
+			dfs_set_visited_index(&dd, j, false);
+		genptable_dfs((Cube){0}, pd, &dd);
+		fprintf(stderr, "Depth %d done, generated %"
+			PRIu64 "\t(%" PRIu64 "/%" PRIu64 ")\n",
+			dd.d+1, pd->n - oldn, pd->n, pd->coord->max);
+		oldn = pd->n;
+	}
+
+	if (!write_ptable_file(pd))
+		fprintf(stderr, "Error writing ptable file\n");
+
+	free(ms);
+	free(dd.visited);
+	free(dd.sorted_moves);
+}
+
+static void
+genptable_dfs(Cube c, PruneData *pd, DfsData *dd)
+{
+	int i, j, pv;
+	Move mm;
+	Cube cc;
+
+	pv = ptableval(pd, c);
+
+	if (pv < dd->m || dd->m > dd->d)
+		return;
+
+	if (dfs_get_visited(pd, dd, c))
+		return;
+	dfs_set_visited(pd, dd, c, true);
+
+	if (pv != dd->m)
+		ptable_update(pd, c, dd->m);
+
+	for (i = 0; i < pd->coord->ntrans; i++) {
+		cc = i == 0 ? c :
+			      apply_trans(pd->coord->trans[i], c);
+		for (j = 0; dd->sorted_moves[j] != NULLMOVE; j++) {
+			mm = dd->sorted_moves[j];
+			dd->m++;
+			genptable_dfs(apply_move(mm, cc), pd, dd);
+			dd->m--;
+		}
+	}
+}
+
+static bool
+dfs_get_visited(PruneData *pd, DfsData *dd, Cube c)
+{
+	return dfs_get_visited_index(dd, pd->coord->index(c));
+}
+
+static bool
+dfs_get_visited_index(DfsData *dd, uint64_t ind)
+{
+	return dd->visited[ind/8] & ((uint8_t)1 << (ind % 8));
+}
+
+static void
+dfs_set_visited(PruneData *pd, DfsData *dd, Cube c, bool b)
+{
+	dfs_set_visited_index(dd, pd->coord->index(c), b);
+}
+
+static void
+dfs_set_visited_index(DfsData *dd, uint64_t ind, bool b)
+{
+	if (b)
+		dd->visited[ind/8] |= ((uint8_t)1 << (ind % 8));
+	else
+		dd->visited[ind/8] &= ~((uint8_t)1 << (ind % 8));
+}
+
+*/
