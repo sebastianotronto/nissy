@@ -6,9 +6,9 @@ PREFIX = /usr/local
 MANPREFIX = ${PREFIX}/share/man
 
 CPPFLAGS = -DVERSION=\"${VERSION}\"
-CFLAGS   = -std=c99 -static -pthread -pedantic -Wall -Wextra \
+CFLAGS   = -std=c99 -pthread -pedantic -Wall -Wextra \
 	   -Wno-unused-parameter -O3 ${CPPFLAGS}
-DBGFLAGS = -std=c99 -static -pthread -pedantic -Wall -Wextra \
+DBGFLAGS = -std=c99 -pthread -pedantic -Wall -Wextra \
            -Wno-unused-parameter -g ${CPPFLAGS}
 
 CC = cc
@@ -22,16 +22,16 @@ options:
 	@echo "CC       = ${CC}"
 
 nissy:
-	${CC} ${CFLAGS} -o nissy.o src/*.c
+	${CC} ${CFLAGS} -o nissy src/*.c
 
 win:
-	x86_64-w64-mingw32-gcc ${CFLAGS} -o nissy.exe src/*.c
+	x86_64-w64-mingw32-gcc ${CFLAGS} -static -o nissy.exe src/*.c
 
 debug:
-	${CC} ${DBGFLAGS} -o nissy.o src/*.c
+	${CC} ${DBGFLAGS} -o nissy src/*.c
 
 clean:
-	rm -rf nissy.o nissy-${VERSION}.tar.gz
+	rm -rf nissy nissy-${VERSION}.tar.gz
 
 dist: clean
 	mkdir -p nissy-${VERSION}
@@ -42,9 +42,9 @@ dist: clean
 	gzip nissy-${VERSION}.tar
 	rm -rf nissy-${VERSION}
 
-install: nissy.o
+install: nissy
 	mkdir -p ${DESTDIR}${PREFIX}/bin
-	cp -f nissy.o ${DESTDIR}${PREFIX}/bin/nissy
+	cp -f nissy ${DESTDIR}${PREFIX}/bin/nissy
 	chmod 755 ${DESTDIR}${PREFIX}/bin/nissy
 	mkdir -p ${DESTDIR}${MANPREFIX}/man1
 	sed "s/VERSION/${VERSION}/g" < doc/nissy.1 \
