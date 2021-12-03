@@ -11,50 +11,50 @@ static bool        write_mtables_file();
 /* Every move is translated to a an <U, x, y> alg before filling the
    transition tables, see init_moves() */
 
-static int              edge_cycle[NMOVES][12] =
+static int edge_cycle[NMOVES][12] =
 {
 	[U] = { UR, UF, UL, UB, DF, DL, DB, DR, FR, FL, BL, BR },
 	[x] = { DF, FL, UF, FR, DB, BL, UB, BR, DR, DL, UL, UR },
 	[y] = { UR, UF, UL, UB, DR, DF, DL, DB, BR, FR, FL, BL }
 };
 
-static int              corner_cycle[NMOVES][8] =
+static int corner_cycle[NMOVES][8] =
 {
 	[U] = { UBR, UFR, UFL, UBL, DFR, DFL, DBL, DBR },
 	[x] = { DFR, DFL, UFL, UFR, DBR, DBL, UBL, UBR },
 	[y] = { UBR, UFR, UFL, UBL, DBR, DFR, DFL, DBL }
 };
 
-static int              center_cycle[NMOVES][6] =
+static int center_cycle[NMOVES][6] =
 {
 	[x] = { F_center, B_center, R_center, L_center, D_center, U_center },
 	[y] = { U_center, D_center, B_center, F_center, R_center, L_center }
 };
 
-static int              eofb_flipped[NMOVES][12] = {
+static int eofb_flipped[NMOVES][12] = {
 	[x] = { [UF] = 1, [UB] = 1, [DF] = 1, [DB] = 1 },
 	[y] = { [FR] = 1, [FL] = 1, [BL] = 1, [BR] = 1 }
 };
 
-static int              eorl_flipped[NMOVES][12] = {
+static int eorl_flipped[NMOVES][12] = {
 	[x] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
 	[y] = { [FR] = 1, [FL] = 1, [BL] = 1, [BR] = 1 }
 };
 
-static int              eoud_flipped[NMOVES][12] = {
+static int eoud_flipped[NMOVES][12] = {
 	[U] = { [UF] = 1, [UL] = 1, [UB] = 1, [UR] = 1 },
 	[x] = { [UF] = 1, [UB] = 1, [DF] = 1, [DB] = 1 },
 	[y] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1  }
 };
 
-static int              coud_flipped[NMOVES][8] = {
+static int coud_flipped[NMOVES][8] = {
 	[x] = {
 		[UFR] = 2, [UBR] = 1, [UFL] = 1, [UBL] = 2,
 		[DBR] = 2, [DFR] = 1, [DBL] = 1, [DFL] = 2
 	}
 };
 
-static int              corl_flipped[NMOVES][8] = {
+static int corl_flipped[NMOVES][8] = {
 	[U] = { [UFR] = 1, [UBR] = 2, [UBL] = 1, [UFL] = 2 },
 	[y] = {
 		[UFR] = 1, [UBR] = 2, [UBL] = 1, [UFL] = 2,
@@ -62,7 +62,7 @@ static int              corl_flipped[NMOVES][8] = {
 	}
 };
 
-static int              cofb_flipped[NMOVES][8] = {
+static int cofb_flipped[NMOVES][8] = {
 	[U] = { [UFR] = 2, [UBR] = 1, [UBL] = 2, [UFL] = 1 },
 	[x] = {
 		[UFR] = 1, [UBR] = 2, [UBL] = 1, [UFL] = 2,
