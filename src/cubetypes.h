@@ -5,7 +5,7 @@
 #include <inttypes.h>
 #include <pthread.h>
 
-#define NMOVES               55 /* Actually 55, but one is NULLMOVE */
+#define NMOVES               55 /* Actually 54, but one is NULLMOVE */
 #define NTRANS               48
 #define NROTATIONS           24
 
