@@ -81,8 +81,9 @@ typedef struct commandargs   CommandArgs;
 typedef struct coordinate    Coordinate;
 typedef struct cube          Cube;
 typedef struct cubearray     CubeArray;
-typedef struct cubetarget    CubeTarget;
 typedef struct dfsdata       DfsData;
+typedef struct estimatedata  EstimateData;
+typedef struct localinfo     LocalInfo;
 typedef struct piecefilter   PieceFilter;
 typedef struct prunedata     PruneData;
 typedef struct solveoptions  SolveOptions;
@@ -92,7 +93,7 @@ typedef struct threaddata    ThreadData;
 
 typedef Cube                 (*AntiIndexer)      (uint64_t);
 typedef bool                 (*Checker)          (Cube);
-typedef int                  (*Estimator)        (CubeTarget);
+typedef int                  (*Estimator)        (EstimateData *);
 typedef bool                 (*Validator)        (Alg *);
 typedef void                 (*Exec)             (CommandArgs *);
 typedef uint64_t             (*Indexer)          (Cube);
@@ -196,13 +197,6 @@ cubearray
 };
 
 struct
-cubetarget
-{
-	Cube              cube;
-	int               target;
-};
-
-struct
 dfsdata
 {
 	int               d;
@@ -211,12 +205,36 @@ dfsdata
 	bool              niss;
 	Move              last1;
 	Move              last2;
+	EstimateData *    ed;
 	AlgList *         sols;
 	pthread_mutex_t * sols_mutex;
 	Alg *             current_alg;
 	Move *            sorted_moves;
 	int *             move_position;
 	uint8_t *         visited;
+};
+
+struct
+estimatedata
+{
+	Cube              cube;
+	int               target;
+	Move              lastmove;
+	uint64_t          movebitmask;
+	LocalInfo *       li;
+};
+
+struct
+localinfo
+{
+	int               corners;
+	int               normal_ud;
+	int               normal_fb;
+	int               normal_rl;
+	int               inverse_ud;
+	int               inverse_fb;
+	int               inverse_rl;
+	int               prev_ret;
 };
 
 struct

@@ -7,6 +7,8 @@
 
 extern Step *           steps[NSTEPS];
 
+void                    free_localinfo(LocalInfo *li);
+LocalInfo *             new_localinfo();
 void                    prepare_step(Step *step);
 
 #endif

@@ -1,5 +1,7 @@
 #include "steps.h"
 
+#define UPDATECHECKSTOP(a, b, c)     if ((a=(MAX((a),(b))))>(c)) return (a);
+
 /* Checkers, estimators and validators ***************************************/
 
 static bool             check_centers(Cube cube);
@@ -7,24 +9,24 @@ static bool             check_eofb(Cube cube);
 static bool             check_drud(Cube cube);
 static bool             check_htr(Cube cube);
 
-static int              estimate_eoany_HTM(CubeTarget ct);
-static int              estimate_eofb_HTM(CubeTarget ct);
-static int              estimate_coany_HTM(CubeTarget ct);
-static int              estimate_coud_HTM(CubeTarget ct);
-static int              estimate_coany_URF(CubeTarget ct);
-static int              estimate_coud_URF(CubeTarget ct);
-static int              estimate_corners_HTM(CubeTarget ct);
-static int              estimate_cornershtr_HTM(CubeTarget ct);
-static int              estimate_corners_URF(CubeTarget ct);
-static int              estimate_cornershtr_URF(CubeTarget ct);
-static int              estimate_drany_HTM(CubeTarget ct);
-static int              estimate_drud_HTM(CubeTarget ct);
-static int              estimate_drud_eofb(CubeTarget ct);
-static int              estimate_dr_eofb(CubeTarget ct);
-static int              estimate_drudfin_drud(CubeTarget ct);
-static int              estimate_htr_drud(CubeTarget ct);
-static int              estimate_htrfin_htr(CubeTarget ct);
-static int              estimate_optimal_HTM(CubeTarget ct);
+static int              estimate_eoany_HTM(EstimateData *ed);
+static int              estimate_eofb_HTM(EstimateData *ed);
+static int              estimate_coany_HTM(EstimateData *ed);
+static int              estimate_coud_HTM(EstimateData *ed);
+static int              estimate_coany_URF(EstimateData *ed);
+static int              estimate_coud_URF(EstimateData *ed);
+static int              estimate_corners_HTM(EstimateData *ed);
+static int              estimate_cornershtr_HTM(EstimateData *ed);
+static int              estimate_corners_URF(EstimateData *ed);
+static int              estimate_cornershtr_URF(EstimateData *ed);
+static int              estimate_drany_HTM(EstimateData *ed);
+static int              estimate_drud_HTM(EstimateData *ed);
+static int              estimate_drud_eofb(EstimateData *ed);
+static int              estimate_dr_eofb(EstimateData *ed);
+static int              estimate_drudfin_drud(EstimateData *ed);
+static int              estimate_htr_drud(EstimateData *ed);
+static int              estimate_htrfin_htr(EstimateData *ed);
+static int              estimate_optimal_HTM(EstimateData *ed);
 
 static bool             always_valid(Alg *alg);
 static bool             validate_singlecw_ending(Alg *alg);
@@ -799,108 +801,106 @@ check_htr(Cube cube)
 }
 
 static int
-estimate_eoany_HTM(CubeTarget ct)
+estimate_eoany_HTM(EstimateData *ed)
 {
 	int r1, r2, r3;
 
-	r1 = ptableval(&pd_eofb_HTM, ct.cube);
-	r2 = ptableval(&pd_eofb_HTM, apply_trans(ur, ct.cube));
-	r3 = ptableval(&pd_eofb_HTM, apply_trans(fd, ct.cube));
+	r1 = ptableval(&pd_eofb_HTM, ed->cube);
+	r2 = ptableval(&pd_eofb_HTM, apply_trans(ur, ed->cube));
+	r3 = ptableval(&pd_eofb_HTM, apply_trans(fd, ed->cube));
 
 	return MIN(r1, MIN(r2, r3));
 }
 
 static int
-estimate_eofb_HTM(CubeTarget ct)
+estimate_eofb_HTM(EstimateData *ed)
 {
-	return ptableval(&pd_eofb_HTM, ct.cube);
+	return ptableval(&pd_eofb_HTM, ed->cube);
 }
 
 static int
-estimate_coany_HTM(CubeTarget ct)
+estimate_coany_HTM(EstimateData *ed)
 {
 	int r1, r2, r3;
 
-	r1 = ptableval(&pd_coud_HTM, ct.cube);
-	r2 = ptableval(&pd_coud_HTM, apply_trans(rf, ct.cube));
-	r3 = ptableval(&pd_coud_HTM, apply_trans(fd, ct.cube));
+	r1 = ptableval(&pd_coud_HTM, ed->cube);
+	r2 = ptableval(&pd_coud_HTM, apply_trans(rf, ed->cube));
+	r3 = ptableval(&pd_coud_HTM, apply_trans(fd, ed->cube));
 
 	return MIN(r1, MIN(r2, r3));
 }
 
 static int
-estimate_coud_HTM(CubeTarget ct)
+estimate_coud_HTM(EstimateData *ed)
 {
-	return ptableval(&pd_coud_HTM, ct.cube);
+	return ptableval(&pd_coud_HTM, ed->cube);
 }
 
 static int
-estimate_coany_URF(CubeTarget ct)
+estimate_coany_URF(EstimateData *ed)
 {
 	int r1, r2, r3;
-	CubeTarget ct2, ct3;
+	EstimateData *ed2, *ed3;
 
-	ct2.cube = apply_trans(rf, ct.cube);
-	ct2.target = ct.target;
+	ed2 = malloc(sizeof(EstimateData));
+	ed3 = malloc(sizeof(EstimateData));
 
-	ct3.cube = apply_trans(fd, ct.cube);
-	ct3.target = ct.target;
+	ed2->cube = apply_trans(rf, ed->cube);
+	ed2->target = ed->target;
 
-	r1 = estimate_coud_URF(ct);
-	r2 = estimate_coud_URF(ct2);
-	r3 = estimate_coud_URF(ct3);
+	ed3->cube = apply_trans(fd, ed->cube);
+	ed3->target = ed->target;
+
+	r1 = estimate_coud_URF(ed);
+	r2 = estimate_coud_URF(ed2);
+	r3 = estimate_coud_URF(ed3);
+
+	free(ed2);
+	free(ed3);
 
 	return MIN(r1, MIN(r2, r3));
 }
 
 static int
-estimate_coud_URF(CubeTarget ct)
+estimate_coud_URF(EstimateData *ed)
 {
 	/* TODO: I can improve this by checking first the orientation of
 	 * the corner in DBL and use that as a reference */
 
-	CubeTarget ct2 = {.cube = apply_move(z, ct.cube), .target = ct.target};
-	CubeTarget ct3 = {.cube = apply_move(x, ct.cube), .target = ct.target};
+	EstimateData *ed2, *ed3;
 
-	int ud = estimate_coud_HTM(ct);
-	int rl = estimate_coud_HTM(ct2);
-	int fb = estimate_coud_HTM(ct3);
+	ed2 = malloc(sizeof(EstimateData));
+	ed2->cube = apply_move(z, ed->cube);
+	ed2->target = ed->target;
+
+	ed3 = malloc(sizeof(EstimateData));
+	ed3->cube = apply_move(x, ed->cube);
+	ed3->target = ed->target;
+
+	int ud = estimate_coud_HTM(ed);
+	int rl = estimate_coud_HTM(ed2);
+	int fb = estimate_coud_HTM(ed3);
+
+	free(ed2);
+	free(ed3);
 
 	return MIN(ud, MIN(rl, fb));
 }
 
 static int
-estimate_corners_HTM(CubeTarget ct)
+estimate_corners_HTM(EstimateData *ed)
 {
-	return ptableval(&pd_corners_HTM, ct.cube);
+	return ptableval(&pd_corners_HTM, ed->cube);
 }
 
 static int
-estimate_cornershtr_HTM(CubeTarget ct)
+estimate_cornershtr_HTM(EstimateData *ed)
 {
-	return ptableval(&pd_cornershtr_HTM, ct.cube);
+	return ptableval(&pd_cornershtr_HTM, ed->cube);
 }
 
 static int
-estimate_cornershtr_URF(CubeTarget ct)
-{
-	/* TODO: I can improve this by checking first the corner in DBL
-	 * and use that as a reference */
-
-	int c, ret = 15;
-	Trans i;
-
-	for (i = 0; i < NROTATIONS; i++) {
-		ct.cube = apply_alg(rotation_alg(i), ct.cube);
-		c = estimate_cornershtr_HTM(ct);
-		ret = MIN(ret, c);
-	}
-
-	return ret;
-}
-
-static int
-estimate_corners_URF(CubeTarget ct)
+estimate_cornershtr_URF(EstimateData *ed)
 {
 	/* TODO: I can improve this by checking first the corner in DBL
 	 * and use that as a reference */
@@ -909,8 +909,8 @@ estimate_corners_URF(CubeTarget ct)
 	Trans i;
 
 	for (i = 0; i < NROTATIONS; i++) {
-		ct.cube = apply_alg(rotation_alg(i), ct.cube);
-		c = estimate_corners_HTM(ct);
+		ed->cube = apply_alg(rotation_alg(i), ed->cube);
+		c = estimate_cornershtr_HTM(ed);
 		ret = MIN(ret, c);
 	}
 
@@ -918,104 +918,148 @@ estimate_corners_URF(CubeTarget ct)
 }
 
 static int
-estimate_drany_HTM(CubeTarget ct)
+estimate_corners_URF(EstimateData *ed)
+{
+	/* TODO: I can improve this by checking first the corner in DBL
+	 * and use that as a reference */
+
+	int c, ret = 15;
+	Trans i;
+
+	for (i = 0; i < NROTATIONS; i++) {
+		ed->cube = apply_alg(rotation_alg(i), ed->cube);
+		c = estimate_corners_HTM(ed);
+		ret = MIN(ret, c);
+	}
+
+	return ret;
+}
+
+static int
+estimate_drany_HTM(EstimateData *ed)
 {
 	int r1, r2, r3;
 
-	r1 = ptableval(&pd_drud_sym16_HTM, ct.cube);
-	r2 = ptableval(&pd_drud_sym16_HTM, apply_trans(rf, ct.cube));
-	r3 = ptableval(&pd_drud_sym16_HTM, apply_trans(fd, ct.cube));
+	r1 = ptableval(&pd_drud_sym16_HTM, ed->cube);
+	r2 = ptableval(&pd_drud_sym16_HTM, apply_trans(rf, ed->cube));
+	r3 = ptableval(&pd_drud_sym16_HTM, apply_trans(fd, ed->cube));
 
 	return MIN(r1, MIN(r2, r3));
 }
 
 static int
-estimate_drud_HTM(CubeTarget ct)
+estimate_drud_HTM(EstimateData *ed)
 {
-	return ptableval(&pd_drud_sym16_HTM, ct.cube);
+	return ptableval(&pd_drud_sym16_HTM, ed->cube);
 }
 
 static int
-estimate_drud_eofb(CubeTarget ct)
+estimate_drud_eofb(EstimateData *ed)
 {
-	return ptableval(&pd_drud_eofb, ct.cube);
+	return ptableval(&pd_drud_eofb, ed->cube);
 }
 
 static int
-estimate_dr_eofb(CubeTarget ct)
+estimate_dr_eofb(EstimateData *ed)
 {
 	int r1, r2;
 
-	r1 = ptableval(&pd_drud_eofb, ct.cube);
-	r2 = ptableval(&pd_drud_eofb, apply_trans(rf, ct.cube));
+	r1 = ptableval(&pd_drud_eofb, ed->cube);
+	r2 = ptableval(&pd_drud_eofb, apply_trans(rf, ed->cube));
 
 	return MIN(r1, r2);
 }
 
 static int
-estimate_drudfin_drud(CubeTarget ct)
+estimate_drudfin_drud(EstimateData *ed)
 {
-	int val = ptableval(&pd_drudfin_noE_sym16_drud, ct.cube);
+	int val = ptableval(&pd_drudfin_noE_sym16_drud, ed->cube);
 
 	if (val != 0)
 		return val;
 
-	return ct.cube.epose % 24 == 0 ? 0 : 1;
+	return ed->cube.epose % 24 == 0 ? 0 : 1;
 }
 
 static int
-estimate_htr_drud(CubeTarget ct)
+estimate_htr_drud(EstimateData *ed)
 {
-	return ptableval(&pd_htr_drud, ct.cube);
+	return ptableval(&pd_htr_drud, ed->cube);
 }
 
 static int
-estimate_htrfin_htr(CubeTarget ct)
+estimate_htrfin_htr(EstimateData *ed)
 {
-	return ptableval(&pd_htrfin_htr, ct.cube);
+	return ptableval(&pd_htrfin_htr, ed->cube);
 }
 
 static int
-estimate_optimal_HTM(CubeTarget ct)
+estimate_optimal_HTM(EstimateData *ed)
 {
-	int dr1, dr2, dr3, cor, ret;
-	Cube inv;
+	int ret = -1;
+	Move lbase;
+	Cube cubeaux, inv;
 
-	dr1 = ptableval(&pd_khuge_HTM, ct.cube);
-	cor = estimate_corners_HTM(ct);
-	ret = MAX(dr1, cor);
-	if (ret > ct.target)
+	ed->li->corners = ptableval(&pd_corners_HTM, ed->cube);
+	UPDATECHECKSTOP(ret, ed->li->corners, ed->target);
+
+	ed->li->normal_ud = ptableval(&pd_khuge_HTM, ed->cube);
+	UPDATECHECKSTOP(ret, ed->li->normal_ud, ed->target);
+
+	cubeaux = apply_trans(fd, ed->cube);
+	ed->li->normal_fb = ptableval(&pd_khuge_HTM, cubeaux);
+	UPDATECHECKSTOP(ret, ed->li->normal_fb, ed->target);
+
+	cubeaux = apply_trans(rf, ed->cube);
+	ed->li->normal_rl = ptableval(&pd_khuge_HTM, cubeaux);
+	UPDATECHECKSTOP(ret, ed->li->normal_rl, ed->target);
+
+	if (ret == 0)
 		return ret;
 
-	dr2 = ptableval(&pd_khuge_HTM, apply_trans(rf, ct.cube));
-	ret = MAX(ret, dr2);
-	if (ret > ct.target)
-		return ret;
+	if (ed->li->normal_ud == ed->li->normal_fb &&
+	    ed->li->normal_fb == ed->li->normal_rl)
+		UPDATECHECKSTOP(ret, ed->li->normal_ud + 1, ed->target);
 
-	dr3 = ptableval(&pd_khuge_HTM, apply_trans(fd, ct.cube));
-	if (dr1 == dr2 && dr2 == dr3 && dr1 != 0)
-		dr3++;
-	ret = MAX(ret, dr3);
-	if (ret > ct.target || ret == 0)
-		return ret;
+	/* TODO: avoid computation of inverse if unnecessary */
+	lbase = base_move(ed->lastmove);
+	inv = inverse_cube(ed->cube);
 
-	/* Inverse cube probing */
+	if ((lbase != U && lbase != D) ||
+	    (ed->li->inverse_ud == -1)) {
+		ed->li->inverse_ud = ptableval(&pd_khuge_HTM, inv);
+	}
+	UPDATECHECKSTOP(ret, ed->li->inverse_ud, ed->target);
 
-	inv = inverse_cube(ct.cube);
-	dr1 = ptableval(&pd_khuge_HTM, inv);
-	ret = MAX(ret, dr1);
-	if (ret > ct.target)
-		return ret;
+	if ((lbase != F && lbase != B) ||
+	    (ed->li->inverse_fb == -1)) {
+		cubeaux = apply_trans(fd, inv);
+		ed->li->inverse_fb = ptableval(&pd_khuge_HTM, cubeaux);
+	}
+	UPDATECHECKSTOP(ret, ed->li->inverse_fb, ed->target);
 
-	dr2 = ptableval(&pd_khuge_HTM, apply_trans(rf, inv));
-	ret = MAX(ret, dr2);
-	if (ret > ct.target)
-		return ret;
-	
-	dr3 = ptableval(&pd_khuge_HTM, apply_trans(fd, inv));
-	if (dr1 == dr2 && dr2 == dr3 && dr1 != 0)
-		dr3++;
-	return MAX(ret, dr3);
+	if ((lbase != R && lbase != L) ||
+	    (ed->li->inverse_rl == -1)) {
+		cubeaux = apply_trans(rf, inv);
+		ed->li->inverse_rl = ptableval(&pd_khuge_HTM, cubeaux);
+	}
+	UPDATECHECKSTOP(ret, ed->li->inverse_rl, ed->target);
+
+	if (ed->li->inverse_ud == ed->li->inverse_fb &&
+	    ed->li->inverse_fb == ed->li->inverse_rl)
+		UPDATECHECKSTOP(ret, ed->li->inverse_ud + 1, ed->target);
+
+	if (ed->li->inverse_ud == ed->target)
+		ed->movebitmask |= (1<<U) | (1<<U2) | (1<<U3) |
+				   (1<<D) | (1<<D2) | (1<<D3);
+	if (ed->li->inverse_fb == ed->target)
+		ed->movebitmask |= (1<<F) | (1<<F2) | (1<<F3) |
+				   (1<<B) | (1<<B2) | (1<<B3);
+	if (ed->li->inverse_rl == ed->target)
+		ed->movebitmask |= (1<<R) | (1<<R2) | (1<<R3) |
+				   (1<<L) | (1<<L2) | (1<<L3);
+
+	return ret;
 }
 
 static bool
@@ -1074,6 +1118,29 @@ detect_pretrans_drud(Cube cube)
 }
 
 /* Public functions **********************************************************/
+
+void
+free_localinfo(LocalInfo *li)
+{
+	free(li);
+}
+
+LocalInfo *
+new_localinfo()
+{
+	LocalInfo *ret = malloc(sizeof(LocalInfo));
+
+	ret->corners    = -1;
+	ret->normal_ud  = -1;
+	ret->normal_fb  = -1;
+	ret->normal_rl  = -1;
+	ret->inverse_ud = -1;
+	ret->inverse_fb = -1;
+	ret->inverse_rl = -1;
+	ret->prev_ret   = -1;
+
+	return ret;
+}
 
 void
 prepare_step(Step *step)

@@ -1,6 +1,6 @@
 # See LICENSE file for copyright and license details.
 
-VERSION = 2.0beta4
+VERSION = 2.0beta5
 
 PREFIX = /usr/local
 MANPREFIX = ${PREFIX}/share/man
