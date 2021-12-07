@@ -167,6 +167,25 @@ genptable_branch(PruneData *pd, uint64_t ind, int d, Move *ms)
 	 * This is a terribly inefficient way to deal with this.
 	 * TODO: make it more efficient.
 	 */
+	/*
+	 * IDEA (with the example of khuge in mind):
+	 * The problem only happens when two position that are actually
+	 * in the same class are considered different. This can happen
+	 * because only CO is used to determine which transformation
+	 * to apply to get a representative for the class. So if the
+	 * corners are in a self-symmetric position more than one
+	 * transformation to the representative is possible, only one
+	 * (essentially at random) is picked, but this is not necessarily
+	 * the correct one if the edges are not in a self-symmetric
+	 * position.
+	 * SOLUTION: Keep in mind which corner positions are
+	 * self-symmetric (add a field to symdata). Add a function
+	 * to coord that tells if a position has this problem, or
+	 * even the list of transformations that need to be tried.
+	 * The second option is a bit more complicated but more
+	 * efficient and allows for removing the ntrans and trans
+	 * field from struct coordinate.
+	 */
 	for (i = 0; i < pd->coord->ntrans; i++) {
 		c = i == 0 ? ci :
 			     apply_trans(pd->coord->trans[i], ci);
