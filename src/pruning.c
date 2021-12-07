@@ -159,6 +159,14 @@ genptable_branch(PruneData *pd, uint64_t ind, int d, Move *ms)
 
 	ci = pd->coord->cube(ind);
 
+	/*
+	 * Here we deal with the following problem:
+	 * The set of positions reached by applying each move to
+	 * a certain position X could depend on the representative
+	 * used for X in its symmetry class.
+	 * This is a terribly inefficient way to deal with this.
+	 * TODO: make it more efficient.
+	 */
 	for (i = 0; i < pd->coord->ntrans; i++) {
 		c = i == 0 ? ci :
 			     apply_trans(pd->coord->trans[i], ci);
