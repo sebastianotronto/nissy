@@ -100,7 +100,7 @@ typedef uint64_t             (*Indexer)          (Cube);
 typedef bool                 (*Moveset)          (Move);
 typedef CommandArgs *        (*ArgParser)        (int, char **);
 typedef Trans                (*TransDetector)    (Cube);
-typedef int                  (*TransFinder)      (uint64_t ind, Trans *);
+typedef int                  (*TransFinder)      (uint64_t, Trans *);
 
 
 /* Structs *******************************************************************/
