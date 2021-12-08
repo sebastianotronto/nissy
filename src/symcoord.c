@@ -1,5 +1,9 @@
 #include "symcoord.h"
 
+/* These constants have been computed generating the respective SymData */
+#define CLASSES_CP_16        2768
+#define CLASSES_EOFBEPOS_16  64430
+
 static Cube        antindex_coud_sym16(uint64_t ind);
 static Cube        antindex_cp_sym16(uint64_t ind);
 static Cube        antindex_eofbepos_sym16(uint64_t ind);
@@ -14,8 +18,13 @@ static uint64_t    index_drud_sym16(Cube cube);
 static uint64_t    index_drudfin_noE_sym16(Cube cube);
 static uint64_t    index_khuge(Cube cube);
 
+static int         transfinder_drud_sym16(uint64_t ind, Trans *ret);
+static int         transfinder_drudfin_noE_sym16(uint64_t ind, Trans *ret);
+static int         transfinder_khuge(uint64_t ind, Trans *ret);
+
 static void        gensym(SymData *sd);
 static bool        read_symdata_file(SymData *sd);
+static int         selfsims(SymData *sd, uint64_t ind, Trans *ret);
 static bool        write_symdata_file(SymData *sd);
 
 /* Transformation groups and symmetry data ***********************************/
@@ -69,51 +78,42 @@ Coordinate
 coord_eofbepos_sym16 = {
 	.index  = index_eofbepos_sym16,
 	.cube   = antindex_eofbepos_sym16,
-	.ntrans = 16,
-	.trans  = trans_group_udfix,
 };
 
 Coordinate
 coord_coud_sym16 = {
 	.index  = index_coud_sym16,
 	.cube   = antindex_coud_sym16,
-	.ntrans = 16,
-	.trans  = trans_group_udfix,
 };
 
 Coordinate
 coord_cp_sym16 = {
 	.index  = index_cp_sym16,
 	.cube   = antindex_cp_sym16,
-	.ntrans = 16,
-	.trans  = trans_group_udfix,
 };
 
 Coordinate
 coord_drud_sym16 = {
 	.index  = index_drud_sym16,
 	.cube   = antindex_drud_sym16,
-	.max    = POW3TO7 * 64430,
-	.ntrans = 16,
-	.trans  = trans_group_udfix,
+	.max    = POW3TO7 * CLASSES_EOFBEPOS_16,
+	.trans  = transfinder_drud_sym16,
 };
 
 Coordinate
 coord_drudfin_noE_sym16 = {
 	.index  = index_drudfin_noE_sym16,
 	.cube   = antindex_drudfin_noE_sym16,
-	.max    = FACTORIAL8 * 2768,
-	.ntrans = 16,
-	.trans  = trans_group_udfix,
+	.max    = FACTORIAL8 * CLASSES_CP_16,
+	.trans  = transfinder_drudfin_noE_sym16,
 };
 
 Coordinate
 coord_khuge = {
 	.index  = index_khuge,
 	.cube   = antindex_khuge,
-	.max    = POW3TO7 * FACTORIAL4 * 64430,
-	.ntrans = 16,
-	.trans  = trans_group_udfix,
+	.max    = POW3TO7 * FACTORIAL4 * CLASSES_EOFBEPOS_16,
+	.trans  = transfinder_khuge,
 };
 
 /* Functions *****************************************************************/
@@ -229,6 +229,72 @@ index_khuge(Cube cube)
 	return a * POW3TO7 + c.coud;
 }
 
+static int
+transfinder_drud_sym16(uint64_t ind, Trans *ret)
+{
+	uint64_t i, trueind;
+	int j;
+	static bool initialized = false;
+	static int naux[CLASSES_EOFBEPOS_16];
+	static Trans retaux[CLASSES_EOFBEPOS_16][NTRANS];
+
+	if (!initialized) {
+		for (i = 0; i < CLASSES_EOFBEPOS_16; i++)
+			naux[i] = selfsims(&sd_eofbepos_16, i, retaux[i]);
+
+		initialized = true;
+	}
+
+	trueind = ind/POW3TO7;
+	for (j = 0; j < naux[trueind]; j++)
+		ret[j] = retaux[trueind][j];
+	return naux[trueind];
+}
+
+static int
+transfinder_drudfin_noE_sym16(uint64_t ind, Trans *ret)
+{
+	uint64_t i, trueind;
+	int j;
+	static bool initialized = false;
+	static int naux[CLASSES_CP_16];
+	static Trans retaux[CLASSES_CP_16][NTRANS];
+
+	if (!initialized) {
+		for (i = 0; i < CLASSES_CP_16; i++)
+			naux[i] = selfsims(&sd_cp_16, i, retaux[i]);
+
+		initialized = true;
+	}
+
+	trueind = ind/FACTORIAL8;
+	for (j = 0; j < naux[trueind]; j++)
+		ret[j] = retaux[trueind][j];
+	return naux[trueind];
+}
+
+static int
+transfinder_khuge(uint64_t ind, Trans *ret)
+{
+	uint64_t i, trueind;
+	int j;
+	static bool initialized = false;
+	static int naux[CLASSES_EOFBEPOS_16];
+	static Trans retaux[CLASSES_EOFBEPOS_16][NTRANS];
+
+	if (!initialized) {
+		for (i = 0; i < CLASSES_EOFBEPOS_16; i++)
+			naux[i] = selfsims(&sd_eofbepos_16, i, retaux[i]);
+
+		initialized = true;
+	}
+
+	trueind = ind/(FACTORIAL4*POW3TO7);
+	for (j = 0; j < naux[trueind]; j++)
+		ret[j] = retaux[trueind][j];
+	return naux[trueind];
+}
+
 /* Other functions ***********************************************************/
 
 static void
@@ -318,6 +384,25 @@ read_symdata_file(SymData *sd)
 
 	fclose(f);
 	return r;
+}
+
+static int
+selfsims(SymData *sd, uint64_t ind, Trans *ret)
+{
+	Cube cube, tcube;
+	int i, n;
+	uint64_t indnosym;
+
+	cube = sd->sym_coord->cube(ind);
+	indnosym = sd->coord->index(cube);
+	n = 0;
+	for (i = 0; i < sd->ntrans; i++) {
+		tcube = apply_trans(sd->trans[i], cube);
+		if (sd->coord->index(tcube) == indnosym)
+			ret[n++] = sd->trans[i];
+	}
+
+	return n;
 }
 
 static bool

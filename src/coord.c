@@ -49,7 +49,6 @@ coord_eofb = {
 	.index  = index_eofb,
 	.cube   = antindex_eofb,
 	.max    = POW2TO11,
-	.ntrans = 1,
 };
 
 Coordinate
@@ -57,7 +56,6 @@ coord_eofbepos = {
 	.index  = index_eofbepos,
 	.cube   = antindex_eofbepos,
 	.max    = POW2TO11 * BINOM12ON4,
-	.ntrans = 1,
 };
 
 Coordinate
@@ -65,7 +63,6 @@ coord_coud = {
 	.index  = index_coud,
 	.cube   = antindex_coud,
 	.max    = POW3TO7,
-	.ntrans = 1,
 };
 
 Coordinate
@@ -73,7 +70,6 @@ coord_corners = {
 	.index  = index_corners,
 	.cube   = antindex_corners,
 	.max    = POW3TO7 * FACTORIAL8,
-	.ntrans = 1,
 };
 
 Coordinate
@@ -81,7 +77,6 @@ coord_cp = {
 	.index  = index_cp,
 	.cube   = antindex_cp,
 	.max    = FACTORIAL8,
-	.ntrans = 1,
 };
 
 Coordinate
@@ -89,7 +84,6 @@ coord_cphtr = {
 	.index  = index_cphtr,
 	.cube   = antindex_cphtr,
 	.max    = BINOM8ON4 * 6,
-	.ntrans = 1,
 };
 
 Coordinate
@@ -97,7 +91,6 @@ coord_cornershtr = {
 	.index  = index_cornershtr,
 	.cube   = antindex_cornershtr,
 	.max    = POW3TO7 * BINOM8ON4 * 6,
-	.ntrans = 1,
 };
 
 Coordinate
@@ -105,7 +98,6 @@ coord_cornershtrfin = {
 	.index  = index_cornershtrfin,
 	.cube   = antindex_cornershtrfin,
 	.max    = 24*24/6,
-	.ntrans = 1,
 };
 
 Coordinate
@@ -113,7 +105,6 @@ coord_epud = {
 	.index  = index_epud,
 	.cube   = antindex_epud,
 	.max    = FACTORIAL8,
-	.ntrans = 1,
 };
 
 Coordinate
@@ -121,7 +112,6 @@ coord_drud = {
 	.index  = index_drud,
 	.cube   = antindex_drud,
 	.max    = POW2TO11 * POW3TO7 * BINOM12ON4,
-	.ntrans = 1,
 };
 
 Coordinate
@@ -129,7 +119,6 @@ coord_htr_drud = {
 	.index  = index_htr_drud,
 	.cube   = antindex_htr_drud,
 	.max    = BINOM8ON4 * 6 * BINOM8ON4,
-	.ntrans = 1,
 };
 
 Coordinate
@@ -137,7 +126,6 @@ coord_htrfin = {
 	.index  = index_htrfin,
 	.cube   = antindex_htrfin,
 	.max    = 24 * 24 * 24 *24 * 24 / 6, /* should be /12 but it's ok */
-	.ntrans = 1,
 };
 
 Coordinate
@@ -145,7 +133,6 @@ coord_drud_eofb = {
 	.index  = index_drud_eofb,
 	.cube   = antindex_drud_eofb,
 	.max    = POW3TO7 * BINOM12ON4,
-	.ntrans = 1,
 };
 
 /* Antindexers ***************************************************************/

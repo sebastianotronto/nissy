@@ -144,20 +144,20 @@ genptable(PruneData *pd)
 static void
 genptable_bfs(PruneData *pd, int d, Move *ms)
 {
-	int j;
+	int j, n;
 	uint64_t i;
 	Cube c, cc;
+	Trans t[NTRANS];
 
 	for (i = 0; i < pd->coord->max; i++) {
-		/*
-		 * TODO: only do this if the position is "nasty",
-		 * i.e. self-symmetrical with respect to the base
-		 * coordinate but not overall.
-		 */
 		 if (ptableval_index(pd, i) == d) {
+			n = pd->coord->trans(i, t);
+			if (n == 1)
+				continue;
+
 			c = pd->coord->cube(i);
-			for (j = 0; j < pd->coord->ntrans; j++) {
-				cc = apply_trans(pd->coord->trans[j], c);
+			for (j = 0; j < n; j++) {
+				cc = apply_trans(t[j], c);
 				if (ptableval(pd, cc) > d)
 					ptable_update(pd, cc, d);
 			}

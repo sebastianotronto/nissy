@@ -100,6 +100,7 @@ typedef uint64_t             (*Indexer)          (Cube);
 typedef bool                 (*Moveset)          (Move);
 typedef CommandArgs *        (*ArgParser)        (int, char **);
 typedef Trans                (*TransDetector)    (Cube);
+typedef int                  (*TransFinder)      (uint64_t ind, Trans *);
 
 
 /* Structs *******************************************************************/
@@ -162,8 +163,7 @@ coordinate
 	Indexer           index;
 	AntiIndexer       cube;
 	uint64_t          max;
-	int               ntrans;
-	Trans *           trans;
+	TransFinder       trans;
 };
 
 struct
