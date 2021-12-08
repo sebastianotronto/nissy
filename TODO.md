@@ -35,14 +35,9 @@ It's more of a personal reminder than anything else.
 
 ## Distribution
 
-* make env.c compatible with Windows (and check that it works with
-  BSD/MacOS)
-* default to current directory for tables; this will work on any OS, up to
-  using the correct #ifdef guards to avoid checking for posix directories
-  in non-posix systems
+* INSTALL file: change info about pruning tables (now fast)
+* README.md: cite nxopt
 * better man page
-* find a better way to distribute the large tables, especially khuge
-(or just generate them quickly, see below)
 * webapp (cgi)
 
 ## Technical stuff
@@ -57,9 +52,6 @@ and one more trick: if the last move is 180° avoid computing inverse cube
 and just use previous values for all 3 axes.
 
 ## Coordinates, symmetries, pruning tables
-* use multiple threads to search for solutions in parallel
-* Faster pruning table generation: multithreading (divide table into large
-sections and use one mutex for each section to avoid too much locking)
 * Cleanup symcoord.c: some coordinates and symdata are never actually used;
 remove also sd_eofbepos and just use sd_coud for khuge (this changes the
 coordinate so the whole table must be generated again!)
