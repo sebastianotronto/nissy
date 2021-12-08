@@ -14,7 +14,7 @@ extern PruneData        pd_htr_drud;
 extern PruneData        pd_htrfin_htr;
 extern PruneData        pd_khuge_HTM;
 
-void        genptable(PruneData *pd);
+void        genptable(PruneData *pd, int nthreads);
 void        print_ptable(PruneData *pd);
 uint64_t    ptablesize(PruneData *pd);
 int         ptableval(PruneData *pd, Cube cube);

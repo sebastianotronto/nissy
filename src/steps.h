@@ -9,6 +9,6 @@ extern Step *           steps[NSTEPS];
 
 void                    free_localinfo(LocalInfo *li);
 LocalInfo *             new_localinfo();
-void                    prepare_step(Step *step);
+void                    prepare_step(Step *step, int nthreads);
 
 #endif

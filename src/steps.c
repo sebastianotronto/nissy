@@ -1143,10 +1143,10 @@ new_localinfo()
 }
 
 void
-prepare_step(Step *step)
+prepare_step(Step *step, int nthreads)
 {
 	int i;
 
 	for (i = 0; i < step->ntables; i++)
-		genptable(step->tables[i]);
+		genptable(step->tables[i], nthreads);
 }

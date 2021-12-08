@@ -330,12 +330,13 @@ struct
 threaddatagenpt
 {
 	int                       thid;
+	int                       nthreads;
 	PruneData *               pd;
 	int                       d;
-	uint64_t                  rangemin;
-	uint64_t                  rangemax;
+	Move *                    ms;
 	int                       nchunks;
 	pthread_mutex_t **        mutex;
+	pthread_mutex_t *         upmutex;
 };
 
 #endif

@@ -282,7 +282,7 @@ solve(Cube cube, Step *step, SolveOptions *opts)
 	EstimateData *ed;
 	bool b;
 
-	prepare_step(step);
+	prepare_step(step, opts->nthreads);
 
 	if (step->detect != NULL)
 		step->pre_trans = step->detect(cube);

@@ -1,8 +1,12 @@
 #include "pruning.h"
 
-static void        genptable_bfs(PruneData *pd, int d, Move *ms);
-static void        genptable_branch(PruneData *pd,uint64_t ind,int d,Move *ms);
+/* Chunks for multithreading */
+#define NCHUNKS    100000
+
+static int         findchunk(PruneData *pd, int nchunks, uint64_t i);
+static void        genptable_bfs(PruneData *pd,int d,Move *ms,int nt,int nc);
 static void        genptable_fixnasty(PruneData *pd, int d);
+static void *      instance_bfs(void *arg);
 static void        ptable_update(PruneData *pd, Cube cube, int m);
 static void        ptable_update_index(PruneData *pd, uint64_t ind, int m);
 static int         ptableval_index(PruneData *pd, uint64_t ind);
@@ -79,11 +83,23 @@ pd_khuge_HTM = {
 	.moveset  = moveset_HTM,
 };
 
+int
+findchunk(PruneData *pd, int nchunks, uint64_t i)
+{
+	uint64_t chunksize;
+
+	chunksize = pd->coord->max / (uint64_t)nchunks;
+	if (chunksize % 2 != 0)
+		chunksize++;
+
+	return MIN(nchunks-1, (int)(i / chunksize));
+}
+
 void
-genptable(PruneData *pd)
+genptable(PruneData *pd, int nthreads)
 {
 	Move *ms;
-	int d;
+	int d, nchunks;
 	uint64_t j, oldn;
 
 	if (pd->generated)
@@ -98,7 +114,10 @@ genptable(PruneData *pd)
 	}
 	pd->generated = true;
 
-	fprintf(stderr, "Cannot load %s, generating it\n", pd->filename); 
+	nchunks = MIN(pd->coord->max, NCHUNKS);
+	fprintf(stderr, "Cannot load %s, generating it "
+			"with %d threads and %d chunks\n",
+			pd->filename, nthreads, nchunks); 
 
 	ms = malloc(NMOVES * sizeof(Move));
 	moveset_to_list(pd->moveset, ms);
@@ -110,13 +129,14 @@ genptable(PruneData *pd)
 	ptable_update(pd, (Cube){0}, 0);
 	pd->n = 1;
 	oldn = 0;
+	genptable_fixnasty(pd, 0);
 	fprintf(stderr, "Depth %d done, generated %"
 		PRIu64 "\t(%" PRIu64 "/%" PRIu64 ")\n",
 		0, pd->n - oldn, pd->n, pd->coord->max);
-	oldn = 1;
+	oldn = pd->n;
 	for (d = 0; d < 15 && pd->n < pd->coord->max; d++) {
-		genptable_fixnasty(pd, d);
-		genptable_bfs(pd, d, ms);
+		genptable_bfs(pd, d, ms, nthreads, nchunks);
+		genptable_fixnasty(pd, d+1);
 		fprintf(stderr, "Depth %d done, generated %"
 			PRIu64 "\t(%" PRIu64 "/%" PRIu64 ")\n",
 			d+1, pd->n - oldn, pd->n, pd->coord->max);
@@ -131,28 +151,38 @@ genptable(PruneData *pd)
 }
 
 static void
-genptable_bfs(PruneData *pd, int d, Move *ms)
-{
-	uint64_t i;
-
-	for (i = 0; i < pd->coord->max; i++)
-		if (ptableval_index(pd, i) == d)
-			genptable_branch(pd, i, d, ms);
-}
-
-static void
-genptable_branch(PruneData *pd, uint64_t ind, int d, Move *ms)
+genptable_bfs(PruneData *pd, int d, Move *ms, int nthreads, int nchunks)
 {
 	int i;
-	Cube c, cc;
+	pthread_t t[nthreads];
+	ThreadDataGenpt td[nthreads];
+	pthread_mutex_t *mtx[nchunks], *upmtx;
 
-	c = pd->coord->cube(ind);
-
-	for (i = 0; ms[i] != NULLMOVE; i++) {
-		cc = apply_move(ms[i], c);
-		if (ptableval(pd, cc) > d+1)
-			ptable_update(pd, cc, d+1);
+	upmtx = malloc(sizeof(pthread_mutex_t));
+	pthread_mutex_init(upmtx, NULL);
+	for (i = 0; i < nchunks; i++) {
+		mtx[i] = malloc(sizeof(pthread_mutex_t));
+		pthread_mutex_init(mtx[i], NULL);
 	}
+
+	for (i = 0; i < nthreads; i++) {
+		td[i].thid     = i;
+		td[i].nthreads = nthreads;
+		td[i].pd       = pd;
+		td[i].d        = d;
+		td[i].ms       = ms;
+		td[i].nchunks  = nchunks;
+		td[i].mutex    = mtx;
+		td[i].upmutex  = upmtx;
+		pthread_create(&t[i], NULL, instance_bfs, &td[i]);
+	}
+
+	for (i = 0; i < nthreads; i++)
+		pthread_join(t[i], NULL);
+
+	free(upmtx);
+	for (i = 0; i < nchunks; i++)
+		free(mtx[i]);
 }
 
 static void
@@ -164,7 +194,7 @@ genptable_fixnasty(PruneData *pd, int d)
 	Trans t[NTRANS];
 
 	for (i = 0; i < pd->coord->max; i++) {
-		 if (ptableval_index(pd, i) == d) {
+		if (ptableval_index(pd, i) == d) {
 			n = pd->coord->trans(i, t);
 			if (n == 1)
 				continue;
@@ -172,11 +202,57 @@ genptable_fixnasty(PruneData *pd, int d)
 			c = pd->coord->cube(i);
 			for (j = 0; j < n; j++) {
 				cc = apply_trans(t[j], c);
-				if (ptableval(pd, cc) > d)
+				if (ptableval(pd, cc) > d) {
 					ptable_update(pd, cc, d);
+					pd->n++;
+				}
 			}
 		}
 	}
+}
+
+static void *
+instance_bfs(void *arg)
+{
+	ThreadDataGenpt *td;
+	uint64_t i, ii, blocksize, rmin, rmax, updated;
+	int j, pval, ichunk;
+	Cube c, cc;
+
+	td = (ThreadDataGenpt *)arg;
+	blocksize = td->pd->coord->max / (uint64_t)td->nthreads;
+	rmin = ((uint64_t)td->thid) * blocksize;
+	rmax = td->thid == td->nthreads - 1 ?
+	       td->pd->coord->max :
+	       ((uint64_t)td->thid + 1) * blocksize;
+
+	updated = 0;
+	for (i = rmin; i < rmax; i++) {
+		ichunk = findchunk(td->pd, td->nchunks, i);
+		pthread_mutex_lock(td->mutex[ichunk]);
+		pval = ptableval_index(td->pd, i);
+		pthread_mutex_unlock(td->mutex[ichunk]);
+		if (pval == td->d) {
+			c = td->pd->coord->cube(i);
+			for (j = 0; td->ms[j] != NULLMOVE; j++) {
+				cc = apply_move(td->ms[j], c);
+				ii = td->pd->coord->index(cc);
+				ichunk = findchunk(td->pd, td->nchunks, ii);
+				pthread_mutex_lock(td->mutex[ichunk]);
+				pval = ptableval_index(td->pd, ii);
+				if (pval > td->d+1) {
+					ptable_update(td->pd, cc, td->d+1);
+					updated++;
+				}
+				pthread_mutex_unlock(td->mutex[ichunk]);
+			}
+		}
+	}
+	pthread_mutex_lock(td->upmutex);
+	td->pd->n += updated;
+	pthread_mutex_unlock(td->upmutex);
+
+	return NULL;
 }
 
 void
@@ -188,7 +264,7 @@ print_ptable(PruneData *pd)
 		a[i] = 0;
 
 	if (!pd->generated)
-		genptable(pd);
+		genptable(pd, 1); /* TODO: set default nthreads somewhere */
 
 	for (i = 0; i < pd->coord->max; i++)
 		a[ptableval_index(pd, i)]++;
@@ -220,7 +296,7 @@ ptable_update_index(PruneData *pd, uint64_t ind, int n)
 	other = (ind % 2) ? oldval2 % 16 : oldval2 / 16;
 
 	pd->ptable[ind/2] = (ind % 2) ? 16*n + other : 16*other + n;
-	pd->n++;
+	/*pd->n++;*/
 }
 
 int
@@ -237,7 +313,7 @@ ptableval_index(PruneData *pd, uint64_t ind)
 			" for uninitialized table %s.\n It's fine, but it"
 			" should not happen. Please report bug.\n",
 			pd->filename);
-		genptable(pd);
+		genptable(pd, 1); /* TODO: set default or remove this case */
 	}
 
 	return (ind % 2) ? pd->ptable[ind/2] / 16 : pd->ptable[ind/2] % 16;
