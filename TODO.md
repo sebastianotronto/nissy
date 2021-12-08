@@ -58,10 +58,6 @@ and just use previous values for all 3 axes.
 
 ## Coordinates, symmetries, pruning tables
 * use multiple threads to search for solutions in parallel
-* Faster pruning table generation: keep track of which positions are "nasty"
-(i.e. self-symmetric with respect to the base symmetry coordinate but not
-self-symmetric overall) by adding a function to struct coord and some datafield
-to struct symdata.
 * Faster pruning table generation: multithreading (divide table into large
 sections and use one mutex for each section to avoid too much locking)
 * Cleanup symcoord.c: some coordinates and symdata are never actually used;
