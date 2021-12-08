@@ -156,11 +156,11 @@ instance_thread(void *arg)
 {
 	bool b;
 	Cube c;
-	ThreadData *td;
+	ThreadDataSolve *td;
 	AlgListNode *node;
 	DfsData dd;
 
-	td = (ThreadData *)arg;
+	td = (ThreadDataSolve *)arg;
 
 	while (1) {
 		b = false;
@@ -215,7 +215,7 @@ multidfs(Cube c, Step *s, SolveOptions *opts, AlgList *sols, int d)
 	AlgList *start;
 	AlgListNode **node;
 	pthread_t t[opts->nthreads];
-	ThreadData td[opts->nthreads];
+	ThreadDataSolve td[opts->nthreads];
 	pthread_mutex_t *start_mutex, *sols_mutex;
 
 	move_position = malloc(NMOVES * sizeof(int));

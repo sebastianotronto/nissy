@@ -2,6 +2,7 @@
 
 static void        genptable_bfs(PruneData *pd, int d, Move *ms);
 static void        genptable_branch(PruneData *pd,uint64_t ind,int d,Move *ms);
+static void        genptable_fixnasty(PruneData *pd, int d);
 static void        ptable_update(PruneData *pd, Cube cube, int m);
 static void        ptable_update_index(PruneData *pd, uint64_t ind, int m);
 static int         ptableval_index(PruneData *pd, uint64_t ind);
@@ -114,6 +115,7 @@ genptable(PruneData *pd)
 		0, pd->n - oldn, pd->n, pd->coord->max);
 	oldn = 1;
 	for (d = 0; d < 15 && pd->n < pd->coord->max; d++) {
+		genptable_fixnasty(pd, d);
 		genptable_bfs(pd, d, ms);
 		fprintf(stderr, "Depth %d done, generated %"
 			PRIu64 "\t(%" PRIu64 "/%" PRIu64 ")\n",
@@ -131,25 +133,7 @@ genptable(PruneData *pd)
 static void
 genptable_bfs(PruneData *pd, int d, Move *ms)
 {
-	int j, n;
 	uint64_t i;
-	Cube c, cc;
-	Trans t[NTRANS];
-
-	for (i = 0; i < pd->coord->max; i++) {
-		 if (ptableval_index(pd, i) == d) {
-			n = pd->coord->trans(i, t);
-			if (n == 1)
-				continue;
-
-			c = pd->coord->cube(i);
-			for (j = 0; j < n; j++) {
-				cc = apply_trans(t[j], c);
-				if (ptableval(pd, cc) > d)
-					ptable_update(pd, cc, d);
-			}
-		}
-	}
 
 	for (i = 0; i < pd->coord->max; i++)
 		if (ptableval_index(pd, i) == d)
@@ -168,6 +152,30 @@ genptable_branch(PruneData *pd, uint64_t ind, int d, Move *ms)
 		cc = apply_move(ms[i], c);
 		if (ptableval(pd, cc) > d+1)
 			ptable_update(pd, cc, d+1);
+	}
+}
+
+static void
+genptable_fixnasty(PruneData *pd, int d)
+{
+	uint64_t i;
+	int j, n;
+	Cube c, cc;
+	Trans t[NTRANS];
+
+	for (i = 0; i < pd->coord->max; i++) {
+		 if (ptableval_index(pd, i) == d) {
+			n = pd->coord->trans(i, t);
+			if (n == 1)
+				continue;
+
+			c = pd->coord->cube(i);
+			for (j = 0; j < n; j++) {
+				cc = apply_trans(t[j], c);
+				if (ptableval(pd, cc) > d)
+					ptable_update(pd, cc, d);
+			}
+		}
 	}
 }
 
