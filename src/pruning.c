@@ -144,7 +144,25 @@ genptable(PruneData *pd)
 static void
 genptable_bfs(PruneData *pd, int d, Move *ms)
 {
+	int j;
 	uint64_t i;
+	Cube c, cc;
+
+	for (i = 0; i < pd->coord->max; i++) {
+		/*
+		 * TODO: only do this if the position is "nasty",
+		 * i.e. self-symmetrical with respect to the base
+		 * coordinate but not overall.
+		 */
+		 if (ptableval_index(pd, i) == d) {
+			c = pd->coord->cube(i);
+			for (j = 0; j < pd->coord->ntrans; j++) {
+				cc = apply_trans(pd->coord->trans[j], c);
+				if (ptableval(pd, cc) > d)
+					ptable_update(pd, cc, d);
+			}
+		}
+	}
 
 	for (i = 0; i < pd->coord->max; i++)
 		if (ptableval_index(pd, i) == d)
@@ -154,11 +172,6 @@ genptable_bfs(PruneData *pd, int d, Move *ms)
 static void
 genptable_branch(PruneData *pd, uint64_t ind, int d, Move *ms)
 {
-	int i, j;
-	Cube ci, cc, c;
-
-	ci = pd->coord->cube(ind);
-
 	/*
 	 * Here we deal with the following problem:
 	 * The set of positions reached by applying each move to
@@ -186,6 +199,15 @@ genptable_branch(PruneData *pd, uint64_t ind, int d, Move *ms)
 	 * efficient and allows for removing the ntrans and trans
 	 * field from struct coordinate.
 	 */
+	/* Work in progress, first attempt */
+
+	/*
+	int i, j;
+	Cube ci, cc, c;
+
+
+	ci = pd->coord->cube(ind);
+
 	for (i = 0; i < pd->coord->ntrans; i++) {
 		c = i == 0 ? ci :
 			     apply_trans(pd->coord->trans[i], ci);
@@ -194,6 +216,18 @@ genptable_branch(PruneData *pd, uint64_t ind, int d, Move *ms)
 			if (ptableval(pd, cc) > d+1)
 				ptable_update(pd, cc, d+1);
 		}
+	}
+	*/
+
+	int i;
+	Cube c, cc;
+
+	c = pd->coord->cube(ind);
+
+	for (i = 0; ms[i] != NULLMOVE; i++) {
+		cc = apply_move(ms[i], c);
+		if (ptableval(pd, cc) > d+1)
+			ptable_update(pd, cc, d+1);
 	}
 }
 
@@ -225,15 +259,17 @@ ptablesize(PruneData *pd)
 static void
 ptable_update(PruneData *pd, Cube cube, int n)
 {
-	uint64_t ind = pd->coord->index(cube);
-	ptable_update_index(pd, ind, n);
+	ptable_update_index(pd, pd->coord->index(cube), n);
 }
 
 static void
 ptable_update_index(PruneData *pd, uint64_t ind, int n)
 {
-	uint8_t oldval2 = pd->ptable[ind/2];
-	int other = (ind % 2) ? oldval2 % 16 : oldval2 / 16;
+	uint8_t oldval2;
+	int other;
+
+	oldval2 = pd->ptable[ind/2];
+	other = (ind % 2) ? oldval2 % 16 : oldval2 / 16;
 
 	pd->ptable[ind/2] = (ind % 2) ? 16*n + other : 16*other + n;
 	pd->n++;
