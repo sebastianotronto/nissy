@@ -1,6 +1,7 @@
 #include "pruning.h"
 
 /* Chunks for multithreading */
+/* TODO: try smaller */
 #define NCHUNKS    100000
 
 static int         findchunk(PruneData *pd, int nchunks, uint64_t i);
@@ -114,7 +115,7 @@ genptable(PruneData *pd, int nthreads)
 	}
 	pd->generated = true;
 
-	nchunks = MIN(pd->coord->max, NCHUNKS);
+	nchunks = MIN(pd->coord->max/2, NCHUNKS);
 	fprintf(stderr, "Cannot load %s, generating it "
 			"with %d threads and %d chunks\n",
 			pd->filename, nthreads, nchunks); 
@@ -192,6 +193,9 @@ genptable_fixnasty(PruneData *pd, int d)
 	int j, n;
 	Cube c, cc;
 	Trans t[NTRANS];
+
+	if (pd->coord->trans == NULL)
+		return;
 
 	for (i = 0; i < pd->coord->max; i++) {
 		if (ptableval_index(pd, i) == d) {
