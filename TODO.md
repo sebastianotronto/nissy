@@ -35,8 +35,8 @@ It's more of a personal reminder than anything else.
 
 ## Distribution
 
-* INSTALL file: change info about pruning tables (now fast)
 * README.md: cite nxopt
+* Add EXAMPLES.md file
 * better man page
 * webapp (cgi)
 
