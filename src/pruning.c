@@ -84,6 +84,21 @@ pd_khuge_HTM = {
 	.moveset  = moveset_HTM,
 };
 
+PruneData * allpd[NPTABLES] = {
+	&pd_eofb_HTM,
+	&pd_coud_HTM,
+	&pd_cornershtr_HTM,
+	&pd_corners_HTM,
+	&pd_drud_sym16_HTM,
+	&pd_drud_eofb,
+	&pd_drudfin_noE_sym16_drud,
+	&pd_htr_drud,
+	&pd_htrfin_htr,
+	&pd_khuge_HTM,
+};
+
+/* Functions *****************************************************************/
+
 int
 findchunk(PruneData *pd, int nchunks, uint64_t i)
 {

@@ -3,6 +3,8 @@
 
 #include "symcoord.h"
 
+#define NPTABLES 20
+
 extern PruneData        pd_eofb_HTM;
 extern PruneData        pd_coud_HTM;
 extern PruneData        pd_corners_HTM;
@@ -13,6 +15,8 @@ extern PruneData        pd_drudfin_noE_sym16_drud;
 extern PruneData        pd_htr_drud;
 extern PruneData        pd_htrfin_htr;
 extern PruneData        pd_khuge_HTM;
+
+extern PruneData *      allpd[NPTABLES];
 
 void        genptable(PruneData *pd, int nthreads);
 void        print_ptable(PruneData *pd);

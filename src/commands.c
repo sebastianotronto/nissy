@@ -3,12 +3,14 @@
 /* Arg parsing functions *****************************************************/
 
 CommandArgs *           solve_parse_args(int c, char **v);
+CommandArgs *           gen_parse_args(int c, char **v);
 CommandArgs *           help_parse_args(int c, char **v);
 CommandArgs *           print_parse_args(int c, char **v);
 CommandArgs *           parse_no_arg(int c, char **v);
 
 /* Exec functions ************************************************************/
 
+static void             gen_exec(CommandArgs *args);
 static void             solve_exec(CommandArgs *args);
 static void             steps_exec(CommandArgs *args);
 static void             commands_exec(CommandArgs *args);
@@ -31,6 +33,15 @@ solve_cmd = {
 	.description = "Solve a step; see command steps for a list of steps",
 	.parse_args  = solve_parse_args,
 	.exec        = solve_exec
+};
+
+Command
+gen_cmd = {
+	.name        = "gen",
+	.usage       = "gen [-t N]",
+	.description = "Generate all tables [using N threads]",
+	.parse_args  = gen_parse_args,
+	.exec        = gen_exec
 };
 
 Command
@@ -89,6 +100,7 @@ version_cmd = {
 
 Command *commands[NCOMMANDS] = {
 	&commands_cmd,
+	&gen_cmd,
 	&help_cmd,
 	&print_cmd,
 	&quit_cmd,
@@ -173,6 +185,34 @@ solve_parse_args(int c, char **v)
 }
 
 CommandArgs *
+gen_parse_args(int c, char **v)
+{
+	int val;
+	CommandArgs *a = new_args();
+
+	a->opts->nthreads = 1;
+	a->success  = false;
+
+	if (c == 0) {
+		a->success = true;
+	} else {
+		if (!strcmp(v[0], "-t") && c > 1) {
+			val = strtol(v[1], NULL, 10);
+			if (val < 1 || val > 64) {
+				fprintf(stderr,
+					"Invalid number of threads."
+					"1 <= t <= 64\n");
+				return a;
+			}
+			a->opts->nthreads = val;
+			a->success = true;
+		}
+	}
+	
+	return a;
+}
+
+CommandArgs *
 help_parse_args(int c, char **v)
 {
 	int i;
@@ -226,6 +266,21 @@ solve_exec(CommandArgs *args)
 
 	print_alglist(sols, args->opts->print_number);
 	free_alglist(sols);
+}
+
+static void
+gen_exec(CommandArgs *args)
+{
+	int i;
+
+	fprintf(stderr, "Generating coordinates...\n");
+	init_symcoord();
+
+	fprintf(stderr, "Generating pruning tables...\n");
+	for (i = 0; i < NPTABLES && allpd[i] != NULL; i++)
+		genptable(allpd[i], args->opts->nthreads);
+
+	fprintf(stderr, "Done!\n");
 }
 
 static void

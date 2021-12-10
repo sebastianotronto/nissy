@@ -54,15 +54,9 @@ and just use previous values for all 3 axes.
 ## Coordinates, symmetries, pruning tables
 * Cleanup symcoord.c: some coordinates and symdata are never actually used;
 remove also sd_eofbepos and just use sd_coud for khuge (this changes the
-coordinate so the whole table must be generated again!)
+coordinate so the whole table must be generated again!) or viceversa
 * Use pruning values mod 4 instead of mod 16 (or maybe not, I like the
 current system)
-
-### Memory management
-* fail gracefully when there is not enough memory to load a large table
-* free tables from memory when not used
-* optionally run in low-memory friendly version (no tables above a few Mb);
-  this can be useful e.g. for embedded devices
 
 ### Structural changes
 * client/server architecture: run a server process in the background so that

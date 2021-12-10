@@ -31,7 +31,7 @@ pruning table. If so, about 200Mb should be enough.
 ### On Windows
 
 Try downloading and executing in a terminal the file nissy.exe, then
-follow the instructions in the UNIX section below for downloading and
+follow the instructions in the **Tables** section below for
 installing the pruning tables.
 If nissy.exe does not work, you can try following the UNIX instructions
 in WSL (Windows Subsystem for Linux) or in a similar environment.
@@ -40,17 +40,32 @@ Sorry for the inconvenience, I don't have a Windows machine to test this on.
 
 ### On a UNIX system:
 
-You can download the source code for the latest version from git or simply clone
-the repo with `git clone https://github.com/sebastianotronto/nissy`.
-
 Edit the Makefile to match your local configuration (usually not necessary, but you
 may want to change the `PREFIX` variable) and run `make`, followed by `make install`.
-After that, you need to download some files and manually save them to your `NISSYDATA`
-folder (see manual page, ENVIRONMENT section). If you don't do it nissy can compute
-these files when needed and save them in the correct folders, but some of them
-take hours to generate even for a powerful computer (for reference, the huge pruning
-table takes about 20 hours on my laptop).
+Follows the instructions below to install the pruning tables.
 
+### Tables
+Nissy needs to generate certain large tables to work. These tables are by default
+generated the first time they are needed (e.g the first time you ask to solve a
+certain step) and then saved to a file. The following times nissy simply loads the
+corresponding file from the hard disk.
+
+The very large table for optimal solving can take some time to generate (about 20
+minutes on my fairly old but decent laptop, using 8 CPU threads). All other
+tables are much faster.
+
+You can ask nissy to generate all the tables it will ever need with the **gen**
+command. It is recommended to use more than one thread, if your CPU has them.
+For example, you can run:
+
+```
+nissy gen -t 8
+```
+
+to generate all tables using 8 threads.
+
+Alternatively, you can simply download all the tables and copy them into the
+correct folder (see manual page, `ENVIRONMENT` section).
 Choose one of the following:
 
 | |.zip|.tar.gz|
@@ -58,9 +73,9 @@ Choose one of the following:
 |Full (~720Mb)|[full.zip](https://math.uni.lu/tronto/nissy/nissy-tables-full.zip)|[full.tar.gz](https://math.uni.lu/tronto/nissy/nissy-tables-full.tar.gz)|
 |No huge table (~90Mb)|[nohuge.zip](https://math.uni.lu/tronto/nissy/nissy-tables-nohuge.zip)|[nohuge.tar.gz](https://math.uni.lu/tronto/nissy/nissy-tables-nohuge.tar.gz)|
 
-extract the archive and copy the `tables` folder into `NISSIDATA` (paste there
-the whole folder, not the single files). The `nohuge` files are much smaller and
-do not contain the huge pruning table for the optimal solver.
+extract the archive and copy the tables folder into `NISSIDATA` (paste there
+the whole folder, not file by file). The "nohuge" files are much smaller and do not
+contain the huge pruning table for the optimal solver.
 
 ## Structure of the code
 
