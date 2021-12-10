@@ -6,25 +6,34 @@
 .Nd a Rubik's cube solver and FMC assistant
 .
 .Sh SYNOPSIS
-.Nm
+.Nm Op Fl b
 .Nm
 .Ar command
 .Op options...
-.
-When run without any argument an interactive shell is launched, otherwise
-the provided
-.Ar command
-is executed and nissy terminates.
-The commands that can be run in the interactive shell are the same that can
-be run non-interactively and are provided below.
 .
 .Sh DESCRIPTION
 .Nm
 is a Rubik's Cube solver. Its optimal solver function uses Kociemba's one-step
 algorithm (huge optimal solver), and its performance is comparable to that
-of Kociemba's implementation in Cube Explorer.
+of Kociemba's implementation in Cube Explorer when using a single CPU
+thread, and much faster when using multiple threads.
 nissy can also solve different substeps of the Thistlethwaite's algorithm
 and more.
+.Pp
+When run without any argument an interactive shell is launched, otherwise
+the provided
+.Ar command
+is executed and nissy terminates. If the option
+.Fl b
+is given, every argument after it is ignored and the shell is launched without
+any prompt or welcome message. This can be used to run nissy in batch mode,
+for example writing a list of commands in a
+.Ar file
+(one per line) and running
+.Ar nissy -b < file
+.Pp
+The commands that can be run in the interactive shell are the same that can
+be run non-interactively and are provided below.
 .
 .Sh COMMANDS
 The available

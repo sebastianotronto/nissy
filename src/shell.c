@@ -55,7 +55,7 @@ exec_args(int c, char **v)
 }
 
 void
-launch()
+launch(bool prompt)
 {
 	int i, shell_argc;
 	char line[MAXLINELEN], **shell_argv;
@@ -64,12 +64,15 @@ launch()
 	for (i = 0; i < MAXNTOKENS; i++)
 		shell_argv[i] = malloc((MAXTOKENLEN+1) * sizeof(char));
 
-	fprintf(stderr, "Welcome to Nissy "VERSION".\n"
-	                "Type \"commands\" for a list of commands.\n"
-	       );
+	if (prompt) {
+		fprintf(stderr, "Welcome to Nissy "VERSION".\n"
+				"Type \"commands\" for a list of commands.\n");
+	}
 
 	while (true) {
-		fprintf(stdout, "nissy-# ");
+		if (prompt) {
+			fprintf(stdout, "nissy-# ");
+		}
 		if (fgets(line, MAXLINELEN, stdin) == NULL)
 			break;
 		shell_argc = parseline(line, shell_argv);
@@ -85,10 +88,15 @@ launch()
 int
 main(int argc, char *argv[])
 {
-	if (argc > 1)
-		exec_args(argc-1, &argv[1]);
-	else
-		launch();
+	if (argc > 1) {
+		if (!strcmp(argv[1], "-b")) {
+			launch(false);
+		} else {
+			exec_args(argc-1, &argv[1]);
+		}
+	} else {
+		launch(true);
+	}
 
 	return 0;
 }

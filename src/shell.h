@@ -8,6 +8,6 @@
 #define MAXNTOKENS          255
 
 void        exec_args(int c, char **v);
-void        launch();
+void        launch(bool prompt);
 
 #endif
