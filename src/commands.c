@@ -130,7 +130,7 @@ solve_parse_args(int c, char **v)
 	a->opts->print_number  = true;
 
 	for (i = 0; i < c; i++) {
-		if (!strcmp(v[i], "-m")) {
+		if (!strcmp(v[i], "-m") && i+1 < c) {
 			val = strtol(v[++i], NULL, 10);
 			if (val < 0 || val > 100) {
 				fprintf(stderr,
@@ -139,7 +139,7 @@ solve_parse_args(int c, char **v)
 				return a;
 			}
 			a->opts->min_moves = val;
-		} else if (!strcmp(v[i], "-M")) {
+		} else if (!strcmp(v[i], "-M") && i+1 < c) {
 			val = strtol(v[++i], NULL, 10);
 			if (val < 0 || val > 100) {
 				fprintf(stderr,
@@ -148,7 +148,7 @@ solve_parse_args(int c, char **v)
 				return a;
 			}
 			a->opts->max_moves = val;
-		} else if (!strcmp(v[i], "-t")) {
+		} else if (!strcmp(v[i], "-t") && i+1 < c) {
 			val = strtol(v[++i], NULL, 10);
 			if (val < 1 || val > 64) {
 				fprintf(stderr,
@@ -157,7 +157,7 @@ solve_parse_args(int c, char **v)
 				return a;
 			}
 			a->opts->nthreads = val;
-		} else if (!strcmp(v[i], "-s")) {
+		} else if (!strcmp(v[i], "-s") && i+1 < c) {
 			val = strtol(v[++i], NULL, 10);
 			if (val < 1 || val > 1000000) {
 				fprintf(stderr,
