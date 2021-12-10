@@ -29,8 +29,6 @@ It's more of a personal reminder than anything else.
 
 ### New features
 * cleanup: translate an alg to the standard HTM moveset + reorient at the end
-* batch mode: read list of commands from stdin or a file and exec them
-  one after the other non-interactively
 * configurability: add an `alias` command, run config file at startup
 
 ## Distribution
