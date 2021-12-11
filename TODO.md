@@ -23,6 +23,7 @@ It's more of a personal reminder than anything else.
 
 ### Improvements to currently implemented commands
 * batch mode: add separator / info on which command it is executing
+(also change man page for this)
 * solve should re-orient first if needed and not just give up if centers are off
 * solve should try up to a small bound without loading the large pruning table
 * drfin for HTR scrambles should try all 3 axis and pick the best solutions;

@@ -641,23 +641,22 @@ where_is_corner(Cube cube, Corner c)
 }
 
 Edge
-where_is_edge(Cube cube, Edge e)
+where_is_edge(Cube c, Edge e)
 {
-	/* TODO: when I wrote this code I forgot to add the final
-		 part, and now I can't remember how it was supposed to
-		 work (i.e. how to recover the location of the edge
-		 from these tables. I think it is either very easy or
-		 wrong, in any case it is not a priority now.
-		 Future Seba can deal with it.
+	int r0, r1, r2;
 
 	static bool initialized = false;
-	static Edge aux[3][FACTORIAL12/FACTORIAL8][12];
-	static int i;
+	static int aux[3][BINOM12ON4*FACTORIAL4][12];
+	static int i, j;
 	static unsigned int ui;
 	static CubeArray *arr;
 
 	if (!initialized) {
-		for (ui = 0; ui < FACTORIAL12/FACTORIAL8; ui++) {
+		for (ui = 0; ui < BINOM12ON4*FACTORIAL4; ui++) {
+			for (i = 0; i < 3; i++)
+				for (j = 0; j < 12; j++)
+					aux[i][ui][j] = -1;
+				
 			arr = new_cubearray((Cube){.epose = ui}, pf_e);
 			for (i = 0; i < 12; i++)
 				if (edge_slice(arr->ep[i]) == 0)
@@ -679,14 +678,9 @@ where_is_edge(Cube cube, Edge e)
 
 		initialized = true;
 	}
-	*/
 
-	int i;
-	CubeArray *arr = new_cubearray(cube, pf_ep);
-
-	for (i = 0; i < 12; i++)
-		if ((Edge)arr->ep[i] == e)
-			return i;
-
-	return -1;
+	r0 = aux[0][c.epose][e];
+	r1 = aux[1][c.eposs][e];
+	r2 = aux[2][c.eposm][e];
+	return MAX(r0, MAX(r1, r2));
 }
