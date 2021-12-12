@@ -1,6 +1,21 @@
 #include "cube.h"
 
-/* Public functions implementation *******************************************/
+/* Local functions ***********************************************************/
+
+static void             init_inverse();
+static bool             read_invtables_file();
+static bool             write_invtables_file();
+
+/* Tables ********************************************************************/
+
+static uint16_t         eo_invtable_e[POW2TO11][BINOM12ON4*FACTORIAL4];
+static uint16_t         eo_invtable_s[POW2TO11][BINOM12ON4*FACTORIAL4];
+static uint16_t         eo_invtable_m[POW2TO11][BINOM12ON4*FACTORIAL4];
+static uint16_t         co_invtable[POW3TO7][FACTORIAL8];
+static uint16_t         cp_invtable[FACTORIAL8];
+static uint16_t         cpos_invtable[FACTORIAL6];
+
+/* Functions implementation **************************************************/
 
 int
 array_ep_to_epos(int *ep, int *ss)
@@ -284,6 +299,7 @@ equal(Cube c1, Cube c2)
 	       c1.cpos  == c2.cpos;
 }
 
+/*
 Cube
 inverse_cube(Cube cube)
 {
@@ -316,6 +332,37 @@ inverse_cube(Cube cube)
 	ret = arrays_to_cube(inv, pf_all);
 	free_cubearray(arr, pf_all);
 	free_cubearray(inv, pf_all);
+
+	return ret;
+}
+*/
+
+Cube
+inverse_cube(Cube cube)
+{
+	CubeArray inv;
+	Cube ret;
+	int i, ep[12];
+
+	for (i = 0; i < 12; i++)
+		ep[i] = where_is_edge(cube, i);
+	inv = (CubeArray){.ep = ep};
+	ret = arrays_to_cube(&inv, pf_ep);
+
+	ret.eofb = ((int)eo_invtable_e[cube.eofb][cube.epose]) |
+		   ((int)eo_invtable_m[cube.eofb][cube.eposm]) |
+		   ((int)eo_invtable_s[cube.eofb][cube.eposs]);
+	ret.eorl = ((int)eo_invtable_e[cube.eorl][cube.epose]) |
+		   ((int)eo_invtable_m[cube.eorl][cube.eposm]) |
+		   ((int)eo_invtable_s[cube.eorl][cube.eposs]);
+	ret.eoud = ((int)eo_invtable_e[cube.eoud][cube.epose]) |
+		   ((int)eo_invtable_m[cube.eoud][cube.eposm]) |
+		   ((int)eo_invtable_s[cube.eoud][cube.eposs]);
+	ret.cp   = cp_invtable[cube.cp];
+	ret.cpos = cpos_invtable[cube.cpos];
+	ret.coud = co_invtable[cube.coud][cube.cp];
+	ret.corl = co_invtable[cube.corl][cube.cp];
+	ret.cofb = co_invtable[cube.cofb][cube.cp];
 
 	return ret;
 }
@@ -683,4 +730,175 @@ where_is_edge(Cube c, Edge e)
 	r1 = aux[1][c.eposs][e];
 	r2 = aux[2][c.eposm][e];
 	return MAX(r0, MAX(r1, r2));
+}
+
+static bool
+read_invtables_file()
+{
+	init_env();
+
+	FILE *f;
+	char fname[strlen(tabledir)+20];
+	int b;
+	unsigned int ui, meeo, meco, mecp, mecpos;
+	bool r;
+
+	strcpy(fname, tabledir);
+	strcat(fname, "/invtables");
+
+	if ((f = fopen(fname, "rb")) == NULL)
+		return false;
+
+	b = sizeof(uint16_t);
+	r = true;
+	meeo = BINOM12ON4*FACTORIAL4;
+	meco = FACTORIAL8;
+	mecp = FACTORIAL8;
+	mecpos = FACTORIAL6;
+
+	for (ui = 0; ui < POW2TO11; ui++) {
+		r = r && fread(eo_invtable_e[ui], b, meeo, f) == meeo;
+		r = r && fread(eo_invtable_m[ui], b, meeo, f) == meeo;
+		r = r && fread(eo_invtable_s[ui], b, meeo, f) == meeo;
+	}
+
+	for (ui = 0; ui < POW3TO7; ui++) {
+		r = r && fread(co_invtable[ui], b, meco, f) == meco;
+	}
+
+	r = r && fread(cp_invtable,   b, mecp,   f) == mecp;
+	r = r && fread(cpos_invtable, b, mecpos, f) == mecpos;
+
+	fclose(f);
+	return r;
+}
+
+static bool
+write_invtables_file()
+{
+	init_env();
+
+	FILE *f;
+	char fname[strlen(tabledir)+20];
+	unsigned int ui, meeo, meco, mecp, mecpos;
+	int b;
+	bool r;
+
+	strcpy(fname, tabledir);
+	strcat(fname, "/invtables");
+
+	if ((f = fopen(fname, "wb")) == NULL)
+		return false;
+
+	b = sizeof(uint16_t);
+	r = true;
+	meeo = BINOM12ON4*FACTORIAL4;
+	meco = FACTORIAL8;
+	mecp = FACTORIAL8;
+	mecpos = FACTORIAL6;
+
+	for (ui = 0; ui < POW2TO11; ui++) {
+		r = r && fwrite(eo_invtable_e[ui], b, meeo, f) == meeo;
+		r = r && fwrite(eo_invtable_m[ui], b, meeo, f) == meeo;
+		r = r && fwrite(eo_invtable_s[ui], b, meeo, f) == meeo;
+	}
+
+	for (ui = 0; ui < POW3TO7; ui++) {
+		r = r && fwrite(co_invtable[ui], b, meco, f) == meco;
+	}
+
+	r = r && fwrite(cp_invtable,   b, mecp,   f) == mecp;
+	r = r && fwrite(cpos_invtable, b, mecpos, f) == mecpos;
+
+	fclose(f);
+	return r;
+}
+
+void
+init_inverse()
+{
+	static bool initialized = false;
+	if (initialized)
+		return;
+	initialized = true;
+
+	if (read_invtables_file())
+		return;
+
+	fprintf(stderr, "Cannot load invtables, generating it\n");
+
+	CubeArray *aux, *inv;
+	Cube c;
+	int i, j, eoaux[12], eoinv[12];
+	unsigned int ui, uj;
+
+	aux = new_cubearray((Cube){0}, pf_all);
+	inv = new_cubearray((Cube){0}, pf_all);
+
+	for (ui = 0; ui < POW2TO11; ui++) {
+		int_to_sum_zero_array(ui, 2, 12, eoaux);
+		for (uj = 0; uj < BINOM12ON4*FACTORIAL4; uj++) {
+			for (j = 0; j < 12; j++)
+				eoinv[j] = 0;
+			c = (Cube){.epose = uj, .eposm = 0, .eposs = 0};
+			eoinv[FR] = eoaux[where_is_edge(c, FR)];
+			eoinv[FL] = eoaux[where_is_edge(c, FL)];
+			eoinv[BL] = eoaux[where_is_edge(c, BL)];
+			eoinv[BR] = eoaux[where_is_edge(c, BR)];
+			eo_invtable_e[ui][uj] = digit_array_to_int(eoinv,11,2);
+ 
+			for (j = 0; j < 12; j++)
+				eoinv[j] = 0;
+			c = (Cube){.epose = 0, .eposm = uj, .eposs = 0};
+			eoinv[UF] = eoaux[where_is_edge(c, UF)];
+			eoinv[UB] = eoaux[where_is_edge(c, UB)];
+			eoinv[DF] = eoaux[where_is_edge(c, DF)];
+			eoinv[DB] = eoaux[where_is_edge(c, DB)];
+			eo_invtable_m[ui][uj] = digit_array_to_int(eoinv,11,2);
+ 
+			for (j = 0; j < 12; j++)
+				eoinv[j] = 0;
+			c = (Cube){.epose = 0, .eposm = 0, .eposs = uj};
+			eoinv[UL] = eoaux[where_is_edge(c, UL)];
+			eoinv[UR] = eoaux[where_is_edge(c, UR)];
+			eoinv[DL] = eoaux[where_is_edge(c, DL)];
+			eoinv[DR] = eoaux[where_is_edge(c, DR)];
+			eo_invtable_s[ui][uj] = digit_array_to_int(eoinv,11,2);
+		}
+	}
+
+	for (ui = 0; ui < FACTORIAL8; ui++) {
+		cube_to_arrays((Cube){.cp = ui}, aux, pf_cp);
+		for (i = 0; i < 8; i++)
+			inv->cp[aux->cp[i]] = i;
+		cp_invtable[ui] = (uint16_t)arrays_to_cube(inv, pf_cp).cp;
+
+		for (uj = 0; uj < POW3TO7; uj++) {
+			cube_to_arrays((Cube){.coud = uj}, aux, pf_coud);
+			for (i = 0; i < 8; i++)
+				inv->coud[aux->cp[i]] = (3-aux->coud[i])%3;
+			co_invtable[uj][ui] =
+			    (uint16_t)arrays_to_cube(inv, pf_coud).coud;
+		}
+	}
+	
+	for (ui = 0; ui < FACTORIAL6; ui++) {
+		cube_to_arrays((Cube){.cpos = ui}, aux, pf_cpos);
+		for (i = 0; i < 6; i++)
+			inv->cpos[aux->cpos[i]] = i;
+		cpos_invtable[ui] =
+		    (uint16_t)arrays_to_cube(inv, pf_cpos).cpos;
+	}
+
+	free_cubearray(aux, pf_all);
+	free_cubearray(inv, pf_all);
+
+	if (!write_invtables_file())
+		fprintf(stderr, "Error writing invtables\n");
+}
+
+void
+init_cube()
+{
+	init_inverse();
 }

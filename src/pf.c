@@ -78,3 +78,18 @@ pf_co = {
 	.corl  = true,
 	.coud  = true
 };
+
+PieceFilter
+pf_coud = {
+	.coud  = true
+};
+
+PieceFilter
+pf_edges = {
+	.epose = true,
+	.eposs = true,
+	.eposm = true,
+	.eofb  = true,
+	.eorl  = true,
+	.eoud  = true
+};

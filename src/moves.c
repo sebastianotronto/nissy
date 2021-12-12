@@ -384,6 +384,8 @@ init_moves() {
 	Move m;
 	Alg *equiv_alg[NMOVES];
 
+	init_cube();
+
 	for (i = 0; i < NMOVES; i++)
 		equiv_alg[i] = new_alg(equiv_alg_string[i]);
 

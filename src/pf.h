@@ -14,5 +14,7 @@ extern PieceFilter pf_s;
 extern PieceFilter pf_m;
 extern PieceFilter pf_eo;
 extern PieceFilter pf_co;
+extern PieceFilter pf_coud;
+extern PieceFilter pf_edges;
 
 #endif

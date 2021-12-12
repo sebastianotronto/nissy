@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <time.h>
 
+#include "env.h"
 #include "pf.h"
 #include "utils.h"
 
@@ -36,6 +37,8 @@ int         what_orientation_edge(int eo, Edge e);
 Center      where_is_center(Cube cube, Center c);
 Corner      where_is_corner(Cube cube, Corner c);
 Edge        where_is_edge(Cube cube, Edge e);
+
+void        init_cube();
 
 #endif
 
