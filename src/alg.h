@@ -30,6 +30,8 @@ AlgList *   new_alglist();
 Alg *       on_inverse(Alg *alg);
 void        print_alg(Alg *alg, bool l);
 void        print_alglist(AlgList *al, bool l);
+void        swapmove(Move *m1, Move *m2);
+void        unniss(Alg *alg);
 
 #endif
 

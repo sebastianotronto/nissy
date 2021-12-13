@@ -81,9 +81,8 @@ typedef struct commandargs        CommandArgs;
 typedef struct coordinate         Coordinate;
 typedef struct cube               Cube;
 typedef struct cubearray          CubeArray;
-typedef struct dfsdata            DfsData;
+typedef struct dfsarg             DfsArg;
 typedef struct estimatedata       EstimateData;
-typedef struct localinfo          LocalInfo;
 typedef struct piecefilter        PieceFilter;
 typedef struct prunedata          PruneData;
 typedef struct solveoptions       SolveOptions;
@@ -94,7 +93,7 @@ typedef struct threaddatagenpt    ThreadDataGenpt;
 
 typedef Cube                 (*AntiIndexer)      (uint64_t);
 typedef bool                 (*Checker)          (Cube);
-typedef int                  (*Estimator)        (EstimateData *);
+typedef int                  (*Estimator)        (DfsArg *);
 typedef bool                 (*Validator)        (Alg *);
 typedef void                 (*Exec)             (CommandArgs *);
 typedef uint64_t             (*Indexer)          (Cube);
@@ -198,35 +197,30 @@ cubearray
 };
 
 struct
-dfsdata
+dfsarg
 {
+	Step *                    step;
+	SolveOptions *            opts;
+	Cube                      cube;
+	Cube                      inverse;
 	int                       d;
-	int                       m;
-	int                       lb;
+	uint64_t                  badmoves;
+	uint64_t                  badmovesinv;
 	bool                      niss;
 	Move                      last1;
 	Move                      last2;
+	Move                      last1inv;
+	Move                      last2inv;
 	EstimateData *            ed;
 	AlgList *                 sols;
 	pthread_mutex_t *         sols_mutex;
 	Alg *                     current_alg;
 	Move *                    sorted_moves;
 	int *                     move_position;
-	uint8_t *                 visited;
 };
 
 struct
 estimatedata
-{
-	Cube                      cube;
-	int                       target;
-	Move                      lastmove;
-	uint64_t                  movebitmask;
-	LocalInfo *               li;
-};
-
-struct
-localinfo
 {
 	int                       corners;
 	int                       normal_ud;
@@ -235,7 +229,7 @@ localinfo
 	int                       inverse_ud;
 	int                       inverse_fb;
 	int                       inverse_rl;
-	int                       prev_ret;
+	int                       oldret;
 };
 
 struct
@@ -284,6 +278,8 @@ step
 {
 	char *                    shortname;
 	char *                    name;
+	bool                      final;
+	Checker                   is_done;
 	Estimator                 estimate;
 	Checker                   ready;
 	char *                    ready_msg;

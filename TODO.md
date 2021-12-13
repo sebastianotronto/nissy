@@ -28,6 +28,7 @@ It's more of a personal reminder than anything else.
 * solve should try up to a small bound without loading the large pruning table
 * drfin for HTR scrambles should try all 3 axis and pick the best solutions;
   in general every step that automatically detects orientation should do this
+* for solve -v, print certain info like average branching value
 
 ### New features
 * cleanup: translate an alg to the standard HTM moveset + reorient at the end

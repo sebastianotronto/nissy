@@ -272,7 +272,17 @@ swap(int *a, int *b)
 	int aux;
 
 	aux = *a;
-	*a = *b;
-	*b = aux;
+	*a  = *b;
+	*b  = aux;
+}
+
+void
+swapu64(uint64_t *a, uint64_t *b)
+{
+	uint64_t aux;
+
+	aux = *a;
+	*a  = *b;
+	*b  = aux;
 }
 

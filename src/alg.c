@@ -373,3 +373,35 @@ realloc_alg(Alg *alg, int n)
 	alg->allocated = n;
 }
 
+void
+swapmove(Move *m1, Move *m2)
+{
+	Move aux;
+
+	aux = *m1;
+	*m1 = *m2;
+	*m2 = aux;
+}
+
+void
+unniss(Alg *alg)
+{
+	int i;
+	Alg *aux;
+
+	aux = new_alg("");
+
+	for (i = 0; i < alg->len; i++)
+		if (!alg->inv[i])
+			append_move(aux, alg->move[i], false);
+	
+	for (i = alg->len-1; i >= 0; i--)
+		if (alg->inv[i])
+			append_move(aux, inverse_move(alg->move[i]), false);
+	
+	for (i = 0; i < alg->len; i++) {
+		alg->move[i] = aux->move[i];
+		alg->inv[i]  = false;
+	}
+	free(aux);
+}

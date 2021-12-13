@@ -5,28 +5,37 @@
 /* Checkers, estimators and validators ***************************************/
 
 static bool             check_centers(Cube cube);
+static bool             check_coany_HTM(Cube cube);
+static bool             check_coud_HTM(Cube cube);
+static bool             check_coany_URF(Cube cube);
+static bool             check_coud_URF(Cube cube);
+static bool             check_corners_HTM(Cube cube);
+static bool             check_corners_URF(Cube cube);
+static bool             check_cornershtr(Cube cube);
+static bool             check_eoany(Cube cube);
 static bool             check_eofb(Cube cube);
+static bool             check_drany(Cube cube);
 static bool             check_drud(Cube cube);
 static bool             check_htr(Cube cube);
 
-static int              estimate_eoany_HTM(EstimateData *ed);
-static int              estimate_eofb_HTM(EstimateData *ed);
-static int              estimate_coany_HTM(EstimateData *ed);
-static int              estimate_coud_HTM(EstimateData *ed);
-static int              estimate_coany_URF(EstimateData *ed);
-static int              estimate_coud_URF(EstimateData *ed);
-static int              estimate_corners_HTM(EstimateData *ed);
-static int              estimate_cornershtr_HTM(EstimateData *ed);
-static int              estimate_corners_URF(EstimateData *ed);
-static int              estimate_cornershtr_URF(EstimateData *ed);
-static int              estimate_drany_HTM(EstimateData *ed);
-static int              estimate_drud_HTM(EstimateData *ed);
-static int              estimate_drud_eofb(EstimateData *ed);
-static int              estimate_dr_eofb(EstimateData *ed);
-static int              estimate_drudfin_drud(EstimateData *ed);
-static int              estimate_htr_drud(EstimateData *ed);
-static int              estimate_htrfin_htr(EstimateData *ed);
-static int              estimate_optimal_HTM(EstimateData *ed);
+static int              estimate_eoany_HTM(DfsArg *arg);
+static int              estimate_eofb_HTM(DfsArg *arg);
+static int              estimate_coany_HTM(DfsArg *arg);
+static int              estimate_coud_HTM(DfsArg *arg);
+static int              estimate_coany_URF(DfsArg *arg);
+static int              estimate_coud_URF(DfsArg *arg);
+static int              estimate_corners_HTM(DfsArg *arg);
+static int              estimate_cornershtr_HTM(DfsArg *arg);
+static int              estimate_corners_URF(DfsArg *arg);
+static int              estimate_cornershtr_URF(DfsArg *arg);
+static int              estimate_drany_HTM(DfsArg *arg);
+static int              estimate_drud_HTM(DfsArg *arg);
+static int              estimate_drud_eofb(DfsArg *arg);
+static int              estimate_dr_eofb(DfsArg *arg);
+static int              estimate_drudfin_drud(DfsArg *arg);
+static int              estimate_htr_drud(DfsArg *arg);
+static int              estimate_htrfin_htr(DfsArg *arg);
+static int              estimate_optimal_HTM(DfsArg *arg);
 
 static bool             always_valid(Alg *alg);
 static bool             validate_singlecw_ending(Alg *alg);
@@ -51,6 +60,8 @@ optimal_HTM = {
 	.shortname = "optimal",
 	.name      = "Optimal solve (in HTM)",
 
+	.final     = true,
+	.is_done   = is_solved,
 	.estimate  = estimate_optimal_HTM,
 	.ready     = check_centers,
 	.ready_msg = check_centers_msg,
@@ -69,6 +80,8 @@ eoany_HTM = {
 	.shortname = "eo",
 	.name      = "EO on any axis",
 
+	.final     = false,
+	.is_done   = check_eoany,
 	.estimate  = estimate_eoany_HTM,
 	.ready     = check_centers,
 	.ready_msg = check_centers_msg,
@@ -86,6 +99,8 @@ eofb_HTM = {
 	.shortname = "eofb",
 	.name      = "EO on F/B",
 
+	.final     = false,
+	.is_done   = check_eofb,
 	.estimate  = estimate_eofb_HTM,
 	.ready     = check_centers,
 	.ready_msg = check_centers_msg,
@@ -103,6 +118,8 @@ eorl_HTM = {
 	.shortname = "eorl",
 	.name      = "EO on R/L",
 
+	.final     = false,
+	.is_done   = check_eofb,
 	.estimate  = estimate_eofb_HTM,
 	.ready     = check_centers,
 	.ready_msg = check_centers_msg,
@@ -120,6 +137,8 @@ eoud_HTM = {
 	.shortname = "eoud",
 	.name      = "EO on U/D",
 
+	.final     = false,
+	.is_done   = check_eofb,
 	.estimate  = estimate_eofb_HTM,
 	.ready     = check_centers,
 	.ready_msg = check_centers_msg,
@@ -138,6 +157,8 @@ coany_HTM = {
 	.shortname = "co",
 	.name      = "CO on any axis",
 
+	.final     = false,
+	.is_done   = check_coany_HTM,
 	.estimate  = estimate_coany_HTM,
 	.ready     = NULL,
 	.is_valid  = validate_singlecw_ending,
@@ -154,6 +175,8 @@ coud_HTM = {
 	.shortname = "coud",
 	.name      = "CO on U/D",
 
+	.final     = false,
+	.is_done   = check_coud_HTM,
 	.estimate  = estimate_coud_HTM,
 	.ready     = NULL,
 	.is_valid  = validate_singlecw_ending,
@@ -170,6 +193,8 @@ corl_HTM = {
 	.shortname = "corl",
 	.name      = "CO on R/L",
 
+	.final     = false,
+	.is_done   = check_coud_HTM,
 	.estimate  = estimate_coud_HTM,
 	.ready     = NULL,
 	.is_valid  = validate_singlecw_ending,
@@ -186,6 +211,8 @@ cofb_HTM = {
 	.shortname = "cofb",
 	.name      = "CO on F/B",
 
+	.final     = false,
+	.is_done   = check_coud_HTM,
 	.estimate  = estimate_coud_HTM,
 	.ready     = NULL,
 	.is_valid  = validate_singlecw_ending,
@@ -202,6 +229,8 @@ coany_URF = {
 	.shortname = "co-URF",
 	.name      = "CO any axis (URF moveset)",
 
+	.final     = false,
+	.is_done   = check_coany_URF,
 	.estimate  = estimate_coany_URF,
 	.ready     = NULL,
 	.is_valid  = validate_singlecw_ending,
@@ -218,6 +247,8 @@ coud_URF = {
 	.shortname = "coud-URF",
 	.name      = "CO on U/D (URF moveset)",
 
+	.final     = false,
+	.is_done   = check_coud_URF,
 	.estimate  = estimate_coud_URF,
 	.ready     = NULL,
 	.is_valid  = validate_singlecw_ending,
@@ -234,6 +265,8 @@ corl_URF = {
 	.shortname = "corl-URF",
 	.name      = "CO on R/L (URF moveset)",
 
+	.final     = false,
+	.is_done   = check_coud_URF,
 	.estimate  = estimate_coud_URF,
 	.ready     = NULL,
 	.is_valid  = validate_singlecw_ending,
@@ -250,6 +283,8 @@ cofb_URF = {
 	.shortname = "cofb-URF",
 	.name      = "CO on F/B (URF moveset)",
 
+	.final     = false,
+	.is_done   = check_coud_URF,
 	.estimate  = estimate_coud_URF,
 	.ready     = NULL,
 	.is_valid  = validate_singlecw_ending,
@@ -267,6 +302,8 @@ cornershtr_HTM = {
 	.shortname = "chtr",
 	.name      = "Solve corners to HTR state",
 
+	.final     = false,
+	.is_done   = check_cornershtr,
 	.estimate  = estimate_cornershtr_HTM,
 	.ready     = NULL,
 	.is_valid  = validate_singlecw_ending,
@@ -283,6 +320,8 @@ cornershtr_URF = {
 	.shortname = "chtr-URF",
 	.name      = "Solve corners to HTR state (URF moveset)",
 
+	.final     = false,
+	.is_done   = check_cornershtr,
 	.estimate  = estimate_cornershtr_URF,
 	.ready     = NULL,
 	.is_valid  = validate_singlecw_ending,
@@ -299,6 +338,8 @@ corners_HTM = {
 	.shortname = "corners",
 	.name      = "Solve corners",
 
+	.final     = true,
+	.is_done   = check_corners_HTM,
 	.estimate  = estimate_corners_HTM,
 	.ready     = NULL,
 	.is_valid  = always_valid,
@@ -315,6 +356,8 @@ corners_URF = {
 	.shortname = "corners-URF",
 	.name      = "Solve corners (URF moveset)",
 
+	.final     = true, /* TODO: check if this works with reorient */
+	.is_done   = check_corners_URF,
 	.estimate  = estimate_corners_URF,
 	.ready     = NULL,
 	.is_valid  = always_valid,
@@ -332,6 +375,8 @@ drany_HTM = {
 	.shortname = "dr",
 	.name      = "DR on any axis",
 
+	.final     = false,
+	.is_done   = check_drany,
 	.estimate  = estimate_drany_HTM,
 	.ready     = check_centers,
 	.ready_msg = check_centers_msg,
@@ -349,6 +394,8 @@ drud_HTM = {
 	.shortname = "drud",
 	.name      = "DR on U/D",
 
+	.final     = false,
+	.is_done   = check_drud,
 	.estimate  = estimate_drud_HTM,
 	.ready     = check_centers,
 	.ready_msg = check_centers_msg,
@@ -366,6 +413,8 @@ drrl_HTM = {
 	.shortname = "drrl",
 	.name      = "DR on R/L",
 
+	.final     = false,
+	.is_done   = check_drud,
 	.estimate  = estimate_drud_HTM,
 	.ready     = check_centers,
 	.ready_msg = check_centers_msg,
@@ -383,6 +432,8 @@ drfb_HTM = {
 	.shortname = "drfb",
 	.name      = "DR on F/B",
 
+	.final     = false,
+	.is_done   = check_drud,
 	.estimate  = estimate_drud_HTM,
 	.ready     = check_centers,
 	.ready_msg = check_centers_msg,
@@ -401,6 +452,8 @@ dr_eo = {
 	.shortname = "dr-eo",
 	.name      = "DR without breaking EO (automatically detected)",
 
+	.final     = false,
+	.is_done   = check_drud,
 	.estimate  = estimate_dr_eofb,
 	.ready     = check_eofb,
 	.ready_msg = check_eo_msg,
@@ -418,6 +471,8 @@ dr_eofb = {
 	.shortname = "dr-eofb",
 	.name      = "DR on U/D or R/L without breaking EO on F/B",
 
+	.final     = false,
+	.is_done   = check_drud,
 	.estimate  = estimate_dr_eofb,
 	.ready     = check_eofb,
 	.ready_msg = check_eo_msg,
@@ -435,6 +490,8 @@ dr_eorl = {
 	.shortname = "dr-eorl",
 	.name      = "DR on U/D or F/B without breaking EO on R/L",
 
+	.final     = false,
+	.is_done   = check_drud,
 	.estimate  = estimate_dr_eofb,
 	.ready     = check_eofb,
 	.ready_msg = check_eo_msg,
@@ -452,6 +509,8 @@ dr_eoud = {
 	.shortname = "dr-eoud",
 	.name      = "DR on R/L or F/B without breaking EO on U/D",
 
+	.final     = false,
+	.is_done   = check_drud,
 	.estimate  = estimate_dr_eofb,
 	.ready     = check_eofb,
 	.ready_msg = check_eo_msg,
@@ -469,6 +528,8 @@ drud_eofb = {
 	.shortname = "drud-eofb",
 	.name      = "DR on U/D without breaking EO on F/B",
 
+	.final     = false,
+	.is_done   = check_drud,
 	.estimate  = estimate_drud_eofb,
 	.ready     = check_eofb,
 	.ready_msg = check_eo_msg,
@@ -486,6 +547,8 @@ drrl_eofb = {
 	.shortname = "drrl-eofb",
 	.name      = "DR on R/L without breaking EO on F/B",
 
+	.final     = false,
+	.is_done   = check_drud,
 	.estimate  = estimate_drud_eofb,
 	.ready     = check_eofb,
 	.ready_msg = check_eo_msg,
@@ -503,6 +566,8 @@ drud_eorl = {
 	.shortname = "drud-eorl",
 	.name      = "DR on U/D without breaking EO on R/L",
 
+	.final     = false,
+	.is_done   = check_drud,
 	.estimate  = estimate_drud_eofb,
 	.ready     = check_eofb,
 	.ready_msg = check_eo_msg,
@@ -520,6 +585,8 @@ drfb_eorl = {
 	.shortname = "drfb-eorl",
 	.name      = "DR on F/B without breaking EO on R/L",
 
+	.final     = false,
+	.is_done   = check_drud,
 	.estimate  = estimate_drud_eofb,
 	.ready     = check_eofb,
 	.ready_msg = check_eo_msg,
@@ -537,6 +604,8 @@ drfb_eoud = {
 	.shortname = "drfb-eoud",
 	.name      = "DR on F/B without breaking EO on U/D",
 
+	.final     = false,
+	.is_done   = check_drud,
 	.estimate  = estimate_drud_eofb,
 	.ready     = check_eofb,
 	.ready_msg = check_eo_msg,
@@ -554,6 +623,8 @@ drrl_eoud = {
 	.shortname = "drrl-eoud",
 	.name      = "DR on R/L without breaking EO on U/D",
 
+	.final     = false,
+	.is_done   = check_drud,
 	.estimate  = estimate_drud_eofb,
 	.ready     = check_eofb,
 	.ready_msg = check_eo_msg,
@@ -572,6 +643,8 @@ dranyfin_DR = {
 	.shortname = "drfin",
 	.name      = "DR finish on any axis without breaking DR",
 
+	.final     = true,
+	.is_done   = is_solved,
 	.estimate  = estimate_drudfin_drud,
 	.ready     = check_drud,
 	.ready_msg = check_drany_msg,
@@ -589,6 +662,8 @@ drudfin_drud = {
 	.shortname = "drudfin",
 	.name      = "DR finish on U/D without breaking DR",
 
+	.final     = true,
+	.is_done   = is_solved,
 	.estimate  = estimate_drudfin_drud,
 	.ready     = check_drud,
 	.ready_msg = check_dr_msg,
@@ -606,6 +681,8 @@ drrlfin_drrl = {
 	.shortname = "drrlfin",
 	.name      = "DR finish on R/L without breaking DR",
 
+	.final     = true,
+	.is_done   = is_solved,
 	.estimate  = estimate_drudfin_drud,
 	.ready     = check_drud,
 	.ready_msg = check_dr_msg,
@@ -623,6 +700,8 @@ drfbfin_drfb = {
 	.shortname = "drfbfin",
 	.name      = "DR finish on F/B without breaking DR",
 
+	.final     = true,
+	.is_done   = is_solved,
 	.estimate  = estimate_drudfin_drud,
 	.ready     = check_drud,
 	.ready_msg = check_dr_msg,
@@ -641,6 +720,8 @@ htr_any = {
 	.shortname = "htr",
 	.name      = "HTR from DR",
 
+	.final     = false,
+	.is_done   = check_htr,
 	.estimate  = estimate_htr_drud,
 	.ready     = check_drud,
 	.ready_msg = check_drany_msg,
@@ -658,6 +739,8 @@ htr_drud = {
 	.shortname = "htr-drud",
 	.name      = "HTR from DR on U/D",
 
+	.final     = false,
+	.is_done   = check_htr,
 	.estimate  = estimate_htr_drud,
 	.ready     = check_drud,
 	.ready_msg = check_dr_msg,
@@ -675,6 +758,8 @@ htr_drrl = {
 	.shortname = "htr-drrl",
 	.name      = "HTR from DR on R/L",
 
+	.final     = false,
+	.is_done   = check_htr,
 	.estimate  = estimate_htr_drud,
 	.ready     = check_drud,
 	.ready_msg = check_dr_msg,
@@ -692,6 +777,8 @@ htr_drfb = {
 	.shortname = "htr-drfb",
 	.name      = "HTR from DR on F/B",
 
+	.final     = false,
+	.is_done   = check_htr,
 	.estimate  = estimate_htr_drud,
 	.ready     = check_drud,
 	.ready_msg = check_dr_msg,
@@ -710,6 +797,8 @@ htrfin_htr = {
 	.shortname = "htrfin",
 	.name      = "HTR finish without breaking HTR",
 
+	.final     = true,
+	.is_done   = is_solved,
 	.estimate  = estimate_htrfin_htr,
 	.ready     = check_htr,
 	.ready_msg = check_htr_msg,
@@ -783,9 +872,86 @@ check_centers(Cube cube)
 }
 
 static bool
+check_coany_HTM(Cube cube)
+{
+	return cube.cofb == 0 || cube.corl == 0 || cube.coud == 0;
+}
+
+static bool
+check_coud_HTM(Cube cube)
+{
+	return cube.coud == 0;
+}
+
+static bool
+check_coany_URF(Cube cube)
+{
+	Cube c2, c3;
+
+	c2 = apply_move(y, apply_move(z, cube));
+	c3 = apply_move(y, apply_move(x, cube));
+
+	return check_coany_HTM(cube) ||
+	       check_coany_HTM(c2)   ||
+	       check_coany_HTM(c3);
+}
+
+static bool
+check_coud_URF(Cube cube)
+{
+	Cube c2, c3;
+
+	c2 = apply_move(z, cube);
+	c3 = apply_move(x, cube);
+
+	return cube.coud == 0 || c2.coud == 0 || c3.coud == 0;
+}
+
+static bool
+check_corners_URF(Cube cube)
+{
+	Cube c;
+	Trans i;
+
+	for (i = 0; i < NROTATIONS; i++) {
+		c = apply_alg(rotation_alg(i), cube);
+		if (c.cp && c.coud)
+			return true;
+	}
+
+	return false;
+}
+
+static bool
+check_corners_HTM(Cube cube)
+{
+	return cube.cp == 0 && cube.coud == 0;
+}
+
+static bool
+check_cornershtr(Cube cube)
+{
+	return coord_cornershtr.index(cube) == 0;
+}
+
+static bool
+check_eoany(Cube cube)
+{
+	return cube.eofb == 0 || cube.eorl == 0 || cube.eoud == 0;
+}
+
+static bool
 check_eofb(Cube cube)
 {
 	return cube.eofb == 0;
+}
+
+static bool
+check_drany(Cube cube)
+{
+	return (cube.eofb == 0 && cube.eorl == 0 && cube.coud == 0) ||
+	       (cube.eorl == 0 && cube.eoud == 0 && cube.cofb == 0) ||
+	       (cube.eoud == 0 && cube.eofb == 0 && cube.corl == 0);
 }
 
 static bool
@@ -801,265 +967,283 @@ check_htr(Cube cube)
 }
 
 static int
-estimate_eoany_HTM(EstimateData *ed)
+estimate_eoany_HTM(DfsArg *arg)
 {
 	int r1, r2, r3;
 
-	r1 = ptableval(&pd_eofb_HTM, ed->cube);
-	r2 = ptableval(&pd_eofb_HTM, apply_trans(ur, ed->cube));
-	r3 = ptableval(&pd_eofb_HTM, apply_trans(fd, ed->cube));
+	r1 = ptableval(&pd_eofb_HTM, arg->cube);
+	r2 = ptableval(&pd_eofb_HTM, apply_trans(ur, arg->cube));
+	r3 = ptableval(&pd_eofb_HTM, apply_trans(fd, arg->cube));
 
 	return MIN(r1, MIN(r2, r3));
 }
 
 static int
-estimate_eofb_HTM(EstimateData *ed)
+estimate_eofb_HTM(DfsArg *arg)
 {
-	return ptableval(&pd_eofb_HTM, ed->cube);
+	return ptableval(&pd_eofb_HTM, arg->cube);
 }
 
 static int
-estimate_coany_HTM(EstimateData *ed)
+estimate_coany_HTM(DfsArg *arg)
 {
 	int r1, r2, r3;
 
-	r1 = ptableval(&pd_coud_HTM, ed->cube);
-	r2 = ptableval(&pd_coud_HTM, apply_trans(rf, ed->cube));
-	r3 = ptableval(&pd_coud_HTM, apply_trans(fd, ed->cube));
+	r1 = ptableval(&pd_coud_HTM, arg->cube);
+	r2 = ptableval(&pd_coud_HTM, apply_trans(rf, arg->cube));
+	r3 = ptableval(&pd_coud_HTM, apply_trans(fd, arg->cube));
 
 	return MIN(r1, MIN(r2, r3));
 }
 
 static int
-estimate_coud_HTM(EstimateData *ed)
+estimate_coud_HTM(DfsArg *arg)
 {
-	return ptableval(&pd_coud_HTM, ed->cube);
+	return ptableval(&pd_coud_HTM, arg->cube);
 }
 
 static int
-estimate_coany_URF(EstimateData *ed)
+estimate_coany_URF(DfsArg *arg)
 {
 	int r1, r2, r3;
-	EstimateData *ed2, *ed3;
+	Cube c;
 
-	ed2 = malloc(sizeof(EstimateData));
-	ed3 = malloc(sizeof(EstimateData));
+	c = arg->cube;
 
-	ed2->cube = apply_trans(rf, ed->cube);
-	ed2->target = ed->target;
+	r1 = estimate_coud_URF(arg);
+	arg->cube = apply_trans(rf, c);
+	r2 = estimate_coud_URF(arg);
+	arg->cube = apply_trans(fd, c);
+	r3 = estimate_coud_URF(arg);
 
-	ed3->cube = apply_trans(fd, ed->cube);
-	ed3->target = ed->target;
-
-	r1 = estimate_coud_URF(ed);
-	r2 = estimate_coud_URF(ed2);
-	r3 = estimate_coud_URF(ed3);
-
-	free(ed2);
-	free(ed3);
+	arg->cube = c;
 
 	return MIN(r1, MIN(r2, r3));
 }
 
 static int
-estimate_coud_URF(EstimateData *ed)
+estimate_coud_URF(DfsArg *arg)
 {
 	/* TODO: I can improve this by checking first the orientation of
 	 * the corner in DBL and use that as a reference */
 
-	EstimateData *ed2, *ed3;
+	Cube c;
 
-	ed2 = malloc(sizeof(EstimateData));
-	ed2->cube = apply_move(z, ed->cube);
-	ed2->target = ed->target;
+	c = arg->cube;
 
-	ed3 = malloc(sizeof(EstimateData));
-	ed3->cube = apply_move(x, ed->cube);
-	ed3->target = ed->target;
+	int ud = estimate_coud_HTM(arg);
+	arg->cube = apply_move(z, c);
+	int rl = estimate_coud_HTM(arg);
+	arg->cube = apply_move(x, c);
+	int fb = estimate_coud_HTM(arg);
 
-	int ud = estimate_coud_HTM(ed);
-	int rl = estimate_coud_HTM(ed2);
-	int fb = estimate_coud_HTM(ed3);
-
-	free(ed2);
-	free(ed3);
+	arg->cube = c;
 
 	return MIN(ud, MIN(rl, fb));
 }
 
 static int
-estimate_corners_HTM(EstimateData *ed)
+estimate_corners_HTM(DfsArg *arg)
 {
-	return ptableval(&pd_corners_HTM, ed->cube);
+	return ptableval(&pd_corners_HTM, arg->cube);
 }
 
 static int
-estimate_cornershtr_HTM(EstimateData *ed)
+estimate_cornershtr_HTM(DfsArg *arg)
 {
-	return ptableval(&pd_cornershtr_HTM, ed->cube);
+	return ptableval(&pd_cornershtr_HTM, arg->cube);
 }
 
 static int
-estimate_cornershtr_URF(EstimateData *ed)
+estimate_cornershtr_URF(DfsArg *arg)
 {
 	/* TODO: I can improve this by checking first the corner in DBL
 	 * and use that as a reference */
 
-	int c, ret = 15;
+	int ret;
+	Cube c;
 	Trans i;
 
+	c = arg->cube;
+	ret = 15;
+
 	for (i = 0; i < NROTATIONS; i++) {
-		ed->cube = apply_alg(rotation_alg(i), ed->cube);
-		c = estimate_cornershtr_HTM(ed);
-		ret = MIN(ret, c);
+		arg->cube = apply_alg(rotation_alg(i), c);
+		ret = MIN(ret, estimate_cornershtr_HTM(arg));
 	}
+
+	arg->cube = c;
 
 	return ret;
 }
 
 static int
-estimate_corners_URF(EstimateData *ed)
+estimate_corners_URF(DfsArg *arg)
 {
 	/* TODO: I can improve this by checking first the corner in DBL
 	 * and use that as a reference */
 
-	int c, ret = 15;
+	int ret;
+	Cube c;
 	Trans i;
 
+	c = arg->cube;
+	ret = 15;
+
 	for (i = 0; i < NROTATIONS; i++) {
-		ed->cube = apply_alg(rotation_alg(i), ed->cube);
-		c = estimate_corners_HTM(ed);
-		ret = MIN(ret, c);
+		arg->cube = apply_alg(rotation_alg(i), c);
+		ret = MIN(ret, estimate_corners_HTM(arg));
 	}
+
+	arg->cube = c;
 
 	return ret;
 }
 
 static int
-estimate_drany_HTM(EstimateData *ed)
+estimate_drany_HTM(DfsArg *arg)
 {
 	int r1, r2, r3;
 
-	r1 = ptableval(&pd_drud_sym16_HTM, ed->cube);
-	r2 = ptableval(&pd_drud_sym16_HTM, apply_trans(rf, ed->cube));
-	r3 = ptableval(&pd_drud_sym16_HTM, apply_trans(fd, ed->cube));
+	r1 = ptableval(&pd_drud_sym16_HTM, arg->cube);
+	r2 = ptableval(&pd_drud_sym16_HTM, apply_trans(rf, arg->cube));
+	r3 = ptableval(&pd_drud_sym16_HTM, apply_trans(fd, arg->cube));
 
 	return MIN(r1, MIN(r2, r3));
 }
 
 static int
-estimate_drud_HTM(EstimateData *ed)
+estimate_drud_HTM(DfsArg *arg)
 {
-	return ptableval(&pd_drud_sym16_HTM, ed->cube);
+	return ptableval(&pd_drud_sym16_HTM, arg->cube);
 }
 
 static int
-estimate_drud_eofb(EstimateData *ed)
+estimate_drud_eofb(DfsArg *arg)
 {
-	return ptableval(&pd_drud_eofb, ed->cube);
+	return ptableval(&pd_drud_eofb, arg->cube);
 }
 
 static int
-estimate_dr_eofb(EstimateData *ed)
+estimate_dr_eofb(DfsArg *arg)
 {
 	int r1, r2;
 
-	r1 = ptableval(&pd_drud_eofb, ed->cube);
-	r2 = ptableval(&pd_drud_eofb, apply_trans(rf, ed->cube));
+	r1 = ptableval(&pd_drud_eofb, arg->cube);
+	r2 = ptableval(&pd_drud_eofb, apply_trans(rf, arg->cube));
 
 	return MIN(r1, r2);
 }
 
 static int
-estimate_drudfin_drud(EstimateData *ed)
+estimate_drudfin_drud(DfsArg *arg)
 {
-	int val = ptableval(&pd_drudfin_noE_sym16_drud, ed->cube);
+	int val = ptableval(&pd_drudfin_noE_sym16_drud, arg->cube);
 
 	if (val != 0)
 		return val;
 
-	return ed->cube.epose % 24 == 0 ? 0 : 1;
+	return arg->cube.epose % 24 == 0 ? 0 : 1;
 }
 
 static int
-estimate_htr_drud(EstimateData *ed)
+estimate_htr_drud(DfsArg *arg)
 {
-	return ptableval(&pd_htr_drud, ed->cube);
+	return ptableval(&pd_htr_drud, arg->cube);
 }
 
 static int
-estimate_htrfin_htr(EstimateData *ed)
+estimate_htrfin_htr(DfsArg *arg)
 {
-	return ptableval(&pd_htrfin_htr, ed->cube);
+	return ptableval(&pd_htrfin_htr, arg->cube);
 }
 
 static int
-estimate_optimal_HTM(EstimateData *ed)
+estimate_optimal_HTM(DfsArg *arg)
 {
-	int ret = -1;
+	int target, ret;
 	Move lbase;
-	Cube cubeaux, inv;
+	Cube aux;
 
-	ed->li->corners = ptableval(&pd_corners_HTM, ed->cube);
-	UPDATECHECKSTOP(ret, ed->li->corners, ed->target);
+	target = arg->d - arg->current_alg->len;
+	ret = -1;
+	arg->inverse = (Cube){0};
+	arg->badmovesinv = 0;
+	arg->badmoves = 0;
 
-	ed->li->normal_ud = ptableval(&pd_khuge_HTM, ed->cube);
-	UPDATECHECKSTOP(ret, ed->li->normal_ud, ed->target);
+	arg->ed->corners = ptableval(&pd_corners_HTM, arg->cube);
+	UPDATECHECKSTOP(ret, arg->ed->corners, target);
 
-	cubeaux = apply_trans(fd, ed->cube);
-	ed->li->normal_fb = ptableval(&pd_khuge_HTM, cubeaux);
-	UPDATECHECKSTOP(ret, ed->li->normal_fb, ed->target);
+	arg->ed->normal_ud = ptableval(&pd_khuge_HTM, arg->cube);
+	UPDATECHECKSTOP(ret, arg->ed->normal_ud, target);
+	if (arg->ed->normal_ud == target) {
+		arg->badmovesinv |= (1<<U) | (1<<U2) | (1<<U3) |
+			            (1<<D) | (1<<D2) | (1<<D3);
+	}
 
-	cubeaux = apply_trans(rf, ed->cube);
-	ed->li->normal_rl = ptableval(&pd_khuge_HTM, cubeaux);
-	UPDATECHECKSTOP(ret, ed->li->normal_rl, ed->target);
+	aux = apply_trans(fd, arg->cube);
+	arg->ed->normal_fb = ptableval(&pd_khuge_HTM, aux);
+	UPDATECHECKSTOP(ret, arg->ed->normal_fb, target);
+	if (arg->ed->normal_fb == target) {
+		arg->badmovesinv |= (1<<F) | (1<<F2) | (1<<F3) |
+			            (1<<B) | (1<<B2) | (1<<B3);
+	}
+
+	aux = apply_trans(rf, arg->cube);
+	arg->ed->normal_rl = ptableval(&pd_khuge_HTM, aux);
+	UPDATECHECKSTOP(ret, arg->ed->normal_rl, target);
+	if (arg->ed->normal_rl == target) {
+		arg->badmovesinv |= (1<<R) | (1<<R2) | (1<<R3) |
+			            (1<<L) | (1<<L2) | (1<<L3);
+	}
 
 	if (ret == 0)
 		return ret;
 
-	if (ed->li->normal_ud == ed->li->normal_fb &&
-	    ed->li->normal_fb == ed->li->normal_rl)
-		UPDATECHECKSTOP(ret, ed->li->normal_ud + 1, ed->target);
+	if (arg->ed->normal_ud == arg->ed->normal_fb &&
+	    arg->ed->normal_fb == arg->ed->normal_rl)
+		UPDATECHECKSTOP(ret, arg->ed->normal_ud + 1, target);
 
 	/* TODO: avoid computation of inverse if unnecessary */
-	lbase = base_move(ed->lastmove);
-	inv = inverse_cube(ed->cube);
+	lbase = base_move(arg->last1);
+	arg->inverse = inverse_cube(arg->cube);
 
-	if ((lbase != U && lbase != D) ||
-	    (ed->li->inverse_ud == -1)) {
-		ed->li->inverse_ud = ptableval(&pd_khuge_HTM, inv);
+	if ((lbase != U && lbase != D) || (arg->ed->inverse_ud == -1)) {
+		arg->ed->inverse_ud = ptableval(&pd_khuge_HTM, arg->inverse);
 	}
-	UPDATECHECKSTOP(ret, ed->li->inverse_ud, ed->target);
+	UPDATECHECKSTOP(ret, arg->ed->inverse_ud, target);
 
-	if ((lbase != F && lbase != B) ||
-	    (ed->li->inverse_fb == -1)) {
-		cubeaux = apply_trans(fd, inv);
-		ed->li->inverse_fb = ptableval(&pd_khuge_HTM, cubeaux);
+	if ((lbase != F && lbase != B) || (arg->ed->inverse_fb == -1)) {
+		aux = apply_trans(fd, arg->inverse);
+		arg->ed->inverse_fb = ptableval(&pd_khuge_HTM, aux);
 	}
-	UPDATECHECKSTOP(ret, ed->li->inverse_fb, ed->target);
+	UPDATECHECKSTOP(ret, arg->ed->inverse_fb, target);
 
-	if ((lbase != R && lbase != L) ||
-	    (ed->li->inverse_rl == -1)) {
-		cubeaux = apply_trans(rf, inv);
-		ed->li->inverse_rl = ptableval(&pd_khuge_HTM, cubeaux);
+	if ((lbase != R && lbase != L) || (arg->ed->inverse_rl == -1)) {
+		aux = apply_trans(rf, arg->inverse);
+		arg->ed->inverse_rl = ptableval(&pd_khuge_HTM, aux);
 	}
-	UPDATECHECKSTOP(ret, ed->li->inverse_rl, ed->target);
+	UPDATECHECKSTOP(ret, arg->ed->inverse_rl, target);
 
-	if (ed->li->inverse_ud == ed->li->inverse_fb &&
-	    ed->li->inverse_fb == ed->li->inverse_rl)
-		UPDATECHECKSTOP(ret, ed->li->inverse_ud + 1, ed->target);
+	if (arg->ed->inverse_ud == arg->ed->inverse_fb &&
+	    arg->ed->inverse_fb == arg->ed->inverse_rl) {
+		UPDATECHECKSTOP(ret, arg->ed->inverse_ud + 1, target);
+	}
 
-	if (ed->li->inverse_ud == ed->target)
-		ed->movebitmask |= (1<<U) | (1<<U2) | (1<<U3) |
-				   (1<<D) | (1<<D2) | (1<<D3);
-	if (ed->li->inverse_fb == ed->target)
-		ed->movebitmask |= (1<<F) | (1<<F2) | (1<<F3) |
-				   (1<<B) | (1<<B2) | (1<<B3);
-	if (ed->li->inverse_rl == ed->target)
-		ed->movebitmask |= (1<<R) | (1<<R2) | (1<<R3) |
-				   (1<<L) | (1<<L2) | (1<<L3);
+	if (arg->ed->inverse_ud == target) {
+		arg->badmoves |= (1<<U) | (1<<U2) | (1<<U3) |
+				 (1<<D) | (1<<D2) | (1<<D3);
+	}
+	if (arg->ed->inverse_fb == target) {
+		arg->badmoves |= (1<<F) | (1<<F2) | (1<<F3) |
+				 (1<<B) | (1<<B2) | (1<<B3);
+	}
+	if (arg->ed->inverse_rl == target) {
+		arg->badmoves |= (1<<R) | (1<<R2) | (1<<R3) |
+				 (1<<L) | (1<<L2) | (1<<L3);
+	}
 
-	return ret;
+	return arg->ed->oldret = ret;
 }
 
 static bool
@@ -1120,15 +1304,36 @@ detect_pretrans_drud(Cube cube)
 /* Public functions **********************************************************/
 
 void
-free_localinfo(LocalInfo *li)
+copy_estimatedata(EstimateData *src, EstimateData *dst)
 {
-	free(li);
+	dst->corners    = src->corners;
+	dst->normal_ud  = src->normal_ud;
+	dst->normal_fb  = src->normal_fb;
+	dst->normal_rl  = src->normal_rl;
+	dst->inverse_ud = src->inverse_ud;
+	dst->inverse_fb = src->inverse_fb;
+	dst->inverse_rl = src->inverse_rl;
+	dst->oldret     = src->oldret;
 }
 
-LocalInfo *
-new_localinfo()
+void
+free_estimatedata(EstimateData *ed)
 {
-	LocalInfo *ret = malloc(sizeof(LocalInfo));
+	free(ed);
+}
+
+void
+invert_estimatedata(EstimateData *ed)
+{
+	swap(&(ed->normal_ud), &(ed->inverse_ud));
+	swap(&(ed->normal_fb), &(ed->inverse_fb));
+	swap(&(ed->normal_rl), &(ed->inverse_rl));
+}
+
+EstimateData *
+new_estimatedata()
+{
+	EstimateData *ret = malloc(sizeof(EstimateData));
 
 	ret->corners    = -1;
 	ret->normal_ud  = -1;
@@ -1137,16 +1342,22 @@ new_localinfo()
 	ret->inverse_ud = -1;
 	ret->inverse_fb = -1;
 	ret->inverse_rl = -1;
-	ret->prev_ret   = -1;
+	ret->oldret     = -1;
 
 	return ret;
 }
 
 void
-prepare_step(Step *step, int nthreads)
+prepare_step(Step *step, SolveOptions *opts)
 {
 	int i;
 
+	if (step->final && opts->can_niss) {
+		opts->can_niss = false;
+		fprintf(stderr, "Step if final, niss not used"
+				"(-n ignored)\n");
+	}
+
 	for (i = 0; i < step->ntables; i++)
-		genptable(step->tables[i], nthreads);
+		genptable(step->tables[i], opts->nthreads);
 }

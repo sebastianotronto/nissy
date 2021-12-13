@@ -2,6 +2,7 @@
 #define UTILS_H
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -37,5 +38,6 @@ int         powint(int a, int b);
 int         subset_to_index(int *a, int n, int k);
 void        sum_arrays_mod(int *src, int *dst, int n, int m);
 void        swap(int *a, int *b);
+void        swapu64(uint64_t *a, uint64_t *b);
 
 #endif
