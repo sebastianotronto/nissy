@@ -55,7 +55,7 @@ exec_args(int c, char **v)
 }
 
 void
-launch(bool prompt)
+launch(bool batchmode)
 {
 	int i, shell_argc;
 	char line[MAXLINELEN], **shell_argv;
@@ -64,18 +64,27 @@ launch(bool prompt)
 	for (i = 0; i < MAXNTOKENS; i++)
 		shell_argv[i] = malloc((MAXTOKENLEN+1) * sizeof(char));
 
-	if (prompt) {
+	if (!batchmode) {
 		fprintf(stderr, "Welcome to Nissy "VERSION".\n"
 				"Type \"commands\" for a list of commands.\n");
 	}
 
 	while (true) {
-		if (prompt) {
+		if (!batchmode) {
 			fprintf(stdout, "nissy-# ");
 		}
+
 		if (fgets(line, MAXLINELEN, stdin) == NULL)
 			break;
+
+		if (batchmode) {
+			printf(">>>\n"
+			       ">>> Executing command: %s"
+			       ">>>\n", line);
+		}
+
 		shell_argc = parseline(line, shell_argv);
+
 		if (shell_argc > 0)
 			exec_args(shell_argc, shell_argv);
 	}
@@ -90,12 +99,12 @@ main(int argc, char *argv[])
 {
 	if (argc > 1) {
 		if (!strcmp(argv[1], "-b")) {
-			launch(false);
+			launch(true);
 		} else {
 			exec_args(argc-1, &argv[1]);
 		}
 	} else {
-		launch(true);
+		launch(false);
 	}
 
 	return 0;
