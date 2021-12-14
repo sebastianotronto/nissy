@@ -14,9 +14,6 @@ It's more of a personal reminder than anything else.
 * invert an alg
 
 ### More steps for `solve`
-* "slow" optimal solver, using drud table but all the tricks
-  of khuge (+ trick to avoid 180° moves when one of the inverse
-  probes returns exactly the target value)
 * QTM optimal solving
 * Block-building steps (cross, roux blocks, ...)
 * Other common steps (LSE, ...)

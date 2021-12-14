@@ -20,11 +20,12 @@ solutions for EO/DR/HTR or similar substeps.
 
 ## Requirements
 
-A full installation of nissy requires about 1.8Gb of space, of which 1.6Gb are
-occupied by the huge pruning table for optimal solving, and running it requires
-the same amount of RAM.
-One can choose to never use the optimal solver and not to install the relative
-pruning table. If so, about 200Mb should be enough.
+A full installation of nissy requires a little more than 2Gb of space,
+of which 1.6Gb are occupied by the huge pruning table for fast optimal solving,
+and running it requires the same amount of RAM.
+One can choose to never use this function and not to install the relative
+pruning table. There is an alternative (about 5 times slower)
+optimal solving function that uses about 500Mb of RAM.
 
 ## Installation
 

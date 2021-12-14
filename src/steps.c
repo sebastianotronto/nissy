@@ -36,6 +36,7 @@ static int              estimate_drudfin_drud(DfsArg *arg);
 static int              estimate_htr_drud(DfsArg *arg);
 static int              estimate_htrfin_htr(DfsArg *arg);
 static int              estimate_optimal_HTM(DfsArg *arg);
+static int              estimate_light_HTM(DfsArg *arg);
 
 static bool             always_valid(Alg *alg);
 static bool             validate_singlecw_ending(Alg *alg);
@@ -55,6 +56,7 @@ static char check_drany_msg[100]   = "DR must be solved on at least one axis";
 
 /* Steps *********************************************************************/
 
+/* Optimal solvers *******************/
 Step
 optimal_HTM = {
 	.shortname = "optimal",
@@ -71,6 +73,25 @@ optimal_HTM = {
 	.pre_trans = uf,
 
 	.tables    = {&pd_khuge_HTM, &pd_corners_HTM},
+	.ntables   = 2,
+};
+
+Step
+optimal_light_HTM = {
+	.shortname = "light",
+	.name      = "Optimal solve (in HTM), small table (500Mb RAM total)",
+
+	.final     = true,
+	.is_done   = is_solved,
+	.estimate  = estimate_light_HTM,
+	.ready     = check_centers,
+	.ready_msg = check_centers_msg,
+	.is_valid  = always_valid,
+	.moveset   = moveset_HTM,
+
+	.pre_trans = uf,
+
+	.tables    = {&pd_drud_sym16_HTM, &pd_corners_HTM},
 	.ntables   = 2,
 };
 
@@ -813,6 +834,7 @@ htrfin_htr = {
 
 Step *steps[NSTEPS] = {
 	&optimal_HTM, /* first is default */
+	&optimal_light_HTM,
 
 	&eoany_HTM,
 	&eofb_HTM,
@@ -1162,7 +1184,6 @@ static int
 estimate_optimal_HTM(DfsArg *arg)
 {
 	int target, ret;
-	Move bl1;
 	Cube aux;
 
 	static const uint64_t udmask = (1<<U) | (1<<U2) | (1<<U3) |
@@ -1174,7 +1195,6 @@ estimate_optimal_HTM(DfsArg *arg)
 
 	ret              = -1;
 	target           = arg->d - arg->current_alg->len;
-	bl1              = base_move(arg->last1);
 	arg->inverse     = (Cube){0};
 	arg->badmovesinv = 0;
 	arg->badmoves    = 0;
@@ -1204,17 +1224,17 @@ estimate_optimal_HTM(DfsArg *arg)
 	}
 
 	/* Inverse probing */
-	arg->inverse = inverse_cube(arg->cube);
-	if ((bl1 != U && bl1 != D) || (arg->ed->inverse_ud == -1)) {
-		arg->ed->inverse_ud = ptableval(&pd_khuge_HTM, arg->inverse);
+	aux = arg->inverse = inverse_cube(arg->cube);
+	if (!((1<<arg->last1) & udmask) || (arg->ed->inverse_ud == -1)) {
+		arg->ed->inverse_ud = ptableval(&pd_khuge_HTM, aux);
 	}
 	UPDATECHECKSTOP(ret, arg->ed->inverse_ud, target);
-	if ((bl1 != F && bl1 != B) || (arg->ed->inverse_fb == -1)) {
+	if (!((1<<arg->last1) & fbmask) || (arg->ed->inverse_fb == -1)) {
 		aux = apply_trans(fd, arg->inverse);
 		arg->ed->inverse_fb = ptableval(&pd_khuge_HTM, aux);
 	}
 	UPDATECHECKSTOP(ret, arg->ed->inverse_fb, target);
-	if ((bl1 != R && bl1 != L) || (arg->ed->inverse_rl == -1)) {
+	if (!((1<<arg->last1) & rlmask) || (arg->ed->inverse_rl == -1)) {
 		aux = apply_trans(rf, arg->inverse);
 		arg->ed->inverse_rl = ptableval(&pd_khuge_HTM, aux);
 	}
@@ -1240,6 +1260,98 @@ estimate_optimal_HTM(DfsArg *arg)
 		arg->badmoves |= fbmask;
 	if (arg->ed->inverse_rl == target)
 		arg->badmoves |= rlmask;
+
+	return arg->ed->oldret = ret;
+}
+
+static int
+estimate_light_HTM(DfsArg *arg)
+{
+	int target, ret;
+	Cube aux;
+
+	static const uint64_t udmask = (1<<U) | (1<<U2) | (1<<U3) |
+				       (1<<D) | (1<<D2) | (1<<D3);
+	static const uint64_t rlmask = (1<<R) | (1<<R2) | (1<<R3) |
+				       (1<<L) | (1<<L2) | (1<<L3);
+	static const uint64_t fbmask = (1<<F) | (1<<F2) | (1<<F3) |
+				       (1<<B) | (1<<B2) | (1<<B3);
+	static const uint64_t htmask = (1<<U2) | (1<<D2) |
+				       (1<<R2) | (1<<L2) |
+				       (1<<F2) | (1<<B2);
+
+	ret              = -1;
+	target           = arg->d - arg->current_alg->len;
+	arg->inverse     = (Cube){0};
+	arg->badmovesinv = 0;
+	arg->badmoves    = 0;
+
+	/* Corners */
+	arg->ed->corners = ptableval(&pd_corners_HTM, arg->cube);
+	UPDATECHECKSTOP(ret, arg->ed->corners, target);
+
+	/* Normal probing */
+	arg->ed->normal_ud = ptableval(&pd_drud_sym16_HTM, arg->cube);
+	UPDATECHECKSTOP(ret, arg->ed->normal_ud, target);
+	aux = apply_trans(fd, arg->cube);
+	arg->ed->normal_fb = ptableval(&pd_drud_sym16_HTM, aux);
+	UPDATECHECKSTOP(ret, arg->ed->normal_fb, target);
+	aux = apply_trans(rf, arg->cube);
+	arg->ed->normal_rl = ptableval(&pd_drud_sym16_HTM, aux);
+	UPDATECHECKSTOP(ret, arg->ed->normal_rl, target);
+
+	/* If ret == 0, it's solved (corners + triple slice solved) */
+	if (ret == 0)
+		return 0;
+
+	/* Michel de Bondt's trick*/
+	if (arg->ed->normal_ud == arg->ed->normal_fb &&
+	    arg->ed->normal_fb == arg->ed->normal_rl) {
+		UPDATECHECKSTOP(ret, arg->ed->normal_ud + 1, target);
+	}
+
+	/* Inverse probing */
+	if (!((1<<arg->last1) & htmask)) {
+		aux = arg->inverse = inverse_cube(arg->cube);
+		if (!((1<<arg->last1) & udmask) || (arg->ed->inverse_ud==-1)) {
+			arg->ed->inverse_ud =
+			    ptableval(&pd_drud_sym16_HTM, aux);
+		}
+		UPDATECHECKSTOP(ret, arg->ed->inverse_ud, target);
+		if (!((1<<arg->last1) & fbmask) || (arg->ed->inverse_fb==-1)) {
+			aux = apply_trans(fd, arg->inverse);
+			arg->ed->inverse_fb =
+			    ptableval(&pd_drud_sym16_HTM, aux);
+		}
+		UPDATECHECKSTOP(ret, arg->ed->inverse_fb, target);
+		if (!((1<<arg->last1) & rlmask) || (arg->ed->inverse_rl==-1)) {
+			aux = apply_trans(rf, arg->inverse);
+			arg->ed->inverse_rl =
+			    ptableval(&pd_drud_sym16_HTM, aux);
+		}
+		UPDATECHECKSTOP(ret, arg->ed->inverse_rl, target);
+	}
+
+	/* Michel de Bondt's trick*/
+	if (arg->ed->inverse_ud == arg->ed->inverse_fb &&
+	    arg->ed->inverse_fb == arg->ed->inverse_rl) {
+		UPDATECHECKSTOP(ret, arg->ed->inverse_ud + 1, target);
+	}
+
+	/* nxopt trick + half turn trick */
+	if (arg->ed->normal_ud == target)
+		arg->badmovesinv |= udmask | htmask;
+	if (arg->ed->normal_fb == target)
+		arg->badmovesinv |= fbmask | htmask;
+	if (arg->ed->normal_rl == target)
+		arg->badmovesinv |= rlmask | htmask;
+
+	if (arg->ed->inverse_ud == target)
+		arg->badmoves |= udmask | htmask;
+	if (arg->ed->inverse_fb == target)
+		arg->badmoves |= fbmask | htmask;
+	if (arg->ed->inverse_rl == target)
+		arg->badmoves |= rlmask | htmask;
 
 	return arg->ed->oldret = ret;
 }
