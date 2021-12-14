@@ -1195,12 +1195,13 @@ estimate_optimal_HTM(DfsArg *arg)
 
 	/* If ret == 0, it's solved (corners + triple slice solved) */
 	if (ret == 0)
-		return ret;
+		return 0;
 
 	/* Michel de Bondt's trick*/
 	if (arg->ed->normal_ud == arg->ed->normal_fb &&
-	    arg->ed->normal_fb == arg->ed->normal_rl)
+	    arg->ed->normal_fb == arg->ed->normal_rl) {
 		UPDATECHECKSTOP(ret, arg->ed->normal_ud + 1, target);
+	}
 
 	/* Inverse probing */
 	arg->inverse = inverse_cube(arg->cube);
