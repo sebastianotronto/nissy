@@ -1165,6 +1165,13 @@ estimate_optimal_HTM(DfsArg *arg)
 	Move bl1;
 	Cube aux;
 
+	static const uint64_t udmask = (1<<U) | (1<<U2) | (1<<U3) |
+				       (1<<D) | (1<<D2) | (1<<D3);
+	static const uint64_t rlmask = (1<<R) | (1<<R2) | (1<<R3) |
+				       (1<<L) | (1<<L2) | (1<<L3);
+	static const uint64_t fbmask = (1<<F) | (1<<F2) | (1<<F3) |
+				       (1<<B) | (1<<B2) | (1<<B3);
+
 	ret              = -1;
 	target           = arg->d - arg->current_alg->len;
 	bl1              = base_move(arg->last1);
@@ -1219,31 +1226,19 @@ estimate_optimal_HTM(DfsArg *arg)
 	}
 
 	/* nxopt trick */
-	if (arg->ed->normal_ud == target) {
-		arg->badmovesinv |= (1<<U) | (1<<U2) | (1<<U3) |
-			            (1<<D) | (1<<D2) | (1<<D3);
-	}
-	if (arg->ed->normal_fb == target) {
-		arg->badmovesinv |= (1<<F) | (1<<F2) | (1<<F3) |
-			            (1<<B) | (1<<B2) | (1<<B3);
-	}
-	if (arg->ed->normal_rl == target) {
-		arg->badmovesinv |= (1<<R) | (1<<R2) | (1<<R3) |
-			            (1<<L) | (1<<L2) | (1<<L3);
-	}
+	if (arg->ed->normal_ud == target)
+		arg->badmovesinv |= udmask;
+	if (arg->ed->normal_fb == target)
+		arg->badmovesinv |= fbmask;
+	if (arg->ed->normal_rl == target)
+		arg->badmovesinv |= rlmask;
 
-	if (arg->ed->inverse_ud == target) {
-		arg->badmoves |= (1<<U) | (1<<U2) | (1<<U3) |
-				 (1<<D) | (1<<D2) | (1<<D3);
-	}
-	if (arg->ed->inverse_fb == target) {
-		arg->badmoves |= (1<<F) | (1<<F2) | (1<<F3) |
-				 (1<<B) | (1<<B2) | (1<<B3);
-	}
-	if (arg->ed->inverse_rl == target) {
-		arg->badmoves |= (1<<R) | (1<<R2) | (1<<R3) |
-				 (1<<L) | (1<<L2) | (1<<L3);
-	}
+	if (arg->ed->inverse_ud == target)
+		arg->badmoves |= udmask;
+	if (arg->ed->inverse_fb == target)
+		arg->badmoves |= fbmask;
+	if (arg->ed->inverse_rl == target)
+		arg->badmoves |= rlmask;
 
 	return arg->ed->oldret = ret;
 }
