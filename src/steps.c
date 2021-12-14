@@ -1162,72 +1162,74 @@ static int
 estimate_optimal_HTM(DfsArg *arg)
 {
 	int target, ret;
-	Move lbase;
+	Move bl1;
 	Cube aux;
 
-	target = arg->d - arg->current_alg->len;
-	ret = -1;
-	arg->inverse = (Cube){0};
+	ret              = -1;
+	target           = arg->d - arg->current_alg->len;
+	bl1              = base_move(arg->last1);
+	arg->inverse     = (Cube){0};
 	arg->badmovesinv = 0;
-	arg->badmoves = 0;
+	arg->badmoves    = 0;
 
+	/* Corners */
 	arg->ed->corners = ptableval(&pd_corners_HTM, arg->cube);
 	UPDATECHECKSTOP(ret, arg->ed->corners, target);
 
+	/* Normal probing */
 	arg->ed->normal_ud = ptableval(&pd_khuge_HTM, arg->cube);
 	UPDATECHECKSTOP(ret, arg->ed->normal_ud, target);
-	if (arg->ed->normal_ud == target) {
-		arg->badmovesinv |= (1<<U) | (1<<U2) | (1<<U3) |
-			            (1<<D) | (1<<D2) | (1<<D3);
-	}
-
 	aux = apply_trans(fd, arg->cube);
 	arg->ed->normal_fb = ptableval(&pd_khuge_HTM, aux);
 	UPDATECHECKSTOP(ret, arg->ed->normal_fb, target);
-	if (arg->ed->normal_fb == target) {
-		arg->badmovesinv |= (1<<F) | (1<<F2) | (1<<F3) |
-			            (1<<B) | (1<<B2) | (1<<B3);
-	}
-
 	aux = apply_trans(rf, arg->cube);
 	arg->ed->normal_rl = ptableval(&pd_khuge_HTM, aux);
 	UPDATECHECKSTOP(ret, arg->ed->normal_rl, target);
-	if (arg->ed->normal_rl == target) {
-		arg->badmovesinv |= (1<<R) | (1<<R2) | (1<<R3) |
-			            (1<<L) | (1<<L2) | (1<<L3);
-	}
 
+	/* If ret == 0, it's solved (corners + triple slice solved) */
 	if (ret == 0)
 		return ret;
 
+	/* Michel de Bondt's trick*/
 	if (arg->ed->normal_ud == arg->ed->normal_fb &&
 	    arg->ed->normal_fb == arg->ed->normal_rl)
 		UPDATECHECKSTOP(ret, arg->ed->normal_ud + 1, target);
 
-	/* TODO: avoid computation of inverse if unnecessary */
-	lbase = base_move(arg->last1);
+	/* Inverse probing */
 	arg->inverse = inverse_cube(arg->cube);
-
-	if ((lbase != U && lbase != D) || (arg->ed->inverse_ud == -1)) {
+	if ((bl1 != U && bl1 != D) || (arg->ed->inverse_ud == -1)) {
 		arg->ed->inverse_ud = ptableval(&pd_khuge_HTM, arg->inverse);
 	}
 	UPDATECHECKSTOP(ret, arg->ed->inverse_ud, target);
-
-	if ((lbase != F && lbase != B) || (arg->ed->inverse_fb == -1)) {
+	if ((bl1 != F && bl1 != B) || (arg->ed->inverse_fb == -1)) {
 		aux = apply_trans(fd, arg->inverse);
 		arg->ed->inverse_fb = ptableval(&pd_khuge_HTM, aux);
 	}
 	UPDATECHECKSTOP(ret, arg->ed->inverse_fb, target);
-
-	if ((lbase != R && lbase != L) || (arg->ed->inverse_rl == -1)) {
+	if ((bl1 != R && bl1 != L) || (arg->ed->inverse_rl == -1)) {
 		aux = apply_trans(rf, arg->inverse);
 		arg->ed->inverse_rl = ptableval(&pd_khuge_HTM, aux);
 	}
 	UPDATECHECKSTOP(ret, arg->ed->inverse_rl, target);
 
+	/* Michel de Bondt's trick*/
 	if (arg->ed->inverse_ud == arg->ed->inverse_fb &&
 	    arg->ed->inverse_fb == arg->ed->inverse_rl) {
 		UPDATECHECKSTOP(ret, arg->ed->inverse_ud + 1, target);
+	}
+
+	/* nxopt trick */
+	if (arg->ed->normal_ud == target) {
+		arg->badmovesinv |= (1<<U) | (1<<U2) | (1<<U3) |
+			            (1<<D) | (1<<D2) | (1<<D3);
+	}
+	if (arg->ed->normal_fb == target) {
+		arg->badmovesinv |= (1<<F) | (1<<F2) | (1<<F3) |
+			            (1<<B) | (1<<B2) | (1<<B3);
+	}
+	if (arg->ed->normal_rl == target) {
+		arg->badmovesinv |= (1<<R) | (1<<R2) | (1<<R3) |
+			            (1<<L) | (1<<L2) | (1<<L3);
 	}
 
 	if (arg->ed->inverse_ud == target) {

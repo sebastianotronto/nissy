@@ -28,6 +28,8 @@ It's more of a personal reminder than anything else.
 * solve should try up to a small bound without loading the large pruning table
 * drfin for HTR scrambles should try all 3 axis and pick the best solutions;
   in general every step that automatically detects orientation should do this
+* for solve -v, solving in different orientation does not give meaningful info,
+  because I need to transform the alg as I go.
 * for solve -v, print certain info like average branching value
 
 ### New features
@@ -43,11 +45,9 @@ It's more of a personal reminder than anything else.
 
 ## Technical stuff
 
-## Performance (optimal solver)
-* Khuge optimal solver: change direction of search when doing so leads to
-less branching (like nxopt). Need to add some info to EstimateData or to
-DfsData (like last moves on inverse/other scramble) and to change some of
-the logic of niss (allow for switching multiple times).
+## Performance
+* solve (allow_next): filter out based on base_move; only check once for each
+  triple of moves; how to deal with different movesets?
 * Light optimal solver: use drud table instead of khuge, with tricks as above
 and one more trick: if the last move is 180° avoid computing inverse cube
 and just use previous values for all 3 axes.
