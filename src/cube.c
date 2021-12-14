@@ -299,44 +299,6 @@ equal(Cube c1, Cube c2)
 	       c1.cpos  == c2.cpos;
 }
 
-/*
-Cube
-inverse_cube(Cube cube)
-{
-	CubeArray *arr, *inv;
-	Cube ret;
-	int i;
-
-	arr = new_cubearray((Cube){0}, pf_all);
-	inv = new_cubearray((Cube){0}, pf_all);
-
-	cube_to_arrays(cube, arr, pf_all);
-
-	for (i = 0; i < 12; i++) {
-		inv->ep[arr->ep[i]]   = i;
-		inv->eofb[arr->ep[i]] = arr->eofb[i];
-		inv->eorl[arr->ep[i]] = arr->eorl[i];
-		inv->eoud[arr->ep[i]] = arr->eoud[i];
-	}
-
-	for (i = 0; i < 8; i++) {
-		inv->cp[arr->cp[i]]   = i;
-		inv->coud[arr->cp[i]] = (3 - arr->coud[i]) % 3;
-		inv->corl[arr->cp[i]] = (3 - arr->corl[i]) % 3;
-		inv->cofb[arr->cp[i]] = (3 - arr->cofb[i]) % 3;
-	}
-
-	for (int i = 0; i < 6; i++)
-		inv->cpos[arr->cpos[i]] = i;
-
-	ret = arrays_to_cube(inv, pf_all);
-	free_cubearray(arr, pf_all);
-	free_cubearray(inv, pf_all);
-
-	return ret;
-}
-*/
-
 Cube
 inverse_cube(Cube cube)
 {
