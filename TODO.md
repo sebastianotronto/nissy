@@ -45,9 +45,13 @@ It's more of a personal reminder than anything else.
 ## Performance
 * solve (allow_next): filter out based on base_move; only check once for each
   triple of moves; how to deal with different movesets?
-* Light optimal solver: use drud table instead of khuge, with tricks as above
-and one more trick: if the last move is 180° avoid computing inverse cube
-and just use previous values for all 3 axes.
+* try htr corners + edges in slice but not oriented (300Mb table);
+  de Bondt's trick does not work, but I can use full symmetry and
+  take advantage of the fact that it is a subset invariant under half-turns
+  (like in light optimal solver)
+* Another idea: DR + cornershtr (5Gb table); same as above, de Bondt's trick
+  does not work but I can use half-turn trick
+* On the contrary: DR + separate UD corners allow dB's trick, but no ht-trick
 
 ## Coordinates, symmetries, pruning tables
 * Cleanup symcoord.c: some coordinates and symdata are never actually used;

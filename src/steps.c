@@ -1330,6 +1330,10 @@ estimate_light_HTM(DfsArg *arg)
 			    ptableval(&pd_drud_sym16_HTM, aux);
 		}
 		UPDATECHECKSTOP(ret, arg->ed->inverse_rl, target);
+	} else {
+		UPDATECHECKSTOP(ret, arg->ed->inverse_ud, target);
+		UPDATECHECKSTOP(ret, arg->ed->inverse_fb, target);
+		UPDATECHECKSTOP(ret, arg->ed->inverse_rl, target);
 	}
 
 	/* Michel de Bondt's trick*/
