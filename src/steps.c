@@ -36,7 +36,10 @@ static int              estimate_drudfin_drud(DfsArg *arg);
 static int              estimate_htr_drud(DfsArg *arg);
 static int              estimate_htrfin_htr(DfsArg *arg);
 static int              estimate_optimal_HTM(DfsArg *arg);
+static int              estimate_nxopt31_HTM(DfsArg *arg);
 static int              estimate_light_HTM(DfsArg *arg);
+
+static int              estimate_nxoptlike(DfsArg *arg, PruneData *pd);
 
 static bool             always_valid(Alg *alg);
 static bool             validate_singlecw_ending(Alg *alg);
@@ -68,11 +71,30 @@ optimal_HTM = {
 	.ready     = check_centers,
 	.ready_msg = check_centers_msg,
 	.is_valid  = always_valid,
-	.moveset   = moveset_HTM,
+	.moveset   = &moveset_HTM,
 
 	.pre_trans = uf,
 
 	.tables    = {&pd_khuge_HTM, &pd_corners_HTM},
+	.ntables   = 2,
+};
+
+Step
+optimal_nxopt31_HTM = {
+	.shortname = "nxopt31",
+	.name      = "Optimal solve (in HTM), nxopt31 table",
+
+	.final     = true,
+	.is_done   = is_solved,
+	.estimate  = estimate_nxopt31_HTM,
+	.ready     = check_centers,
+	.ready_msg = check_centers_msg,
+	.is_valid  = always_valid,
+	.moveset   = &moveset_HTM,
+
+	.pre_trans = uf,
+
+	.tables    = {&pd_nxopt31_HTM, &pd_corners_HTM},
 	.ntables   = 2,
 };
 
@@ -87,7 +109,7 @@ optimal_light_HTM = {
 	.ready     = check_centers,
 	.ready_msg = check_centers_msg,
 	.is_valid  = always_valid,
-	.moveset   = moveset_HTM,
+	.moveset   = &moveset_HTM,
 
 	.pre_trans = uf,
 
@@ -107,7 +129,7 @@ eoany_HTM = {
 	.ready     = check_centers,
 	.ready_msg = check_centers_msg,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_HTM,
+	.moveset   = &moveset_HTM,
 
 	.pre_trans = uf,
 
@@ -126,7 +148,7 @@ eofb_HTM = {
 	.ready     = check_centers,
 	.ready_msg = check_centers_msg,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_HTM,
+	.moveset   = &moveset_HTM,
 
 	.pre_trans = uf,
 
@@ -145,7 +167,7 @@ eorl_HTM = {
 	.ready     = check_centers,
 	.ready_msg = check_centers_msg,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_HTM,
+	.moveset   = &moveset_HTM,
 
 	.pre_trans = ur,
 
@@ -164,7 +186,7 @@ eoud_HTM = {
 	.ready     = check_centers,
 	.ready_msg = check_centers_msg,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_HTM,
+	.moveset   = &moveset_HTM,
 
 	.pre_trans = fd,
 
@@ -183,7 +205,7 @@ coany_HTM = {
 	.estimate  = estimate_coany_HTM,
 	.ready     = NULL,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_HTM,
+	.moveset   = &moveset_HTM,
 
 	.pre_trans = uf,
 
@@ -201,7 +223,7 @@ coud_HTM = {
 	.estimate  = estimate_coud_HTM,
 	.ready     = NULL,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_HTM,
+	.moveset   = &moveset_HTM,
 
 	.pre_trans = uf,
 
@@ -219,7 +241,7 @@ corl_HTM = {
 	.estimate  = estimate_coud_HTM,
 	.ready     = NULL,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_HTM,
+	.moveset   = &moveset_HTM,
 
 	.pre_trans = rf,
 
@@ -237,7 +259,7 @@ cofb_HTM = {
 	.estimate  = estimate_coud_HTM,
 	.ready     = NULL,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_HTM,
+	.moveset   = &moveset_HTM,
 
 	.pre_trans = fd,
 
@@ -255,7 +277,7 @@ coany_URF = {
 	.estimate  = estimate_coany_URF,
 	.ready     = NULL,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_URF,
+	.moveset   = &moveset_URF,
 
 	.pre_trans = uf,
 
@@ -273,7 +295,7 @@ coud_URF = {
 	.estimate  = estimate_coud_URF,
 	.ready     = NULL,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_URF,
+	.moveset   = &moveset_URF,
 
 	.pre_trans = uf,
 
@@ -291,7 +313,7 @@ corl_URF = {
 	.estimate  = estimate_coud_URF,
 	.ready     = NULL,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_URF,
+	.moveset   = &moveset_URF,
 
 	.pre_trans = rf,
 
@@ -309,7 +331,7 @@ cofb_URF = {
 	.estimate  = estimate_coud_URF,
 	.ready     = NULL,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_URF,
+	.moveset   = &moveset_URF,
 
 	.pre_trans = fd,
 
@@ -328,7 +350,7 @@ cornershtr_HTM = {
 	.estimate  = estimate_cornershtr_HTM,
 	.ready     = NULL,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_HTM,
+	.moveset   = &moveset_HTM,
 
 	.pre_trans = uf,
 
@@ -346,7 +368,7 @@ cornershtr_URF = {
 	.estimate  = estimate_cornershtr_URF,
 	.ready     = NULL,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_URF,
+	.moveset   = &moveset_URF,
 
 	.pre_trans = uf,
 
@@ -364,7 +386,7 @@ corners_HTM = {
 	.estimate  = estimate_corners_HTM,
 	.ready     = NULL,
 	.is_valid  = always_valid,
-	.moveset   = moveset_HTM,
+	.moveset   = &moveset_HTM,
 
 	.pre_trans = uf,
 
@@ -382,7 +404,7 @@ corners_URF = {
 	.estimate  = estimate_corners_URF,
 	.ready     = NULL,
 	.is_valid  = always_valid,
-	.moveset   = moveset_URF,
+	.moveset   = &moveset_URF,
 
 	.pre_trans = uf,
 
@@ -402,7 +424,7 @@ drany_HTM = {
 	.ready     = check_centers,
 	.ready_msg = check_centers_msg,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_HTM,
+	.moveset   = &moveset_HTM,
 
 	.pre_trans = uf,
 
@@ -421,7 +443,7 @@ drud_HTM = {
 	.ready     = check_centers,
 	.ready_msg = check_centers_msg,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_HTM,
+	.moveset   = &moveset_HTM,
 
 	.pre_trans = uf,
 
@@ -440,7 +462,7 @@ drrl_HTM = {
 	.ready     = check_centers,
 	.ready_msg = check_centers_msg,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_HTM,
+	.moveset   = &moveset_HTM,
 
 	.pre_trans = rf,
 
@@ -459,7 +481,7 @@ drfb_HTM = {
 	.ready     = check_centers,
 	.ready_msg = check_centers_msg,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_HTM,
+	.moveset   = &moveset_HTM,
 
 	.pre_trans = fd,
 
@@ -479,7 +501,7 @@ dr_eo = {
 	.ready     = check_eofb,
 	.ready_msg = check_eo_msg,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_eofb,
+	.moveset   = &moveset_eofb,
 
 	.detect    = detect_pretrans_eofb,
 
@@ -498,7 +520,7 @@ dr_eofb = {
 	.ready     = check_eofb,
 	.ready_msg = check_eo_msg,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_eofb,
+	.moveset   = &moveset_eofb,
 
 	.pre_trans = uf,
 
@@ -517,7 +539,7 @@ dr_eorl = {
 	.ready     = check_eofb,
 	.ready_msg = check_eo_msg,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_eofb,
+	.moveset   = &moveset_eofb,
 
 	.pre_trans = ur,
 
@@ -536,7 +558,7 @@ dr_eoud = {
 	.ready     = check_eofb,
 	.ready_msg = check_eo_msg,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_eofb,
+	.moveset   = &moveset_eofb,
 
 	.pre_trans = fd,
 
@@ -555,7 +577,7 @@ drud_eofb = {
 	.ready     = check_eofb,
 	.ready_msg = check_eo_msg,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_eofb,
+	.moveset   = &moveset_eofb,
 
 	.pre_trans = uf,
 
@@ -574,7 +596,7 @@ drrl_eofb = {
 	.ready     = check_eofb,
 	.ready_msg = check_eo_msg,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_eofb,
+	.moveset   = &moveset_eofb,
 
 	.pre_trans = rf,
 
@@ -593,7 +615,7 @@ drud_eorl = {
 	.ready     = check_eofb,
 	.ready_msg = check_eo_msg,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_eofb,
+	.moveset   = &moveset_eofb,
 
 	.pre_trans = ur,
 
@@ -612,7 +634,7 @@ drfb_eorl = {
 	.ready     = check_eofb,
 	.ready_msg = check_eo_msg,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_eofb,
+	.moveset   = &moveset_eofb,
 
 	.pre_trans = fr,
 
@@ -631,7 +653,7 @@ drfb_eoud = {
 	.ready     = check_eofb,
 	.ready_msg = check_eo_msg,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_eofb,
+	.moveset   = &moveset_eofb,
 
 	.pre_trans = fd,
 
@@ -650,7 +672,7 @@ drrl_eoud = {
 	.ready     = check_eofb,
 	.ready_msg = check_eo_msg,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_eofb,
+	.moveset   = &moveset_eofb,
 
 	.pre_trans = rd,
 
@@ -670,7 +692,7 @@ dranyfin_DR = {
 	.ready     = check_drud,
 	.ready_msg = check_drany_msg,
 	.is_valid  = always_valid,
-	.moveset   = moveset_drud,
+	.moveset   = &moveset_drud,
 
 	.detect    = detect_pretrans_drud,
 
@@ -689,7 +711,7 @@ drudfin_drud = {
 	.ready     = check_drud,
 	.ready_msg = check_dr_msg,
 	.is_valid  = always_valid,
-	.moveset   = moveset_drud,
+	.moveset   = &moveset_drud,
 
 	.pre_trans = uf,
 
@@ -708,7 +730,7 @@ drrlfin_drrl = {
 	.ready     = check_drud,
 	.ready_msg = check_dr_msg,
 	.is_valid  = always_valid,
-	.moveset   = moveset_drud,
+	.moveset   = &moveset_drud,
 
 	.pre_trans = rf,
 
@@ -727,7 +749,7 @@ drfbfin_drfb = {
 	.ready     = check_drud,
 	.ready_msg = check_dr_msg,
 	.is_valid  = always_valid,
-	.moveset   = moveset_drud,
+	.moveset   = &moveset_drud,
 
 	.pre_trans = fd,
 
@@ -747,7 +769,7 @@ htr_any = {
 	.ready     = check_drud,
 	.ready_msg = check_drany_msg,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_drud,
+	.moveset   = &moveset_drud,
 
 	.detect    = detect_pretrans_drud,
 
@@ -766,7 +788,7 @@ htr_drud = {
 	.ready     = check_drud,
 	.ready_msg = check_dr_msg,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_drud,
+	.moveset   = &moveset_drud,
 
 	.pre_trans = uf,
 
@@ -785,7 +807,7 @@ htr_drrl = {
 	.ready     = check_drud,
 	.ready_msg = check_dr_msg,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_drud,
+	.moveset   = &moveset_drud,
 
 	.pre_trans = rf,
 
@@ -804,7 +826,7 @@ htr_drfb = {
 	.ready     = check_drud,
 	.ready_msg = check_dr_msg,
 	.is_valid  = validate_singlecw_ending,
-	.moveset   = moveset_drud,
+	.moveset   = &moveset_drud,
 
 	.pre_trans = fd,
 
@@ -824,7 +846,7 @@ htrfin_htr = {
 	.ready     = check_htr,
 	.ready_msg = check_htr_msg,
 	.is_valid  = always_valid,
-	.moveset   = moveset_htr,
+	.moveset   = &moveset_htr,
 
 	.pre_trans = uf,
 
@@ -834,6 +856,7 @@ htrfin_htr = {
 
 Step *steps[NSTEPS] = {
 	&optimal_HTM, /* first is default */
+	&optimal_nxopt31_HTM,
 	&optimal_light_HTM,
 
 	&eoany_HTM,
@@ -1183,87 +1206,16 @@ estimate_htrfin_htr(DfsArg *arg)
 static int
 estimate_optimal_HTM(DfsArg *arg)
 {
-	int target, ret;
-	Cube aux;
-
-	static const uint64_t udmask = (1<<U) | (1<<U2) | (1<<U3) |
-				       (1<<D) | (1<<D2) | (1<<D3);
-	static const uint64_t rlmask = (1<<R) | (1<<R2) | (1<<R3) |
-				       (1<<L) | (1<<L2) | (1<<L3);
-	static const uint64_t fbmask = (1<<F) | (1<<F2) | (1<<F3) |
-				       (1<<B) | (1<<B2) | (1<<B3);
-
-	ret              = -1;
-	target           = arg->d - arg->current_alg->len;
-	arg->inverse     = (Cube){0};
-	arg->badmovesinv = 0;
-	arg->badmoves    = 0;
-
-	/* Corners */
-	arg->ed->corners = ptableval(&pd_corners_HTM, arg->cube);
-	UPDATECHECKSTOP(ret, arg->ed->corners, target);
-
-	/* Normal probing */
-	arg->ed->normal_ud = ptableval(&pd_khuge_HTM, arg->cube);
-	UPDATECHECKSTOP(ret, arg->ed->normal_ud, target);
-	aux = apply_trans(fd, arg->cube);
-	arg->ed->normal_fb = ptableval(&pd_khuge_HTM, aux);
-	UPDATECHECKSTOP(ret, arg->ed->normal_fb, target);
-	aux = apply_trans(rf, arg->cube);
-	arg->ed->normal_rl = ptableval(&pd_khuge_HTM, aux);
-	UPDATECHECKSTOP(ret, arg->ed->normal_rl, target);
-
-	/* If ret == 0, it's solved (corners + triple slice solved) */
-	if (ret == 0)
-		return 0;
-
-	/* Michel de Bondt's trick*/
-	if (arg->ed->normal_ud == arg->ed->normal_fb &&
-	    arg->ed->normal_fb == arg->ed->normal_rl) {
-		UPDATECHECKSTOP(ret, arg->ed->normal_ud + 1, target);
-	}
-
-	/* Inverse probing */
-	aux = arg->inverse = inverse_cube(arg->cube);
-	if (!((1<<arg->last1) & udmask) || (arg->ed->inverse_ud == -1)) {
-		arg->ed->inverse_ud = ptableval(&pd_khuge_HTM, aux);
-	}
-	UPDATECHECKSTOP(ret, arg->ed->inverse_ud, target);
-	if (!((1<<arg->last1) & fbmask) || (arg->ed->inverse_fb == -1)) {
-		aux = apply_trans(fd, arg->inverse);
-		arg->ed->inverse_fb = ptableval(&pd_khuge_HTM, aux);
-	}
-	UPDATECHECKSTOP(ret, arg->ed->inverse_fb, target);
-	if (!((1<<arg->last1) & rlmask) || (arg->ed->inverse_rl == -1)) {
-		aux = apply_trans(rf, arg->inverse);
-		arg->ed->inverse_rl = ptableval(&pd_khuge_HTM, aux);
-	}
-	UPDATECHECKSTOP(ret, arg->ed->inverse_rl, target);
-
-	/* Michel de Bondt's trick*/
-	if (arg->ed->inverse_ud == arg->ed->inverse_fb &&
-	    arg->ed->inverse_fb == arg->ed->inverse_rl) {
-		UPDATECHECKSTOP(ret, arg->ed->inverse_ud + 1, target);
-	}
-
-	/* nxopt trick */
-	if (arg->ed->normal_ud == target)
-		arg->badmovesinv |= udmask;
-	if (arg->ed->normal_fb == target)
-		arg->badmovesinv |= fbmask;
-	if (arg->ed->normal_rl == target)
-		arg->badmovesinv |= rlmask;
-
-	if (arg->ed->inverse_ud == target)
-		arg->badmoves |= udmask;
-	if (arg->ed->inverse_fb == target)
-		arg->badmoves |= fbmask;
-	if (arg->ed->inverse_rl == target)
-		arg->badmoves |= rlmask;
-
-	return arg->ed->oldret = ret;
+	return estimate_nxoptlike(arg, &pd_khuge_HTM);
 }
 
+static int
+estimate_nxopt31_HTM(DfsArg *arg)
+{
+	return estimate_nxoptlike(arg, &pd_nxopt31_HTM);
+}
+
+/* TODO: also use generic procedure for this */
 static int
 estimate_light_HTM(DfsArg *arg)
 {
@@ -1302,7 +1254,7 @@ estimate_light_HTM(DfsArg *arg)
 
 	/* If ret == 0, it's solved (corners + triple slice solved) */
 	if (ret == 0)
-		return 0;
+		return is_solved(arg->cube) ? 0 : 1;
 
 	/* Michel de Bondt's trick*/
 	if (arg->ed->normal_ud == arg->ed->normal_fb &&
@@ -1359,6 +1311,90 @@ estimate_light_HTM(DfsArg *arg)
 
 	return arg->ed->oldret = ret;
 }
+
+static int
+estimate_nxoptlike(DfsArg *arg, PruneData *pd)
+{
+	int target, ret;
+	Cube aux;
+
+	static const uint64_t udmask = (1<<U) | (1<<U2) | (1<<U3) |
+				       (1<<D) | (1<<D2) | (1<<D3);
+	static const uint64_t rlmask = (1<<R) | (1<<R2) | (1<<R3) |
+				       (1<<L) | (1<<L2) | (1<<L3);
+	static const uint64_t fbmask = (1<<F) | (1<<F2) | (1<<F3) |
+				       (1<<B) | (1<<B2) | (1<<B3);
+
+	ret              = -1;
+	target           = arg->d - arg->current_alg->len;
+	arg->inverse     = (Cube){0};
+	arg->badmovesinv = 0;
+	arg->badmoves    = 0;
+
+	/* Corners */
+	arg->ed->corners = ptableval(&pd_corners_HTM, arg->cube);
+	UPDATECHECKSTOP(ret, arg->ed->corners, target);
+
+	/* Normal probing */
+	arg->ed->normal_ud = ptableval(pd, arg->cube);
+	UPDATECHECKSTOP(ret, arg->ed->normal_ud, target);
+	aux = apply_trans(fd, arg->cube);
+	arg->ed->normal_fb = ptableval(pd, aux);
+	UPDATECHECKSTOP(ret, arg->ed->normal_fb, target);
+	aux = apply_trans(rf, arg->cube);
+	arg->ed->normal_rl = ptableval(pd, aux);
+	UPDATECHECKSTOP(ret, arg->ed->normal_rl, target);
+
+	if (ret == 0)
+		return arg->step->is_done(arg->cube) ? 0 : 1;
+
+	/* Michel de Bondt's trick*/
+	if (arg->ed->normal_ud == arg->ed->normal_fb &&
+	    arg->ed->normal_fb == arg->ed->normal_rl) {
+		UPDATECHECKSTOP(ret, arg->ed->normal_ud + 1, target);
+	}
+
+	/* Inverse probing */
+	aux = arg->inverse = inverse_cube(arg->cube);
+	if (!((1<<arg->last1) & udmask) || (arg->ed->inverse_ud == -1)) {
+		arg->ed->inverse_ud = ptableval(pd, aux);
+	}
+	UPDATECHECKSTOP(ret, arg->ed->inverse_ud, target);
+	if (!((1<<arg->last1) & fbmask) || (arg->ed->inverse_fb == -1)) {
+		aux = apply_trans(fd, arg->inverse);
+		arg->ed->inverse_fb = ptableval(pd, aux);
+	}
+	UPDATECHECKSTOP(ret, arg->ed->inverse_fb, target);
+	if (!((1<<arg->last1) & rlmask) || (arg->ed->inverse_rl == -1)) {
+		aux = apply_trans(rf, arg->inverse);
+		arg->ed->inverse_rl = ptableval(pd, aux);
+	}
+	UPDATECHECKSTOP(ret, arg->ed->inverse_rl, target);
+
+	/* Michel de Bondt's trick*/
+	if (arg->ed->inverse_ud == arg->ed->inverse_fb &&
+	    arg->ed->inverse_fb == arg->ed->inverse_rl) {
+		UPDATECHECKSTOP(ret, arg->ed->inverse_ud + 1, target);
+	}
+
+	/* nxopt trick */
+	if (arg->ed->normal_ud == target)
+		arg->badmovesinv |= udmask;
+	if (arg->ed->normal_fb == target)
+		arg->badmovesinv |= fbmask;
+	if (arg->ed->normal_rl == target)
+		arg->badmovesinv |= rlmask;
+
+	if (arg->ed->inverse_ud == target)
+		arg->badmoves |= udmask;
+	if (arg->ed->inverse_fb == target)
+		arg->badmoves |= fbmask;
+	if (arg->ed->inverse_rl == target)
+		arg->badmoves |= rlmask;
+
+	return arg->ed->oldret = ret;
+}
+
 
 static bool
 always_valid(Alg *alg)

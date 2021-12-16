@@ -8,7 +8,7 @@ static void        copy_dfsarg(DfsArg *src, DfsArg *dst);
 static void        dfs(DfsArg *arg);
 static void        dfs_branch(DfsArg *arg);
 static bool        dfs_check_solved(DfsArg *arg);
-static bool        dfs_switch_final(DfsArg *arg);
+static bool        dfs_switch(DfsArg *arg);
 static void        dfs_niss(DfsArg *arg);
 static bool        dfs_stop(DfsArg *arg);
 static void *      instance_thread(void *arg);
@@ -21,25 +21,43 @@ static bool        niss_makes_sense(DfsArg *arg);
 static bool
 allowed_next(Move m, DfsArg *arg)
 {
-	if ((1 << m) & arg->badmoves)
-		return false;
+	bool bad, allowed, order;
+	uint64_t mbit;
 
-	if (!possible_next(arg->last2, arg->last1, m))
-		return false;
+	if (arg->last1 == NULLMOVE)
+		return true;
 
-	if (commute(arg->last1, m))
-		return arg->move_position[arg->last1] < arg->move_position[m];
+	mbit    = ((uint64_t)1) << m;
+	bad     = mbit & arg->badmoves;
+	allowed = mbit & arg->step->moveset->mask[arg->last2][arg->last1];
+	order   = !commute(arg->last1, m) || arg->last1 < m;
 
-	return true;
+	return allowed && !bad && order;
 }
 
 static bool
 cancel_niss(DfsArg *arg)
 {
-	return !possible_next(arg->last2, arg->last1, arg->last1inv) &&
-	       !(commute(arg->last1inv, arg->last2inv) &&
-	         arg->last2inv != NULLMOVE &&
-		 possible_next(arg->last2, arg->last1, arg->last2inv));
+	Moveset *ms;
+	Move i1, i2;
+	bool p, p1, p2, q, q1, q2;
+
+	if (arg->last1inv == NULLMOVE)
+		return false;
+
+	ms = arg->step->moveset;
+	i1 = inverse_move(arg->last1inv);
+	i2 = inverse_move(arg->last2inv);
+
+	p1 = !ms->allowed_next(arg->last2, arg->last1, i1);
+	p2 = !ms->allowed_next(arg->last2, i1, arg->last1);
+	p = p1 || (commute(i1, arg->last1) && p2);
+
+	q1 = !ms->allowed_next(arg->last2, arg->last1, i2);
+	q2 = !ms->allowed_next(arg->last2, i2, arg->last1);
+	q = q1 || (commute(i2, arg->last1) && q2);
+
+	return p || (commute(i1, i2) && q);
 }
 
 static void
@@ -60,8 +78,6 @@ copy_dfsarg(DfsArg *src, DfsArg *dst)
 	dst->sols          = src->sols;
 	dst->sols_mutex    = src->sols_mutex;
 	dst->current_alg   = src->current_alg;
-	dst->sorted_moves  = src->sorted_moves;
-	dst->move_position = src->move_position;
 
 	copy_estimatedata(src->ed, dst->ed);
 }
@@ -77,7 +93,7 @@ dfs(DfsArg *arg)
 	if (dfs_check_solved(arg))
 		return;
 
-	if (arg->step->final && (sw = dfs_switch_final(arg)))
+	if (arg->step->final && (sw = dfs_switch(arg)))
 		invert_branch(arg);
 	dfs_branch(arg);
 
@@ -98,8 +114,8 @@ dfs_branch(DfsArg *arg)
 	newarg = malloc(sizeof(DfsArg));
 	newarg->ed = malloc(sizeof(EstimateData));
 
-	for (i = 0; arg->sorted_moves[i] != NULLMOVE; i++) {
-		m = arg->sorted_moves[i];
+	for (i = 0; arg->step->moveset->sorted_moves[i] != NULLMOVE; i++) {
+		m = arg->step->moveset->sorted_moves[i];
 		if (allowed_next(m, arg)) {
 			copy_dfsarg(arg, newarg);
 			newarg->last2 = arg->last1;
@@ -181,20 +197,22 @@ dfs_stop(DfsArg *arg)
 }
 
 static bool
-dfs_switch_final(DfsArg *arg)
+dfs_switch(DfsArg *arg)
 {
 	int i, bn, bi;
 
-	for (bn = 0, i = 0; arg->sorted_moves[i] != NULLMOVE; i++)
-		if (allowed_next(arg->sorted_moves[i], arg))
+	bn = 0;
+	for (i = 0; arg->step->moveset->sorted_moves[i] != NULLMOVE; i++)
+		if (allowed_next(arg->step->moveset->sorted_moves[i], arg))
 			bn++;
 	
 	swapmove(&(arg->last1), &(arg->last1inv));
 	swapmove(&(arg->last2), &(arg->last2inv));
 	swapu64(&(arg->badmoves), &(arg->badmovesinv));
 
-	for (bi = 0, i = 0; arg->sorted_moves[i] != NULLMOVE; i++)
-		if (allowed_next(arg->sorted_moves[i], arg))
+	bi = 0;
+	for (i = 0; arg->step->moveset->sorted_moves[i] != NULLMOVE; i++)
+		if (allowed_next(arg->step->moveset->sorted_moves[i], arg))
 			bi++;
 	
 	swapmove(&(arg->last1), &(arg->last1inv));
@@ -246,8 +264,6 @@ instance_thread(void *arg)
 		darg.current_alg     = new_alg("");
 		append_move(darg.current_alg, node->alg->move[0],
 		            node->alg->inv[0]);
-		darg.sorted_moves    = td->sorted_moves;
-		darg.move_position   = td->move_position;
 		darg.ed              = new_estimatedata();
 		darg.badmoves        = 0;
 		darg.badmovesinv     = 0;
@@ -281,8 +297,7 @@ invert_branch(DfsArg *arg)
 static void
 multidfs(Cube c, Step *s, SolveOptions *opts, AlgList *sols, int d)
 {
-	int i, *move_position;
-	Move *sorted_moves;
+	int i;
 	Alg *alg;
 	AlgList *start;
 	AlgListNode **node;
@@ -290,8 +305,6 @@ multidfs(Cube c, Step *s, SolveOptions *opts, AlgList *sols, int d)
 	ThreadDataSolve td[opts->nthreads];
 	pthread_mutex_t *start_mutex, *sols_mutex;
 
-	move_position = malloc(NMOVES * sizeof(int));
-	sorted_moves  = malloc(NMOVES * sizeof(Move));
 	node  = malloc(sizeof(AlgListNode *));
 	start_mutex = malloc(sizeof(pthread_mutex_t));
 	sols_mutex  = malloc(sizeof(pthread_mutex_t));
@@ -300,14 +313,11 @@ multidfs(Cube c, Step *s, SolveOptions *opts, AlgList *sols, int d)
 	pthread_mutex_init(start_mutex, NULL);
 	pthread_mutex_init(sols_mutex,  NULL);
 
-	moveset_to_list(s->moveset, sorted_moves);
-	movelist_to_position(sorted_moves, move_position);
-
-	for (i = 0; sorted_moves[i] != NULLMOVE; i++) {
+	for (i = 0; s->moveset->sorted_moves[i] != NULLMOVE; i++) {
 		alg = new_alg("");
 		/* TODO: start on inverse also in case of final step
 		   and ed->sw true */
-		append_move(alg, sorted_moves[i], false);
+		append_move(alg, s->moveset->sorted_moves[i], false);
 		append_alg(start, alg);
 		if (opts->can_niss) {
 			alg->inv[0] = true;
@@ -322,8 +332,6 @@ multidfs(Cube c, Step *s, SolveOptions *opts, AlgList *sols, int d)
 		td[i].cube          = c;
 		td[i].step          = s;
 		td[i].depth         = d;
-		td[i].sorted_moves  = sorted_moves;
-		td[i].move_position = move_position;
 		td[i].opts          = opts;
 		td[i].start         = start;
 		td[i].node          = node;
@@ -340,8 +348,6 @@ multidfs(Cube c, Step *s, SolveOptions *opts, AlgList *sols, int d)
 	free(node);
 	free(start_mutex);
 	free(sols_mutex);
-	free(move_position);
-	free(sorted_moves);
 }
 
 static bool

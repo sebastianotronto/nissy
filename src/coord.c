@@ -13,6 +13,7 @@ static Cube        antindex_drud(uint64_t ind);
 static Cube        antindex_drud_eofb(uint64_t ind);
 static Cube        antindex_htr_drud(uint64_t ind);
 static Cube        antindex_htrfin(uint64_t ind);
+static Cube        antindex_cpud_separate(uint64_t ind);
 
 static uint64_t    index_eofb(Cube cube);
 static uint64_t    index_eofbepos(Cube cube);
@@ -27,6 +28,7 @@ static uint64_t    index_drud(Cube cube);
 static uint64_t    index_drud_eofb(Cube cube);
 static uint64_t    index_htr_drud(Cube cube);
 static uint64_t    index_htrfin(Cube cube);
+static uint64_t    index_cpud_separate(Cube cube);
 
 static void        init_cphtr_cosets();
 static void        init_cphtr_left_cosets_bfs(int i, int c);
@@ -133,6 +135,13 @@ coord_drud_eofb = {
 	.index  = index_drud_eofb,
 	.cube   = antindex_drud_eofb,
 	.max    = POW3TO7 * BINOM12ON4,
+};
+
+Coordinate
+coord_cpud_separate = {
+	.index  = index_cpud_separate,
+	.cube   = antindex_cpud_separate,
+	.max    = BINOM8ON4,
 };
 
 /* Antindexers ***************************************************************/
@@ -356,6 +365,31 @@ antindex_htrfin(uint64_t ind)
 	return ret;
 }
 
+static Cube
+antindex_cpud_separate(uint64_t ind)
+{
+	/* Not consistent because of side corner orientations and cp */
+	unsigned int ui;
+	int i, co[8], cp[8];
+	Corner u, d;
+
+	static Cube aux[BINOM8ON4];
+	static bool initialized = false;
+
+	if (!initialized) {
+		for (ui = 0; ui < BINOM8ON4; ui++) {
+			index_to_subset(ui, 8, 4, co);
+			for (i = 0, u = UFR, d = DFR; i < 8; i++)
+				cp[i] = co[i] ? d++ : u++;
+			aux[ui] = (Cube){.cp = perm_to_index(cp, 8)};
+		}
+
+		initialized = true;
+	}
+
+	return aux[ind];
+}
+
 /* Indexers ******************************************************************/
 
 static uint64_t
@@ -477,6 +511,29 @@ index_htrfin(Cube cube)
 	return cp * 24 * 24 * 24 + ep;
 }
 
+static uint64_t
+index_cpud_separate(Cube cube)
+{
+	unsigned int ui;
+	int i, co[8];
+
+	static int aux[FACTORIAL8];
+	static bool initialized = false;
+
+	if (!initialized) {
+		for (ui = 0; ui < FACTORIAL8; ui++) {
+			for (i = 0; i < 8; i++)
+				co[i] = what_corner_at((Cube){.cp=ui},i)>UBR ?
+					 1 : 0;
+			aux[ui] = subset_to_index(co, 8, 4);
+		}
+		
+		initialized = true;
+	}
+
+	return aux[cube.cp];
+}
+
 /* Init functions implementation *********************************************/
 
 /*
@@ -528,7 +585,7 @@ init_cphtr_left_cosets_bfs(int i, int c)
 	while (n != 0) {
 		for (j = 0, n2 = 0; j < n; j++) {
 			for (k = U2; k < B3; k++) {
-				if (!moveset_htr(k))
+				if (!moveset_htr.allowed(k))
 					continue;
 				jj = apply_move(k, (Cube){ .cp = next[j] }).cp;
 
@@ -578,7 +635,7 @@ init_cornershtrfin()
 			if (cornershtrfin_ind[j] == -1)
 				continue;
 			for (m = U; m < NMOVES; m++) {
-				if (moveset_htr(m)) {
+				if (moveset_htr.allowed(m)) {
 					c = apply_move(m, (Cube){.cp = j}).cp;
 					if (cornershtrfin_ind[c] == -1) {
 						cornershtrfin_ind[c] = n;
@@ -589,6 +646,31 @@ init_cornershtrfin()
 			}
 		}
 	}
+}
+
+void
+test_coord(Coordinate *coord)
+{
+	bool passed;
+	uint64_t ui, failcount;
+
+	if (!(passed = (coord->index((Cube){0}) == 0))) {
+		printf("Failed: coordinate of solved cube is "
+		       "%" PRIu64 "\n", coord->index((Cube){0}));
+	}
+
+	printf("Testing %" PRIu64 " coordinates\n", coord->max);
+	for (failcount = 0, ui = 0; ui < coord->max; ui++) {
+		if (!(passed = (coord->index(coord->cube(ui)) == ui))) {
+			printf("Failed at %" PRIu64 "\n", ui);
+			failcount++;
+		}
+	}
+
+	if (passed)
+		printf("Ok\n");
+	else
+		printf("Test failed in %" PRIu64 " cases\n", failcount);
 }
 
 void

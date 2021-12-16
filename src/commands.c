@@ -259,6 +259,7 @@ solve_exec(CommandArgs *args)
 	Cube c;
 	AlgList *sols;
 
+	init_movesets();
 	init_symcoord();
 
 	c = apply_alg(args->scramble, (Cube){0});
@@ -274,6 +275,7 @@ gen_exec(CommandArgs *args)
 	int i;
 
 	fprintf(stderr, "Generating coordinates...\n");
+	init_movesets();
 	init_symcoord();
 
 	fprintf(stderr, "Generating pruning tables...\n");

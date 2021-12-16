@@ -8,6 +8,7 @@
 #define NMOVES               55 /* Actually 54, but one is NULLMOVE */
 #define NTRANS               48
 #define NROTATIONS           24
+#define entry_group_t        uint8_t /* For pruning tables */
 
 /* Enums *********************************************************************/
 
@@ -83,6 +84,7 @@ typedef struct cube               Cube;
 typedef struct cubearray          CubeArray;
 typedef struct dfsarg             DfsArg;
 typedef struct estimatedata       EstimateData;
+typedef struct moveset            Moveset;
 typedef struct piecefilter        PieceFilter;
 typedef struct prunedata          PruneData;
 typedef struct solveoptions       SolveOptions;
@@ -97,7 +99,6 @@ typedef int                  (*Estimator)        (DfsArg *);
 typedef bool                 (*Validator)        (Alg *);
 typedef void                 (*Exec)             (CommandArgs *);
 typedef uint64_t             (*Indexer)          (Cube);
-typedef bool                 (*Moveset)          (Move);
 typedef CommandArgs *        (*ArgParser)        (int, char **);
 typedef Trans                (*TransDetector)    (Cube);
 typedef int                  (*TransFinder)      (uint64_t, Trans *);
@@ -215,8 +216,6 @@ dfsarg
 	AlgList *                 sols;
 	pthread_mutex_t *         sols_mutex;
 	Alg *                     current_alg;
-	Move *                    sorted_moves;
-	int *                     move_position;
 };
 
 struct
@@ -230,6 +229,15 @@ estimatedata
 	int                       inverse_fb;
 	int                       inverse_rl;
 	int                       oldret;
+};
+
+struct
+moveset
+{
+	bool                      (*allowed)(Move);
+	bool                      (*allowed_next)(Move, Move, Move);
+	Move                      sorted_moves[NMOVES+1];
+	uint64_t                  mask[NMOVES][NMOVES];
 };
 
 struct
@@ -252,11 +260,11 @@ struct
 prunedata
 {
 	char *                    filename;
-	uint8_t *                 ptable;
+	entry_group_t *           ptable;
 	bool                      generated;
 	uint64_t                  n;
 	Coordinate *              coord;
-	Moveset                   moveset;
+	Moveset *                 moveset;
 };
 
 struct
@@ -284,7 +292,7 @@ step
 	Checker                   ready;
 	char *                    ready_msg;
 	Validator                 is_valid;
-	Moveset                   moveset;
+	Moveset *                 moveset;
 	Trans                     pre_trans;
 	TransDetector             detect;
 	int                       ntables;
@@ -312,8 +320,6 @@ threaddatasolve
 	Cube                      cube;
 	Step *                    step;
 	int                       depth;
-	Move *                    sorted_moves;
-	int *                     move_position;
 	SolveOptions *            opts;
 	AlgList *                 start;
 	AlgListNode **            node;
@@ -329,7 +335,6 @@ threaddatagenpt
 	int                       nthreads;
 	PruneData *               pd;
 	int                       d;
-	Move *                    ms;
 	int                       nchunks;
 	pthread_mutex_t **        mutex;
 	pthread_mutex_t *         upmutex;

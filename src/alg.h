@@ -8,16 +8,17 @@
 #include "cubetypes.h"
 #include "utils.h"
 
-bool        moveset_HTM(Move m);
-bool        moveset_URF(Move m);
-bool        moveset_eofb(Move m);
-bool        moveset_drud(Move m);
-bool        moveset_htr(Move m);
+extern Moveset          moveset_HTM;
+extern Moveset          moveset_URF;
+extern Moveset          moveset_eofb;
+extern Moveset          moveset_drud;
+extern Moveset          moveset_htr;
 
 void        append_alg(AlgList *l, Alg *alg);
 void        append_move(Alg *alg, Move m, bool inverse);
-void        compose_alg(Alg *alg1, Alg *alg2);
 Move        base_move(Move m);
+void        compose_alg(Alg *alg1, Alg *alg2);
+bool        commute(Move m1, Move m2);
 void        free_alg(Alg *alg);
 void        free_alglist(AlgList *l);
 Alg *       inverse_alg(Alg *alg);
@@ -32,6 +33,8 @@ void        print_alg(Alg *alg, bool l);
 void        print_alglist(AlgList *al, bool l);
 void        swapmove(Move *m1, Move *m2);
 void        unniss(Alg *alg);
+
+void        init_movesets();
 
 #endif
 

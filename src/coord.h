@@ -16,7 +16,9 @@ extern Coordinate       coord_drud;
 extern Coordinate       coord_drud_eofb;
 extern Coordinate       coord_htr_drud;
 extern Coordinate       coord_htrfin;
+extern Coordinate       coord_cpud_separate;
 
+void        test_coord(Coordinate *coord);
 void        init_coord();
 
 #endif

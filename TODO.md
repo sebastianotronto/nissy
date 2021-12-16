@@ -14,13 +14,11 @@ It's more of a personal reminder than anything else.
 * invert an alg
 
 ### More steps for `solve`
-* QTM optimal solving
+* QTM optimal solving (important: fix possible_next, which works only for HTM now)
 * Block-building steps (cross, roux blocks, ...)
 * Other common steps (LSE, ...)
 
 ### Improvements to currently implemented commands
-* batch mode: add separator / info on which command it is executing
-(also change man page for this)
 * solve should re-orient first if needed and not just give up if centers are off
 * solve should try up to a small bound without loading the large pruning table
 * drfin for HTR scrambles should try all 3 axis and pick the best solutions;
@@ -42,7 +40,12 @@ It's more of a personal reminder than anything else.
 
 ## Technical stuff
 
-## Performance
+### Memory management
+* Check if memory is enough for loading pruning tables; if not, abort
+* For optimal solver: choose largest that fits in memory between
+  khuge, shug6 and light
+
+### Performance
 * solve (allow_next): filter out based on base_move; only check once for each
   triple of moves; how to deal with different movesets?
 * try htr corners + edges in slice but not oriented (300Mb table);
@@ -51,12 +54,8 @@ It's more of a personal reminder than anything else.
   (like in light optimal solver)
 * Another idea: DR + cornershtr (5Gb table); same as above, de Bondt's trick
   does not work but I can use half-turn trick
-* On the contrary: DR + separate UD corners allow dB's trick, but no ht-trick
 
-## Coordinates, symmetries, pruning tables
-* Cleanup symcoord.c: some coordinates and symdata are never actually used;
-remove also sd_eofbepos and just use sd_coud for khuge (this changes the
-coordinate so the whole table must be generated again!) or viceversa
+### Coordinates, symmetries, pruning tables
 * Use pruning values mod 4 instead of mod 16 (or maybe not, I like the
 current system)
 

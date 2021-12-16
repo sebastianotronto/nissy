@@ -2,27 +2,76 @@
 
 /* Local functions ***********************************************************/
 
+static bool        allowed_HTM(Move m);
+static bool        allowed_URF(Move m);
+static bool        allowed_eofb(Move m);
+static bool        allowed_drud(Move m);
+static bool        allowed_htr(Move m);
+static bool        allowed_next_HTM(Move l2, Move l1, Move m);
+static int         axis(Move m);
+
 static void        free_alglistnode(AlgListNode *aln);
 static void        realloc_alg(Alg *alg, int n);
 
 /* Movesets ******************************************************************/
 
-bool
-moveset_HTM(Move m)
+Moveset
+moveset_HTM = {
+	.allowed      = allowed_HTM,
+	.allowed_next = allowed_next_HTM,
+};
+
+Moveset
+moveset_URF = {
+	.allowed      = allowed_URF,
+	.allowed_next = allowed_next_HTM,
+};
+
+Moveset
+moveset_eofb = {
+	.allowed      = allowed_eofb,
+	.allowed_next = allowed_next_HTM,
+};
+
+Moveset
+moveset_drud = {
+	.allowed      = allowed_drud,
+	.allowed_next = allowed_next_HTM,
+};
+
+Moveset
+moveset_htr = {
+	.allowed      = allowed_htr,
+	.allowed_next = allowed_next_HTM,
+};
+
+static int nmoveset = 5;
+static Moveset * all_ms[] = {
+	&moveset_HTM,
+	&moveset_URF,
+	&moveset_eofb,
+	&moveset_drud,
+	&moveset_htr,
+};
+
+/* Functions *****************************************************************/
+
+static bool
+allowed_HTM(Move m)
 {
 	return m >= U && m <= B3;
 }
 
-bool
-moveset_URF(Move m)
+static bool
+allowed_URF(Move m)
 {
 	Move b = base_move(m);
 
 	return b == U || b == R || b == F;
 }
 
-bool
-moveset_eofb(Move m)
+static bool
+allowed_eofb(Move m)
 {
 	Move b = base_move(m);
 
@@ -30,8 +79,8 @@ moveset_eofb(Move m)
 	       ((b == F || b == B) && m == b+1);
 }
 
-bool
-moveset_drud(Move m)
+static bool
+allowed_drud(Move m)
 {
 	Move b = base_move(m);
 
@@ -39,16 +88,65 @@ moveset_drud(Move m)
 	       ((b == R || b == L || b == F || b == B) && m == b + 1);
 }
 
-bool
-moveset_htr(Move m)
+static bool
+allowed_htr(Move m)
 {
 	Move b = base_move(m);
 
-	return moveset_HTM(m) && m == b + 1;
+	return moveset_HTM.allowed(m) && m == b + 1;
 }
 
+static bool
+allowed_next_HTM(Move l2, Move l1, Move m)
+{
+	bool p, q;
 
-/* Functions *****************************************************************/
+	p = l1 != NULLMOVE && base_move(l1) == base_move(m);
+	q = l2 != NULLMOVE && base_move(l2) == base_move(m);
+
+	return !(p || (commute(l1, l2) && q));
+}
+
+static int
+axis(Move m)
+{
+	Move i;
+
+	static bool initialized = false;
+	static int aux[NMOVES];
+
+	if (!initialized) {
+		for (i = 0; i < NMOVES; i++) {
+			if (i == NULLMOVE)
+				aux[i] = 0;
+
+			if (i >= U && i <= B3)
+				aux[i] = (i-1)/6 + 1;
+	
+			if (i >= Uw && i <= Bw3)
+				aux[i] = (i-1)/6 - 2;
+
+			if (base_move(i) == E || base_move(i) == y)
+				aux[i] = 1;
+
+			if (base_move(i) == M || base_move(i) == x)
+				aux[i] = 2;
+
+			if (base_move(i) == S || base_move(i) == z)
+				aux[i] = 3;
+		}
+
+		initialized = true;
+	}
+
+	return aux[m];
+}
+
+bool
+commute(Move m1, Move m2)
+{
+	return axis(m1) == axis(m2);
+}
 
 void
 append_alg(AlgList *l, Alg *alg)
@@ -169,33 +267,6 @@ move_string(Move m)
 	};
 
 	return move_string_aux[m];
-}
-
-void
-movelist_to_position(Move *movelist, int *position)
-{
-	Move m;
-
-	for (m = 0; m < NMOVES && movelist[m] != NULLMOVE; m++)
-		position[movelist[m]] = m;
-}
-
-void
-moveset_to_list(Moveset ms, Move *r)
-{
-	int n = 0;
-	Move i;
-
-	if (ms == NULL) {
-		fprintf(stderr, "Error: no moveset given\n");
-		return;
-	}
-
-	for (i = U; i < NMOVES; i++)
-		if (ms(i))
-			r[n++] = i;
-
-	r[n] = NULLMOVE;
 }
 
 Alg *
@@ -404,4 +475,35 @@ unniss(Alg *alg)
 		alg->inv[i]  = false;
 	}
 	free(aux);
+}
+
+void
+init_movesets()
+{
+	int i, j;
+	uint64_t l, one;
+	Move m, l2, l1;
+	Moveset *ms;
+
+	one = 1;
+
+	for (i = 0; i < nmoveset; i++) {
+		ms = all_ms[i];
+
+		for (j = 0, m = U; m < NMOVES; m++)
+			if (ms->allowed(m))
+				ms->sorted_moves[j++] = m;
+		ms->sorted_moves[j] = NULLMOVE;
+
+		for (l1 = 0; l1 < NMOVES; l1++) { 
+			for (l2 = 0; l2 < NMOVES; l2++) { 
+				ms->mask[l2][l1] = 0;
+				for (l=0; ms->sorted_moves[l]!=NULLMOVE; l++) {
+					m = ms->sorted_moves[l];
+					if (ms->allowed_next(l2, l1, m))
+						ms->mask[l2][l1] |= (one<<m);
+				}
+			}
+		}
+	}
 }

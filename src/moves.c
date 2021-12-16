@@ -319,57 +319,6 @@ write_mtables_file()
 	return r;
 }
 
-bool
-commute(Move m1, Move m2)
-{
-	static bool initialized = false;
-	static bool commute_aux[NMOVES][NMOVES];
-
-	if (!initialized) {
-		Cube c1, c2;
-		int i, j;
-
-		for (i = 0; i < NMOVES; i++) {
-			for (j = 0; j < NMOVES; j++) {
-				c1 = apply_move(i, apply_move(j, (Cube){0}));
-				c2 = apply_move(j, apply_move(i, (Cube){0}));
-				commute_aux[i][j] = equal(c1, c2) && i && j;
-			}
-		}
-
-		initialized = true;
-	}
-
-	return commute_aux[m1][m2];
-}
-
-bool
-possible_next(Move m1, Move m2, Move m3)
-{
-	static bool initialized = false;
-	static bool paux[NMOVES][NMOVES][NMOVES];
-
-	if (!initialized) {
-		int i, j, k;
-		bool p, q, c;
-
-		for (i = 0; i < NMOVES; i++) {
-			for (j = 0; j < NMOVES; j++) {
-				for (k = 0; k < NMOVES; k++) {
-					p = j && base_move(j) == base_move(k);
-					q = i && base_move(i) == base_move(k);
-					c = commute(i, j);
-					paux[i][j][k] = !(p || (c && q));
-				}
-			}
-		}
-
-		initialized = true;
-	}
-
-	return paux[m1][m2][m3];
-}
-
 void
 init_moves() {
 	static bool initialized = false;

@@ -4,23 +4,24 @@
 #define CLASSES_CP_16        2768
 #define CLASSES_EOFBEPOS_16  64430
 
-static Cube        antindex_coud_sym16(uint64_t ind);
 static Cube        antindex_cp_sym16(uint64_t ind);
 static Cube        antindex_eofbepos_sym16(uint64_t ind);
 static Cube        antindex_drud_sym16(uint64_t ind);
 static Cube        antindex_drudfin_noE_sym16(uint64_t ind);
 static Cube        antindex_khuge(uint64_t ind);
+static Cube        antindex_nxopt31(uint64_t ind);
 
-static uint64_t    index_coud_sym16(Cube cube);
 static uint64_t    index_cp_sym16(Cube cube);
 static uint64_t    index_eofbepos_sym16(Cube cube);
 static uint64_t    index_drud_sym16(Cube cube);
 static uint64_t    index_drudfin_noE_sym16(Cube cube);
 static uint64_t    index_khuge(Cube cube);
+static uint64_t    index_nxopt31(Cube cube);
 
 static int         transfinder_drud_sym16(uint64_t ind, Trans *ret);
 static int         transfinder_drudfin_noE_sym16(uint64_t ind, Trans *ret);
 static int         transfinder_khuge(uint64_t ind, Trans *ret);
+static int         transfinder_nxopt31(uint64_t ind, Trans *ret);
 
 static void        gensym(SymData *sd);
 static bool        read_symdata_file(SymData *sd);
@@ -35,15 +36,6 @@ trans_group_udfix[16] = {
 	df, dr, db, dl,
 	uf_mirror, ur_mirror, ub_mirror, ul_mirror,
 	df_mirror, dr_mirror, db_mirror, dl_mirror,
-};
-
-static SymData
-sd_coud_16 = {
-	.filename  = "sd_coud_16",
-	.coord     = &coord_coud,
-	.sym_coord = &coord_coud_sym16,
-	.ntrans    = 16,
-	.trans     = trans_group_udfix
 };
 
 static SymData
@@ -64,9 +56,8 @@ sd_eofbepos_16 = {
 	.trans     = trans_group_udfix
 };
 
-static int nsymdata = 3;
+static int nsymdata = 2;
 static SymData * all_sd[] = {
-	&sd_coud_16,
 	&sd_cp_16,
 	&sd_eofbepos_16,
 };
@@ -78,12 +69,6 @@ Coordinate
 coord_eofbepos_sym16 = {
 	.index  = index_eofbepos_sym16,
 	.cube   = antindex_eofbepos_sym16,
-};
-
-Coordinate
-coord_coud_sym16 = {
-	.index  = index_coud_sym16,
-	.cube   = antindex_coud_sym16,
 };
 
 Coordinate
@@ -116,13 +101,15 @@ coord_khuge = {
 	.trans  = transfinder_khuge,
 };
 
-/* Functions *****************************************************************/
+Coordinate
+coord_nxopt31 = {
+	.index  = index_nxopt31,
+	.cube   = antindex_nxopt31,
+	.max    = POW3TO7 * BINOM8ON4 * CLASSES_EOFBEPOS_16 ,
+	.trans  = transfinder_nxopt31,
+};
 
-static Cube
-antindex_coud_sym16(uint64_t ind)
-{
-	return sd_coud_16.rep[ind];
-}
+/* Functions *****************************************************************/
 
 static Cube
 antindex_cp_sym16(uint64_t ind)
@@ -173,10 +160,16 @@ antindex_khuge(uint64_t ind)
 	return c;
 }
 
-static uint64_t
-index_coud_sym16(Cube cube)
+static Cube
+antindex_nxopt31(uint64_t ind)
 {
-	return sd_coud_16.class[coord_coud.index(cube)];
+	Cube c;
+
+	c = antindex_eofbepos_sym16(ind/(BINOM8ON4*POW3TO7));
+	c.cp = coord_cpud_separate.cube((ind/POW3TO7)%BINOM8ON4).cp;
+	c.coud = ind % POW3TO7;
+
+	return c;
 }
 
 static uint64_t
@@ -225,6 +218,20 @@ index_khuge(Cube cube)
 	t = sd_eofbepos_16.transtorep[coord_eofbepos.index(cube)];
 	c = apply_trans(t, cube);
 	a = (index_eofbepos_sym16(c) * 24) + (c.epose % 24);
+
+	return a * POW3TO7 + c.coud;
+}
+
+static uint64_t
+index_nxopt31(Cube cube)
+{
+	Trans t;
+	Cube c;
+	uint64_t a;
+
+	t = sd_eofbepos_16.transtorep[coord_eofbepos.index(cube)];
+	c = apply_trans(t, cube);
+	a = (index_eofbepos_sym16(c)*BINOM8ON4) + coord_cpud_separate.index(c);
 
 	return a * POW3TO7 + c.coud;
 }
@@ -290,6 +297,28 @@ transfinder_khuge(uint64_t ind, Trans *ret)
 	}
 
 	trueind = ind/(FACTORIAL4*POW3TO7);
+	for (j = 0; j < naux[trueind]; j++)
+		ret[j] = retaux[trueind][j];
+	return naux[trueind];
+}
+
+static int
+transfinder_nxopt31(uint64_t ind, Trans *ret)
+{
+	uint64_t i, trueind;
+	int j;
+	static bool initialized = false;
+	static int naux[CLASSES_EOFBEPOS_16];
+	static Trans retaux[CLASSES_EOFBEPOS_16][NTRANS];
+
+	if (!initialized) {
+		for (i = 0; i < CLASSES_EOFBEPOS_16; i++)
+			naux[i] = selfsims(&sd_eofbepos_16, i, retaux[i]);
+
+		initialized = true;
+	}
+
+	trueind = ind/(BINOM8ON4*POW3TO7);
 	for (j = 0; j < naux[trueind]; j++)
 		ret[j] = retaux[trueind][j];
 	return naux[trueind];
