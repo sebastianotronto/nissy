@@ -110,36 +110,25 @@ allowed_next_HTM(Move l2, Move l1, Move m)
 static int
 axis(Move m)
 {
-	Move i;
+	if (m == NULLMOVE)
+		return 0;
 
-	static bool initialized = false;
-	static int aux[NMOVES];
-
-	if (!initialized) {
-		for (i = 0; i < NMOVES; i++) {
-			if (i == NULLMOVE)
-				aux[i] = 0;
-
-			if (i >= U && i <= B3)
-				aux[i] = (i-1)/6 + 1;
+	if (m >= U && m <= B3)
+		return (m-1)/6 + 1;
 	
-			if (i >= Uw && i <= Bw3)
-				aux[i] = (i-1)/6 - 2;
+	if (m >= Uw && m <= Bw3)
+		return (m-1)/6 - 2;
 
-			if (base_move(i) == E || base_move(i) == y)
-				aux[i] = 1;
+	if (base_move(m) == E || base_move(m) == y)
+		return 1;
 
-			if (base_move(i) == M || base_move(i) == x)
-				aux[i] = 2;
+	if (base_move(m) == M || base_move(m) == x)
+		return 2;
 
-			if (base_move(i) == S || base_move(i) == z)
-				aux[i] = 3;
-		}
+	if (base_move(m) == S || base_move(m) == z)
+		return 3;
 
-		initialized = true;
-	}
-
-	return aux[m];
+	return -1;
 }
 
 bool

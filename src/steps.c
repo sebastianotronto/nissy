@@ -1467,12 +1467,6 @@ copy_estimatedata(EstimateData *src, EstimateData *dst)
 }
 
 void
-free_estimatedata(EstimateData *ed)
-{
-	free(ed);
-}
-
-void
 invert_estimatedata(EstimateData *ed)
 {
 	swap(&(ed->normal_ud), &(ed->inverse_ud));
@@ -1480,21 +1474,17 @@ invert_estimatedata(EstimateData *ed)
 	swap(&(ed->normal_rl), &(ed->inverse_rl));
 }
 
-EstimateData *
-new_estimatedata()
+void
+reset_estimatedata(EstimateData *ed)
 {
-	EstimateData *ret = malloc(sizeof(EstimateData));
-
-	ret->corners    = -1;
-	ret->normal_ud  = -1;
-	ret->normal_fb  = -1;
-	ret->normal_rl  = -1;
-	ret->inverse_ud = -1;
-	ret->inverse_fb = -1;
-	ret->inverse_rl = -1;
-	ret->oldret     = -1;
-
-	return ret;
+	ed->corners    = -1;
+	ed->normal_ud  = -1;
+	ed->normal_fb  = -1;
+	ed->normal_rl  = -1;
+	ed->inverse_ud = -1;
+	ed->inverse_fb = -1;
+	ed->inverse_rl = -1;
+	ed->oldret     = -1;
 }
 
 void

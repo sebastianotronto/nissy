@@ -526,11 +526,12 @@ what_center_at(Cube cube, Center c)
 Corner
 what_corner_at(Cube cube, Corner c)
 {
+	int i;
+	unsigned int ui;
+	CubeArray *arr;
+
 	static bool initialized = false;
 	static Corner aux[FACTORIAL8][8];
-	static int i;
-	static unsigned int ui;
-	static CubeArray *arr;
 
 	if (!initialized) {
 		for (ui = 0; ui < FACTORIAL8; ui++) {

@@ -25,7 +25,6 @@ static int              cpos_mirror[6] = {
 	[F_center] = F_center, [B_center] = B_center
 };
 
-/* TODO Is there a more elegant way? */
 static char             rotation_alg_string[100][NROTATIONS] = {
 	[uf] = "",     [ur] = "y",    [ub] = "y2",    [ul] = "y3",
 	[df] = "z2",   [dr] = "y z2", [db] = "x2",    [dl] = "y3 z2",
@@ -208,7 +207,6 @@ apply_trans(Trans t, Cube cube)
 Trans
 inverse_trans(Trans t)
 {
-	/* TODO is there a more elegant way? */
 	static Trans inverse_trans_aux[NTRANS] = {
 		[uf] = uf, [ur] = ul, [ul] = ur, [ub] = ub,
 		[df] = df, [dr] = dr, [dl] = dl, [db] = db,

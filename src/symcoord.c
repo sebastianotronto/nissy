@@ -352,16 +352,7 @@ gensym(SymData *sd)
 
 	for (i = 0; i < sd->coord->max; i++) {
 		if (sd->class[i] == sd->coord->max + 1) {
-		
-			/*
-			 * TODO: this is the only unavoidable use of
-			 * antindexes. I also use them in genptable() (see
-			 * pruning.c), but there I can do without (see
-			 * commented functions in that file.
-			 * Removing this would allow for a great simplification
-			 */
 			c = sd->coord->cube(i);
-
 			sd->rep[nreps] = c;
 			for (j = 0; j < sd->ntrans; j++) {
 				d = apply_trans(sd->trans[j], c);

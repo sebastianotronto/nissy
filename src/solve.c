@@ -264,14 +264,15 @@ instance_thread(void *arg)
 		darg.current_alg     = new_alg("");
 		append_move(darg.current_alg, node->alg->move[0],
 		            node->alg->inv[0]);
-		darg.ed              = new_estimatedata();
+		darg.ed              = malloc(sizeof(EstimateData));
+		reset_estimatedata(darg.ed);
 		darg.badmoves        = 0;
 		darg.badmovesinv     = 0;
 
 		dfs(&darg);
 
 		free_alg(darg.current_alg);
-		free_estimatedata(darg.ed);
+		free(darg.ed);
 	}
 
 	return NULL;

@@ -8,9 +8,8 @@
 extern Step *           steps[NSTEPS];
 
 void                    copy_estimatedata(EstimateData *s, EstimateData *d);
-void                    free_estimatedata(EstimateData *ed);
 void                    invert_estimatedata(EstimateData *ed);
-EstimateData *          new_estimatedata();
+void                    reset_estimatedata(EstimateData *ed);
 void                    prepare_step(Step *step, SolveOptions *opts);
 
 #endif
