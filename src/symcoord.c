@@ -166,8 +166,8 @@ antindex_nxopt31(uint64_t ind)
 	Cube c;
 
 	c = antindex_eofbepos_sym16(ind/(BINOM8ON4*POW3TO7));
-	c.cp = coord_cpud_separate.cube((ind/POW3TO7)%BINOM8ON4).cp;
-	c.coud = ind % POW3TO7;
+	c.cp = coord_cpud_separate.cube(ind % BINOM8ON4).cp;
+	c.coud = (ind / BINOM8ON4) % POW3TO7;
 
 	return c;
 }
@@ -231,9 +231,9 @@ index_nxopt31(Cube cube)
 
 	t = sd_eofbepos_16.transtorep[coord_eofbepos.index(cube)];
 	c = apply_trans(t, cube);
-	a = (index_eofbepos_sym16(c)*BINOM8ON4) + coord_cpud_separate.index(c);
+	a = (index_eofbepos_sym16(c)*POW3TO7) + c.coud;
 
-	return a * POW3TO7 + c.coud;
+	return a * BINOM8ON4 + coord_cpud_separate.index(c);
 }
 
 static int

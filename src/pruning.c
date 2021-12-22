@@ -1,11 +1,13 @@
 #include "pruning.h"
 
-#define NCHUNKS               100000
-#define ENTRIES_PER_GROUP     (2*sizeof(entry_group_t))
+#define ENTRIES_PER_GROUP              (2*sizeof(entry_group_t))
+#define ENTRIES_PER_GROUP_COMPACT      (4*sizeof(entry_group_t))
 
 static int         findchunk(PruneData *pd, int nchunks, uint64_t i);
 static void        genptable_bfs(PruneData *pd, int d, int nt, int nc);
+static void        genptable_compress(PruneData *pd);
 static void        genptable_fixnasty(PruneData *pd, int d);
+static void        genptable_setbase(PruneData *pd);
 static void *      instance_bfs(void *arg);
 static void        ptable_update(PruneData *pd, Cube cube, int m);
 static void        ptable_update_index(PruneData *pd, uint64_t ind, int m);
@@ -76,6 +78,7 @@ pd_htrfin_htr = {
 	.moveset  = &moveset_htr,
 };
 
+/* TODO: remove */
 PruneData
 pd_khuge_HTM = {
 	.filename = "pt_khuge_HTM",
@@ -88,6 +91,10 @@ pd_nxopt31_HTM = {
 	.filename = "pt_nxopt31_HTM",
 	.coord    = &coord_nxopt31,
 	.moveset  = &moveset_HTM,
+
+	.compact  = true,
+	.fallback = &pd_drud_sym16_HTM,
+	.fbmod    = BINOM8ON4,
 };
 
 PruneData * allpd[NPTABLES] = {
@@ -100,7 +107,7 @@ PruneData * allpd[NPTABLES] = {
 	&pd_drudfin_noE_sym16_drud,
 	&pd_htr_drud,
 	&pd_htrfin_htr,
-	&pd_khuge_HTM,
+/*	&pd_khuge_HTM,*/
 	&pd_nxopt31_HTM,
 };
 
@@ -135,10 +142,9 @@ genptable(PruneData *pd, int nthreads)
 	}
 	pd->generated = true;
 
-	nchunks = MIN(pd->coord->max/ENTRIES_PER_GROUP, NCHUNKS);
-	fprintf(stderr, "Cannot load %s, generating it "
-			"with %d threads and %d chunks\n",
-			pd->filename, nthreads, nchunks); 
+	nchunks = MIN(ptablesize(pd), 100000);
+	fprintf(stderr, "Cannot load %s, generating it with %d threads\n",
+			pd->filename, nthreads); 
 
 	memset(pd->ptable, ~(uint8_t)0, ptablesize(pd)*sizeof(entry_group_t));
 
@@ -150,16 +156,22 @@ genptable(PruneData *pd, int nthreads)
 		PRIu64 "\t(%" PRIu64 "/%" PRIu64 ")\n",
 		0, pd->n - oldn, pd->n, pd->coord->max);
 	oldn = pd->n;
+	pd->count[0] = pd->n;
 	for (d = 0; d < 15 && pd->n < pd->coord->max; d++) {
 		genptable_bfs(pd, d, nthreads, nchunks);
 		genptable_fixnasty(pd, d+1);
 		fprintf(stderr, "Depth %d done, generated %"
 			PRIu64 "\t(%" PRIu64 "/%" PRIu64 ")\n",
 			d+1, pd->n - oldn, pd->n, pd->coord->max);
+		pd->count[d+1] = pd->n - oldn;
 		oldn = pd->n;
 	}
 	fprintf(stderr, "Pruning table generated!\n");
-
+	
+	genptable_setbase(pd);
+	if (pd->compact)
+		genptable_compress(pd);
+	
 	if (!write_ptable_file(pd))
 		fprintf(stderr, "Error writing ptable file\n");
 }
@@ -199,6 +211,27 @@ genptable_bfs(PruneData *pd, int d, int nthreads, int nchunks)
 }
 
 static void
+genptable_compress(PruneData *pd)
+{
+	int val;
+	uint64_t i, j;
+	entry_group_t mask, v;
+
+	pd->compact = false;
+	for (i = 0; i < pd->coord->max; i += ENTRIES_PER_GROUP_COMPACT) {
+		mask = 0;
+		for (j = 0; j < ENTRIES_PER_GROUP_COMPACT; j++) {
+			val = ptableval_index(pd, i+j) - pd->base;
+			v = MIN(3, MAX(0, val));
+			mask |= v << (2*j);
+		}
+		pd->ptable[i/ENTRIES_PER_GROUP_COMPACT] = mask;
+	}
+	pd->compact = true;
+	realloc(pd->ptable, sizeof(entry_group_t) * ptablesize(pd));
+}
+
+static void
 genptable_fixnasty(PruneData *pd, int d)
 {
 	uint64_t i;
@@ -224,6 +257,22 @@ genptable_fixnasty(PruneData *pd, int d)
 				}
 			}
 		}
+	}
+}
+
+static void
+genptable_setbase(PruneData *pd)
+{
+	int i;
+	uint64_t sum, newsum;
+
+	pd->base = 0;
+	sum = pd->count[0] + pd->count[1] + pd->count[2];
+	for (i = 3; i < 16; i++) {
+		newsum = sum + pd->count[i] - pd->count[i-3];
+		if (newsum > sum)
+			pd->base = i-3;
+		sum = newsum;
 	}
 }
 
@@ -276,26 +325,25 @@ instance_bfs(void *arg)
 void
 print_ptable(PruneData *pd)
 {
-	uint64_t i, a[16];
-	
-	for (i = 0; i < 16; i++)
-		a[i] = 0;
+	uint64_t i;
 
 	if (!pd->generated)
 		genptable(pd, 1); /* TODO: set default nthreads somewhere */
-
-	for (i = 0; i < pd->coord->max; i++)
-		a[ptableval_index(pd, i)]++;
 		
-	fprintf(stderr, "Values for table %s\n", pd->filename);
+	printf("Table %s\n", pd->filename);
+	printf("Base value: %d\n", pd->base);
 	for (i = 0; i < 16; i++)
-		printf("%2" PRIu64 "\t%10" PRIu64 "\n", i, a[i]);
+		printf("%2" PRIu64 "\t%10" PRIu64 "\n", i, pd->count[i]);
 }
 
 uint64_t
 ptablesize(PruneData *pd)
 {
-	return (pd->coord->max + ENTRIES_PER_GROUP - 1) / ENTRIES_PER_GROUP;
+	uint64_t e;
+
+	e = pd->compact ? ENTRIES_PER_GROUP_COMPACT : ENTRIES_PER_GROUP;
+
+	return (pd->coord->max + e - 1) / e;
 }
 
 static void
@@ -328,9 +376,10 @@ ptableval(PruneData *pd, Cube cube)
 static int
 ptableval_index(PruneData *pd, uint64_t ind)
 {
-	int sh;
+	int sh, ret;
 	entry_group_t mask;
-	uint64_t i;
+	uint64_t i, e;
+	entry_group_t m;
 
 	if (!pd->generated) {
 		fprintf(stderr, "Warning: request pruning table value"
@@ -340,11 +389,23 @@ ptableval_index(PruneData *pd, uint64_t ind)
 		genptable(pd, 1); /* TODO: set default or remove this case */
 	}
 
-	sh = 4 * (ind % ENTRIES_PER_GROUP);
-	mask = ((entry_group_t)15) << sh;
-	i = ind/ENTRIES_PER_GROUP;
+	e = pd->compact ? ENTRIES_PER_GROUP_COMPACT : ENTRIES_PER_GROUP;
+	m = pd->compact ? 3 : 15;
 
-	return (pd->ptable[i] & mask) >> sh;
+	sh = 4 * (ind % e);
+	mask = m << sh;
+	i = ind/e;
+
+	ret = (pd->ptable[i] & mask) >> sh;
+
+	if (pd->compact) {
+		if (ret)
+			ret += pd->base;
+		else
+			ret = ptableval_index(pd->fallback, ind % pd->fbmod);
+	}
+
+	return ret;
 }
 
 static bool
@@ -354,6 +415,7 @@ read_ptable_file(PruneData *pd)
 
 	FILE *f;
 	char fname[strlen(tabledir)+100];
+	int i;
 	uint64_t r;
 
 	strcpy(fname, tabledir);
@@ -363,10 +425,14 @@ read_ptable_file(PruneData *pd)
 	if ((f = fopen(fname, "rb")) == NULL)
 		return false;
 
-	r = fread(pd->ptable, sizeof(entry_group_t), ptablesize(pd), f);
+	r = fread(&(pd->base), sizeof(int), 1, f);
+	for (i = 0; i < 16; i++)
+		r += fread(&(pd->count[i]), sizeof(uint64_t), 1, f);
+	r += fread(pd->ptable, sizeof(entry_group_t), ptablesize(pd), f);
+
 	fclose(f);
 
-	return r == ptablesize(pd);
+	return r == 17 + ptablesize(pd);
 }
 
 static bool
@@ -376,7 +442,8 @@ write_ptable_file(PruneData *pd)
 
 	FILE *f;
 	char fname[strlen(tabledir)+100];
-	uint64_t written;
+	int i;
+	uint64_t w;
 
 	strcpy(fname, tabledir);
 	strcat(fname, "/");
@@ -385,9 +452,12 @@ write_ptable_file(PruneData *pd)
 	if ((f = fopen(fname, "wb")) == NULL)
 		return false;
 
-	written = fwrite(pd->ptable, sizeof(entry_group_t), ptablesize(pd), f);
+	w = fwrite(&(pd->base), sizeof(int), 1, f);
+	for (i = 0; i < 16; i++)
+		w += fwrite(&(pd->count[i]), sizeof(uint64_t), 1, f);
+	w += fwrite(pd->ptable, sizeof(entry_group_t), ptablesize(pd), f);
 	fclose(f);
 
-	return written == ptablesize(pd);
+	return w == 17 + ptablesize(pd);
 }
 

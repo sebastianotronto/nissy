@@ -265,6 +265,11 @@ prunedata
 	uint64_t                  n;
 	Coordinate *              coord;
 	Moveset *                 moveset;
+	bool                      compact;
+	int                       base;
+	uint64_t                  count[16];
+	PruneData *               fallback;
+	uint64_t                  fbmod;
 };
 
 struct
