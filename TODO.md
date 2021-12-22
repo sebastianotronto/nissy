@@ -17,6 +17,7 @@ It's more of a personal reminder than anything else.
 * QTM optimal solving (important: fix possible_next, which works only for HTM now)
 * Block-building steps (cross, roux blocks, ...)
 * Other common steps (LSE, ...)
+* optimal after eo (without breaking eo)
 
 ### Improvements to currently implemented commands
 * solve should re-orient first if needed and not just give up if centers are off
@@ -30,6 +31,9 @@ It's more of a personal reminder than anything else.
 ### New features
 * cleanup: translate an alg to the standard HTM moveset + reorient at the end
 * configurability: add an `alias` command, run config file at startup
+* configure max ram to be used (via config file and/or command line option)
+* command to transform cube and alg
+* command notation to list available moves
 
 ## Distribution
 
@@ -41,9 +45,17 @@ It's more of a personal reminder than anything else.
 ## Technical stuff
 
 ### Memory management
+* free pruning table after solve is done? if so, I need to add another way
+  of doing batch solving (I don't want to re-load the tables every time);
+  for example I could add the possibility of reading scrambles from file,
+  and execute the same solve command to every line; also improve multi-threading:
+  I can just solve one scramble per thread, it's better because there is no lock.
+* alternative: just add a command "free" to free up memory; it is not
+  user friendly (who wants to manage memory manually?) but on the other hand
+  it will only be used by the few who have less than 4(?) Gb of ram.
 * Check if memory is enough for loading pruning tables; if not, abort
-* For optimal solver: choose largest that fits in memory between
-  khuge, shug6 and light
+* For optimal solver: choose largest that fits in memory between nxopt and light
+* Remove ptable khuge
 
 ### Performance
 * solve (allow_next): filter out based on base_move; only check once for each
@@ -54,10 +66,6 @@ It's more of a personal reminder than anything else.
   (like in light optimal solver)
 * Another idea: DR + cornershtr (5Gb table); same as above, de Bondt's trick
   does not work but I can use half-turn trick
-
-### Coordinates, symmetries, pruning tables
-* Use pruning values mod 4 instead of mod 16 (or maybe not, I like the
-current system)
 
 ### Structural changes
 * client/server architecture: run a server process in the background so that
