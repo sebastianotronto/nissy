@@ -78,13 +78,14 @@ pd_htrfin_htr = {
 	.moveset  = &moveset_htr,
 };
 
-/* TODO: remove */
+/*
 PruneData
 pd_khuge_HTM = {
 	.filename = "pt_khuge_HTM",
 	.coord    = &coord_khuge,
 	.moveset  = &moveset_HTM,
 };
+*/
 
 PruneData
 pd_nxopt31_HTM = {
@@ -399,10 +400,16 @@ ptableval_index(PruneData *pd, uint64_t ind)
 		genptable(pd, 1); /* TODO: set default or remove this case */
 	}
 
-	e = pd->compact ? ENTRIES_PER_GROUP_COMPACT : ENTRIES_PER_GROUP;
-	m = (entry_group_t)(pd->compact ? 3 : 15);
+	if (pd->compact) {
+		e  = ENTRIES_PER_GROUP_COMPACT;
+		m  = 3;
+		sh = (ind % e) * 2;
+	} else {
+		e  = ENTRIES_PER_GROUP;
+		m  = 15;
+		sh = (ind % e) * 4;
+	}
 
-	sh = (ind % e) * (pd->compact ? 2 : 4);
 	mask = m << sh;
 	i = ind/e;
 

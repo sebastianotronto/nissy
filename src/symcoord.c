@@ -8,19 +8,19 @@ static Cube        antindex_cp_sym16(uint64_t ind);
 static Cube        antindex_eofbepos_sym16(uint64_t ind);
 static Cube        antindex_drud_sym16(uint64_t ind);
 static Cube        antindex_drudfin_noE_sym16(uint64_t ind);
-static Cube        antindex_khuge(uint64_t ind);
+/*static Cube        antindex_khuge(uint64_t ind);*/
 static Cube        antindex_nxopt31(uint64_t ind);
 
 static uint64_t    index_cp_sym16(Cube cube);
 static uint64_t    index_eofbepos_sym16(Cube cube);
 static uint64_t    index_drud_sym16(Cube cube);
 static uint64_t    index_drudfin_noE_sym16(Cube cube);
-static uint64_t    index_khuge(Cube cube);
+/*static uint64_t    index_khuge(Cube cube);*/
 static uint64_t    index_nxopt31(Cube cube);
 
 static int         transfinder_drud_sym16(uint64_t ind, Trans *ret);
 static int         transfinder_drudfin_noE_sym16(uint64_t ind, Trans *ret);
-static int         transfinder_khuge(uint64_t ind, Trans *ret);
+/*static int         transfinder_khuge(uint64_t ind, Trans *ret);*/
 static int         transfinder_nxopt31(uint64_t ind, Trans *ret);
 
 static void        gensym(SymData *sd);
@@ -93,6 +93,7 @@ coord_drudfin_noE_sym16 = {
 	.trans  = transfinder_drudfin_noE_sym16,
 };
 
+/*
 Coordinate
 coord_khuge = {
 	.index  = index_khuge,
@@ -100,6 +101,7 @@ coord_khuge = {
 	.max    = POW3TO7 * FACTORIAL4 * CLASSES_EOFBEPOS_16,
 	.trans  = transfinder_khuge,
 };
+*/
 
 Coordinate
 coord_nxopt31 = {
@@ -148,6 +150,7 @@ antindex_drudfin_noE_sym16(uint64_t ind)
 	return c1;
 }
 
+/*
 static Cube
 antindex_khuge(uint64_t ind)
 {
@@ -159,6 +162,7 @@ antindex_khuge(uint64_t ind)
 
 	return c;
 }
+*/
 
 static Cube
 antindex_nxopt31(uint64_t ind)
@@ -208,6 +212,7 @@ index_eofbepos_sym16(Cube cube)
 	return sd_eofbepos_16.class[coord_eofbepos.index(cube)];
 }
 
+/*
 static uint64_t
 index_khuge(Cube cube)
 {
@@ -221,6 +226,7 @@ index_khuge(Cube cube)
 
 	return a * POW3TO7 + c.coud;
 }
+*/
 
 static uint64_t
 index_nxopt31(Cube cube)
@@ -280,6 +286,7 @@ transfinder_drudfin_noE_sym16(uint64_t ind, Trans *ret)
 	return naux[trueind];
 }
 
+/*
 static int
 transfinder_khuge(uint64_t ind, Trans *ret)
 {
@@ -301,6 +308,7 @@ transfinder_khuge(uint64_t ind, Trans *ret)
 		ret[j] = retaux[trueind][j];
 	return naux[trueind];
 }
+*/
 
 static int
 transfinder_nxopt31(uint64_t ind, Trans *ret)

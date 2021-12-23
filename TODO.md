@@ -73,3 +73,9 @@ It's more of a personal reminder than anything else.
 * client/server architecture: run a server process in the background so that
   multiple client processess can send it queries and get results; this would
   open up the door for a web-based version or graphical clients
+
+### Cleanup
+* Remove khuge from everywhere
+* sort again functions alphabetically in their files
+* more stuff to load at start (or when suitable command is called) rather
+  than when called directly, to avoid nasty problems with threading

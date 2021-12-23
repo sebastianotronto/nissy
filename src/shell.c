@@ -97,12 +97,6 @@ launch(bool batchmode)
 int
 main(int argc, char *argv[])
 {
-/*
-	init_movesets();
-	init_symcoord();
-	print_ptable(&pd_nxopt31_HTM);
-*/
-
 	if (argc > 1) {
 		if (!strcmp(argv[1], "-b")) {
 			launch(true);

@@ -35,7 +35,7 @@ static int              estimate_dr_eofb(DfsArg *arg);
 static int              estimate_drudfin_drud(DfsArg *arg);
 static int              estimate_htr_drud(DfsArg *arg);
 static int              estimate_htrfin_htr(DfsArg *arg);
-static int              estimate_optimal_HTM(DfsArg *arg);
+/*static int              estimate_khuge_HTM(DfsArg *arg);*/
 static int              estimate_nxopt31_HTM(DfsArg *arg);
 static int              estimate_light_HTM(DfsArg *arg);
 
@@ -60,14 +60,17 @@ static char check_drany_msg[100]   = "DR must be solved on at least one axis";
 /* Steps *********************************************************************/
 
 /* Optimal solvers *******************/
+
+/* This is not used anymore, I'll keep it just in case */
+/*
 Step
-optimal_HTM = {
-	.shortname = "optimal",
-	.name      = "Optimal solve (in HTM)",
+optimal_khuge_HTM = {
+	.shortname = "khuge",
+	.name      = "Optimal solve (in HTM) using khuge table",
 
 	.final     = true,
 	.is_done   = is_solved,
-	.estimate  = estimate_optimal_HTM,
+	.estimate  = estimate_khuge_HTM,
 	.ready     = check_centers,
 	.ready_msg = check_centers_msg,
 	.is_valid  = always_valid,
@@ -78,11 +81,12 @@ optimal_HTM = {
 	.tables    = {&pd_khuge_HTM, &pd_corners_HTM},
 	.ntables   = 2,
 };
+*/
 
 Step
-optimal_nxopt31_HTM = {
-	.shortname = "nxopt31",
-	.name      = "Optimal solve (in HTM), nxopt31 table",
+optimal_HTM = {
+	.shortname = "optimal",
+	.name      = "Optimal solve (in HTM)",
 
 	.final     = true,
 	.is_done   = is_solved,
@@ -856,7 +860,6 @@ htrfin_htr = {
 
 Step *steps[NSTEPS] = {
 	&optimal_HTM, /* first is default */
-	&optimal_nxopt31_HTM,
 	&optimal_light_HTM,
 
 	&eoany_HTM,
@@ -1203,11 +1206,13 @@ estimate_htrfin_htr(DfsArg *arg)
 	return ptableval(&pd_htrfin_htr, arg->cube);
 }
 
+/*
 static int
-estimate_optimal_HTM(DfsArg *arg)
+estimate_khuge_HTM(DfsArg *arg)
 {
 	return estimate_nxoptlike(arg, &pd_khuge_HTM);
 }
+*/
 
 static int
 estimate_nxopt31_HTM(DfsArg *arg)
