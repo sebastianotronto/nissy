@@ -322,7 +322,7 @@ help_exec(CommandArgs *args)
 		       "available commands.\n"
 		       "See the manual page for more details. The manual"
 		       " page is available with \"man nissy\" on a UNIX"
-		       " system (such a Linux or MacOS) or in pdf and html"
+		       " system (such as Linux or MacOS) or in pdf and html"
 		       " format in the docs folder.\n"
 		       "Nissy is available for free at "
 		       "https://github.com/sebastianotronto/nissy\n"

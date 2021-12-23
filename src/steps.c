@@ -1497,6 +1497,9 @@ prepare_step(Step *step, SolveOptions *opts)
 		fprintf(stderr, "Step is final, NISS not used (-n ignored)\n");
 	}
 
-	for (i = 0; i < step->ntables; i++)
+	for (i = 0; i < step->ntables; i++) {
 		genptable(step->tables[i], opts->nthreads);
+		if (step->tables[i]->compact)
+			genptable(step->tables[i]->fallback, opts->nthreads);
+	}
 }

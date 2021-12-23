@@ -60,6 +60,8 @@ It's more of a personal reminder than anything else.
 ### Performance
 * solve (allow_next): filter out based on base_move; only check once for each
   triple of moves; how to deal with different movesets?
+
+### Other optimal solvers
 * try htr corners + edges in slice but not oriented (300Mb table);
   de Bondt's trick does not work, but I can use full symmetry and
   take advantage of the fact that it is a subset invariant under half-turns

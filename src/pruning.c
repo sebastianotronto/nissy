@@ -127,19 +127,25 @@ findchunk(PruneData *pd, int nchunks, uint64_t i)
 void
 genptable(PruneData *pd, int nthreads)
 {
+	bool compact;
 	int d, nchunks;
-	uint64_t oldn;
+	uint64_t oldn, sz;
 
 	if (pd->generated)
 		return;
 
 	/* TODO: check if memory is enough, otherwise maybe exit gracefully? */
-	pd->ptable = malloc(ptablesize(pd) * sizeof(entry_group_t));
+	sz = ptablesize(pd) * (pd->compact ? 2 : 1);
+	pd->ptable = malloc(sz * sizeof(entry_group_t));
 
 	if (read_ptable_file(pd)) {
 		pd->generated = true;
 		return;
 	}
+
+	/* For the first steps we proceed the same way for compact and not */
+	compact = pd->compact;
+	pd->compact = false;
 	pd->generated = true;
 
 	nchunks = MIN(ptablesize(pd), 100000);
@@ -169,7 +175,7 @@ genptable(PruneData *pd, int nthreads)
 	fprintf(stderr, "Pruning table generated!\n");
 	
 	genptable_setbase(pd);
-	if (pd->compact)
+	if (compact)
 		genptable_compress(pd);
 	
 	if (!write_ptable_file(pd))
@@ -217,18 +223,22 @@ genptable_compress(PruneData *pd)
 	uint64_t i, j;
 	entry_group_t mask, v;
 
-	pd->compact = false;
+	fprintf(stderr, "Compressing table to 2 bits per entry\n");
+
 	for (i = 0; i < pd->coord->max; i += ENTRIES_PER_GROUP_COMPACT) {
-		mask = 0;
+		mask = (entry_group_t)0;
 		for (j = 0; j < ENTRIES_PER_GROUP_COMPACT; j++) {
+			if (i+j >= pd->coord->max)
+				break;
 			val = ptableval_index(pd, i+j) - pd->base;
-			v = MIN(3, MAX(0, val));
+			v = (entry_group_t)MIN(3, MAX(0, val));
 			mask |= v << (2*j);
 		}
 		pd->ptable[i/ENTRIES_PER_GROUP_COMPACT] = mask;
 	}
+
 	pd->compact = true;
-	realloc(pd->ptable, sizeof(entry_group_t) * ptablesize(pd));
+	pd->ptable = realloc(pd->ptable, sizeof(entry_group_t)*ptablesize(pd));
 }
 
 static void
@@ -390,9 +400,9 @@ ptableval_index(PruneData *pd, uint64_t ind)
 	}
 
 	e = pd->compact ? ENTRIES_PER_GROUP_COMPACT : ENTRIES_PER_GROUP;
-	m = pd->compact ? 3 : 15;
+	m = (entry_group_t)(pd->compact ? 3 : 15);
 
-	sh = 4 * (ind % e);
+	sh = (ind % e) * (pd->compact ? 2 : 4);
 	mask = m << sh;
 	i = ind/e;
 
@@ -402,7 +412,7 @@ ptableval_index(PruneData *pd, uint64_t ind)
 		if (ret)
 			ret += pd->base;
 		else
-			ret = ptableval_index(pd->fallback, ind % pd->fbmod);
+			ret = ptableval_index(pd->fallback, ind / pd->fbmod);
 	}
 
 	return ret;
