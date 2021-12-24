@@ -121,6 +121,27 @@ optimal_light_HTM = {
 	.ntables   = 2,
 };
 
+/* Optimal after EO ******************/
+
+Step
+eofin_eo = {
+	.shortname = "eofin",
+	.name      = "Optimal solve after EO without breaking EO (detected)",
+
+	.final     = true,
+	.is_done   = is_solved,
+	.estimate  = estimate_nxopt31_HTM,
+	.ready     = check_eofb,
+	.ready_msg = check_eo_msg,
+	.is_valid  = always_valid,
+	.moveset   = &moveset_eofb,
+
+	.detect    = detect_pretrans_eofb,
+
+	.tables    = {&pd_nxopt31_HTM, &pd_corners_HTM},
+	.ntables   = 2,
+};
+
 Step
 eofbfin_eofb = {
 	.shortname = "eofbfin",
@@ -135,6 +156,44 @@ eofbfin_eofb = {
 	.moveset   = &moveset_eofb,
 
 	.pre_trans = uf,
+
+	.tables    = {&pd_nxopt31_HTM, &pd_corners_HTM},
+	.ntables   = 2,
+};
+
+Step
+eorlfin_eorl = {
+	.shortname = "eorlfin",
+	.name      = "Optimal after EO on R/L without breaking EO",
+
+	.final     = true,
+	.is_done   = is_solved,
+	.estimate  = estimate_nxopt31_HTM,
+	.ready     = check_eofb,
+	.ready_msg = check_eo_msg,
+	.is_valid  = always_valid,
+	.moveset   = &moveset_eofb,
+
+	.pre_trans = ur,
+
+	.tables    = {&pd_nxopt31_HTM, &pd_corners_HTM},
+	.ntables   = 2,
+};
+
+Step
+eoudfin_eoud = {
+	.shortname = "eoudfin",
+	.name      = "Optimal after EO on U/D without breaking EO",
+
+	.final     = true,
+	.is_done   = is_solved,
+	.estimate  = estimate_nxopt31_HTM,
+	.ready     = check_eofb,
+	.ready_msg = check_eo_msg,
+	.is_valid  = always_valid,
+	.moveset   = &moveset_eofb,
+
+	.pre_trans = fd,
 
 	.tables    = {&pd_nxopt31_HTM, &pd_corners_HTM},
 	.ntables   = 2,
@@ -880,7 +939,11 @@ htrfin_htr = {
 Step *steps[NSTEPS] = {
 	&optimal_HTM, /* first is default */
 	&optimal_light_HTM,
+
+	&eofin_eo,
 	&eofbfin_eofb,
+	&eorlfin_eorl,
+	&eoudfin_eoud,
 
 	&eoany_HTM,
 	&eofb_HTM,
