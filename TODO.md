@@ -17,7 +17,6 @@ It's more of a personal reminder than anything else.
 * QTM optimal solving (important: fix possible_next, which works only for HTM now)
 * Block-building steps (cross, roux blocks, ...)
 * Other common steps (LSE, ...)
-* optimal after eo (without breaking eo)
 
 ### Improvements to currently implemented commands
 * solve should re-orient first if needed and not just give up if centers are off
@@ -27,7 +26,6 @@ It's more of a personal reminder than anything else.
 * for solve -v, solving in different orientation does not give meaningful info,
   because I need to transform the alg as I go.
 * for solve -v, print certain info like average branching value
-* solve should default to +infity for -s if other bounds are given
 
 ### New features
 * cleanup: translate an alg to the standard HTM moveset + reorient at the end
