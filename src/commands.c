@@ -115,6 +115,7 @@ CommandArgs *
 solve_parse_args(int c, char **v)
 {
 	int i;
+	bool infinitesols, fixedmsols;
 	long val;
 
 	CommandArgs *a = new_args();
@@ -129,6 +130,9 @@ solve_parse_args(int c, char **v)
 	a->opts->all           = false;
 	a->opts->print_number  = true;
 	a->opts->count_only    = false;
+
+	fixedmsols = false;
+	infinitesols = false;
 
 	for (i = 0; i < c; i++) {
 		if (!strcmp(v[i], "-m") && i+1 < c) {
@@ -149,6 +153,7 @@ solve_parse_args(int c, char **v)
 				return a;
 			}
 			a->opts->max_moves = val;
+			infinitesols = true;
 		} else if (!strcmp(v[i], "-t") && i+1 < c) {
 			val = strtol(v[++i], NULL, 10);
 			if (val < 1 || val > 64) {
@@ -166,8 +171,10 @@ solve_parse_args(int c, char **v)
 				return a;
 			}
 			a->opts->max_solutions = val;
+			fixedmsols = true;
 		} else if (!strcmp(v[i], "-o")) {
 			a->opts->optimal_only = true;
+			infinitesols = true;
 		} else if (!strcmp(v[i], "-n")) {
 			a->opts->can_niss = true;
 		} else if (!strcmp(v[i], "-v")) {
@@ -182,6 +189,9 @@ solve_parse_args(int c, char **v)
 			break;
 		}
 	}
+
+	if (infinitesols && !fixedmsols)
+		a->opts->max_solutions = 1000000; /* 1M = +infty */
 
 	a->success = read_scramble(c-i, &v[i], a);
 	return a;
