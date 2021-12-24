@@ -33,6 +33,7 @@ It's more of a personal reminder than anything else.
 * configure max ram to be used (via config file and/or command line option)
 * command to transform cube and alg
 * command notation to list available moves
+*
 
 ## Distribution
 
