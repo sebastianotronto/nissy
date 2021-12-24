@@ -21,6 +21,12 @@ solutions for EO/DR/HTR or similar substeps.
 
 ## Requirements
 
+** Warning: ** *This section is not up to date with the code. In nissy-2.0beta8
+or later the only way to get the table files is to generate them yourself.
+All but the huge table just requires a few minutes; the huge table for 
+optimal solving can require a couple of hours. Use more than 1 thread
+if you can.*
+
 A full installation of Nissy requires a little more than 2Gb of space,
 of which 1.6Gb are occupied by the huge pruning table for fast optimal solving,
 and running it requires the same amount of RAM.
@@ -120,17 +126,26 @@ of the cube if not necessary).
 
 Some coordinates make use of symmetries to reduce the size of the resulting
 pruning table. Unfortunately this complicates the code a lot, but it is a huge
-advantage: it reduces by a factor of about 16 the huge pruning table, which
-results in around 1.6Gb instead of 24 or so.
+advantage: it reduces by a factor of about 16 the pruning table size.
 
 Pruning tables are related to a specific step, a moveset and a coordinate. They
 contain one value from 0 to 15 (4 bits) for each possible value for the coordinate,
 which is less or equal than the minimum number of moves required to solve the
 given step with the given moveset for a cube which has the given coordinate. For example,
 say the coordinate `neo` gives the number of non-oriented edges (say with respect to
-F/B). Then the possible values for the coordinate are 0,2,4,...,12. An associate pruning
-table to solving EO with HTM moveset and this coordinate would have values 0 (for
-`neo=0`), 3 (for `neo=2`), 1 (for `neo=4`)...
+F/B). Then the possible values for the coordinate are 0,2,4,...,12. An associated
+pruning table to solving EO with HTM moveset and this coordinate would have values 0
+(for `neo=0`), 3 (for `neo=2`), 1 (for `neo=4`)...
+
+The values for most pruning tables are memorized modulo 16, so they only occupy
+4 bits per entry, and values larger than 15 are saved as 15. This is good enough
+for most applications.
+Some large tables are memorized in compact form using only 4 bits, similarly
+to what [nxopt](https://github.com/rokicki/cube20src/blob/master/nxopt.md) does:
+a base value `b` is picked and a value of `n` is saved as `MIN(3,MAX(0,n-b))`.
+When a value of `v=1,2,3` is read it is simply returned as `v+b`, while if
+`0` is a successive lookup to a fallback table is performed. The base value `b`
+is picked to maximize the sum frequency of the values `1,2,3`.
 
 There is one caveat: each coordinates also needs an inverse function that takes a
 coordinate value and returns a cube which has that coordinate. This is in general

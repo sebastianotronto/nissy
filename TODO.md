@@ -38,6 +38,7 @@ It's more of a personal reminder than anything else.
 
 * Add EXAMPLES.md file
 * webapp (cgi)
+* Re-upload tables, fix README.md
 
 ## Technical stuff
 
@@ -52,11 +53,6 @@ It's more of a personal reminder than anything else.
   it will only be used by the few who have less than 4(?) Gb of ram.
 * Check if memory is enough for loading pruning tables; if not, abort
 * For optimal solver: choose largest that fits in memory between nxopt and light
-* Remove ptable khuge
-
-### Performance
-* solve (allow_next): filter out based on base_move; only check once for each
-  triple of moves; how to deal with different movesets?
 
 ### Other optimal solvers
 * try htr corners + edges in slice but not oriented (300Mb table);
