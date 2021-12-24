@@ -24,9 +24,6 @@ allowed_next(Move m, DfsArg *arg)
 	bool bad, allowed, order;
 	uint64_t mbit;
 
-	if (arg->last1 == NULLMOVE)
-		return true;
-
 	mbit    = ((uint64_t)1) << m;
 	bad     = mbit & arg->badmoves;
 	allowed = mbit & arg->step->moveset->mask[arg->last2][arg->last1];
