@@ -13,12 +13,12 @@
 .
 .Sh DESCRIPTION
 .Nm
-is a Rubik's Cube solver. Its optimal solver function uses Kociemba's one-step
-algorithm (huge optimal solver), and its performance is comparable to that
-of Kociemba's implementation in Cube Explorer when using a single CPU
-thread, and much faster when using multiple threads.
-nissy can also solve different substeps of the Thistlethwaite's algorithm
-and more.
+is a Rubik's Cube solver. 
+It uses techniques from Herbert Kociemba's Cube Explorer and
+Tomas Rokicki's nxopt. With 4 cores at 2.5GHz and using less than 3Gb
+of RAM, Nissy can find the optimal solution for a random Rubik's cube position
+in less than a minute (18 moves or less) to a few minutes.
+Nissy can also solve different substeps of the Thistlethwaite's algorithm and more.
 .Pp
 When run without any argument an interactive shell is launched, otherwise
 the provided

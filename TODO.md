@@ -38,9 +38,7 @@ It's more of a personal reminder than anything else.
 
 ## Distribution
 
-* README.md: cite nxopt
 * Add EXAMPLES.md file
-* better man page
 * webapp (cgi)
 
 ## Technical stuff

@@ -1,18 +1,19 @@
 # Nissy
 
 A Rubik's cube solver and FMC assistant.
-For optimal HTM solving nissy uses the same method as Herbert Kociemba's
-[Cube Explorer](http://kociemba.org/cube.htm). When using a single CPU thread
-its performance are comparable, but nissy is much faster when using multiple
-threads (with the -t option for the solve command). 
-issy can also solve many different substeps of
-Thistlethwaite's algorithm (DR/HTR), and can use NISS (Normal-Inverse Scramble Switch).
+For optimal HTM solving Nissy uses techniquest from Herbert Kociemba's
+[Cube Explorer](http://kociemba.org/cube.htm) and Tomas Rokicki's
+[nxopt](https://github.com/rokicki/cube20src/blob/master/nxopt.md).
+With 4 cores at 2.5GHz and using less than 3Gb of RAM, Nissy can find an
+optimal solution in less than a minute (18 moves or less) to a few minutes.
 
+Nissy can also solve many different substeps of Thistlethwaite's algorithm
+(DR/HTR), and can use NISS (Normal-Inverse Scramble Switch).
 It can be useful to analyze your DR solves (and more, once I implement more features).
 
-## Why should I use nissy?
+## Why should I use Nissy?
 
-You should use nissy if you:
+You should use Nissy if you:
 * Want to analyze your DR solutions or check for multiple optimal (or sub-optimal)
 solutions for EO/DR/HTR or similar substeps.
 * You just want a Rubik's cube solver and you like command line interfaces.
@@ -20,7 +21,7 @@ solutions for EO/DR/HTR or similar substeps.
 
 ## Requirements
 
-A full installation of nissy requires a little more than 2Gb of space,
+A full installation of Nissy requires a little more than 2Gb of space,
 of which 1.6Gb are occupied by the huge pruning table for fast optimal solving,
 and running it requires the same amount of RAM.
 One can choose to never use this function and not to install the relative
@@ -48,14 +49,14 @@ Follows the instructions below to install the pruning tables.
 ### Tables
 Nissy needs to generate certain large tables to work. These tables are by default
 generated the first time they are needed (e.g the first time you ask to solve a
-certain step) and then saved to a file. The following times nissy simply loads the
+certain step) and then saved to a file. The following times Nissy simply loads the
 corresponding file from the hard disk.
 
 The very large table for optimal solving can take some time to generate (about 20
 minutes on my fairly old but decent laptop, using 8 CPU threads). All other
 tables are much faster.
 
-You can ask nissy to generate all the tables it will ever need with the **gen**
+You can ask Nissy to generate all the tables it will ever need with the **gen**
 command. It is recommended to use more than one thread, if your CPU has them.
 For example, you can run:
 
@@ -86,7 +87,7 @@ I'll try to explain here the main parts of the program.
 
 ### Cube, moves and transformations
 
-There are many ways to represent a cube. In nissy I use two:
+There are many ways to represent a cube. In Nissy I use two:
 * An array representation `CubeArray`: 3 arrays representing the permutation
 of corners, edges and centers and 2 arrays for the orientation of corners and edges.
 * An 11-integers representation `Cube`: 3 integers for edge orientation (with respect
