@@ -121,6 +121,25 @@ optimal_light_HTM = {
 	.ntables   = 2,
 };
 
+Step
+eofbfin_eofb = {
+	.shortname = "eofbfin",
+	.name      = "Optimal after EO on F/B without breaking EO",
+
+	.final     = true,
+	.is_done   = is_solved,
+	.estimate  = estimate_nxopt31_HTM,
+	.ready     = check_eofb,
+	.ready_msg = check_eo_msg,
+	.is_valid  = always_valid,
+	.moveset   = &moveset_eofb,
+
+	.pre_trans = uf,
+
+	.tables    = {&pd_nxopt31_HTM, &pd_corners_HTM},
+	.ntables   = 2,
+};
+
 /* EO steps **************************/
 Step
 eoany_HTM = {
@@ -861,6 +880,7 @@ htrfin_htr = {
 Step *steps[NSTEPS] = {
 	&optimal_HTM, /* first is default */
 	&optimal_light_HTM,
+	&eofbfin_eofb,
 
 	&eoany_HTM,
 	&eofb_HTM,

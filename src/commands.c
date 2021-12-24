@@ -128,6 +128,7 @@ solve_parse_args(int c, char **v)
 	a->opts->verbose       = false;
 	a->opts->all           = false;
 	a->opts->print_number  = true;
+	a->opts->count_only    = false;
 
 	for (i = 0; i < c; i++) {
 		if (!strcmp(v[i], "-m") && i+1 < c) {
@@ -175,6 +176,8 @@ solve_parse_args(int c, char **v)
 			a->opts->all = true;
 		} else if (!strcmp(v[i], "-p")) {
 			a->opts->print_number = false;
+		} else if (!strcmp(v[i], "-c")) {
+			a->opts->count_only = true;
 		} else if (!read_step(a, v[i])) {
 			break;
 		}
@@ -265,7 +268,11 @@ solve_exec(CommandArgs *args)
 	c = apply_alg(args->scramble, (Cube){0});
 	sols = solve(c, args->step, args->opts);
 
-	print_alglist(sols, args->opts->print_number);
+	if (args->opts->count_only)
+		printf("%d\n", sols->len);
+	else
+		print_alglist(sols, args->opts->print_number);
+
 	free_alglist(sols);
 }
 

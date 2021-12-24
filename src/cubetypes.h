@@ -284,6 +284,7 @@ solveoptions
 	bool                      verbose;
 	bool                      all;
 	bool                      print_number;
+	bool                      count_only;
 };
 
 struct

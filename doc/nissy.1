@@ -6,7 +6,7 @@
 .Nd a Rubik's cube solver and FMC assistant
 .
 .Sh SYNOPSIS
-.Nm Op Fl b
+.Op Fl b
 .Nm
 .Ar command
 .Op options...
@@ -82,6 +82,13 @@ command are the following:
 .
 .Bl -tag -width Ds
 .
+.It Fl a
+Print all solutions: some solutions are filtered out by default for some
+steps, for examples EOs that finish with F\(aq, with this options they are not.
+.
+.It Fl c
+Display only the number of solutions found, not the solutions themselves.
+.
 .It Fl m Ar min
 Only look for solution that are at least
 .Ar min
@@ -92,15 +99,6 @@ Only look for solution that are at most
 .Ar MAX
 moves long.
 .
-.It Fl s Ar n
-Try to find
-.Ar n
-solutions.
-.
-.It Fl a
-Print all solutions: some solutions are filtered out by default for some
-steps, for examples EOs that finish with F\(aq, with this options they are not.
-.
 .It Fl n
 Allow use of NISS.
 .
@@ -109,6 +107,11 @@ Only find solutions that require the minimum number of moves.
 .
 .It Fl p
 Plain style: do not print the number of moves.
+.
+.It Fl s Ar n
+Try to find
+.Ar n
+solutions.
 .
 .It Fl t Ar n
 Use
