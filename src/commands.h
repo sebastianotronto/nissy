@@ -4,7 +4,7 @@
 #include "solve.h"
 #include "steps.h"
 
-#define NCOMMANDS       10
+#define NCOMMANDS       20
 
 void                    free_args(CommandArgs *args);
 CommandArgs *           new_args();

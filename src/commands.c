@@ -6,17 +6,20 @@ CommandArgs *           solve_parse_args(int c, char **v);
 CommandArgs *           gen_parse_args(int c, char **v);
 CommandArgs *           help_parse_args(int c, char **v);
 CommandArgs *           print_parse_args(int c, char **v);
+CommandArgs *           parse_only_scramble(int c, char **v);
 CommandArgs *           parse_no_arg(int c, char **v);
 
 /* Exec functions ************************************************************/
 
 static void             gen_exec(CommandArgs *args);
+static void             invert_exec(CommandArgs *args);
 static void             solve_exec(CommandArgs *args);
 static void             steps_exec(CommandArgs *args);
 static void             commands_exec(CommandArgs *args);
 static void             print_exec(CommandArgs *args);
 static void             help_exec(CommandArgs *args);
 static void             quit_exec(CommandArgs *args);
+static void             unniss_exec(CommandArgs *args);
 static void             version_exec(CommandArgs *args);
 
 /* Local functions ***********************************************************/
@@ -42,6 +45,15 @@ gen_cmd = {
 	.description = "Generate all tables [using N threads]",
 	.parse_args  = gen_parse_args,
 	.exec        = gen_exec
+};
+
+Command
+invert_cmd = {
+	.name        = "invert",
+	.usage       = "invert SCRAMBLE]",
+	.description = "Invert a scramble",
+	.parse_args  = parse_only_scramble,
+	.exec        = invert_exec,
 };
 
 Command
@@ -90,6 +102,15 @@ quit_cmd = {
 };
 
 Command
+unniss_cmd = {
+	.name        = "unniss",
+	.usage       = "unniss SCRAMBLE",
+	.description = "Rewrite a scramble without NISS",
+	.parse_args  = parse_only_scramble,
+	.exec        = unniss_exec,
+};
+
+Command
 version_cmd = {
 	.name        = "version",
 	.usage       = "version",
@@ -102,10 +123,12 @@ Command *commands[NCOMMANDS] = {
 	&commands_cmd,
 	&gen_cmd,
 	&help_cmd,
+	&invert_cmd,
 	&print_cmd,
 	&quit_cmd,
 	&solve_cmd,
 	&steps_cmd,
+	&unniss_cmd,
 	&version_cmd,
 };
 
@@ -245,6 +268,16 @@ help_parse_args(int c, char **v)
 }
 
 CommandArgs *
+parse_only_scramble(int c, char **v)
+{
+	CommandArgs *a = new_args();
+
+	a->success = read_scramble(c, v, a);
+
+	return a;
+}
+
+CommandArgs *
 parse_no_arg(int c, char **v)
 {
 	CommandArgs *a = new_args();
@@ -303,6 +336,17 @@ gen_exec(CommandArgs *args)
 }
 
 static void
+invert_exec(CommandArgs *args)
+{
+	Alg *inv;
+
+	inv = inverse_alg(args->scramble);
+	print_alg(inv, false);
+
+	free_alg(inv);
+}
+
+static void
 steps_exec(CommandArgs *args)
 {
 	int i;
@@ -354,6 +398,13 @@ static void
 quit_exec(CommandArgs *args)
 {
 	exit(0);
+}
+
+static void
+unniss_exec(CommandArgs *args)
+{
+	unniss(args->scramble);
+	print_alg(args->scramble, false);
 }
 
 static void

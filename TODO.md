@@ -10,7 +10,6 @@ It's more of a personal reminder than anything else.
 ### Commands that are available in nissy 1.0, but not in this version (yet):
 * drcorners (solve corners after dr)
 * search and improve non-optimal subsequences
-* **unniss (rewrite A (B) -> B' A)**
 * **fast non-optimal solver (also needed for scramble)**
 * **scramble [dr, corners only, edges only, htr, fmc(RUF)...]**
 * save and edit algs as "variables"
@@ -34,7 +33,8 @@ including e.g. solutions that were not shown because -c)
 * **cleanup: translate an alg to the standard HTM moveset + reorient at the end**
 * configurability: add an `alias` command, run config file at startup
 * configure max ram to be used (via config file and/or command line option)
-* **invert an alg, transform, rufify etc...**
+* transform alg, rufify etc...
+* more scramble stuff (scramble FMC with rufify...)
 * **command notation to list available moves**
 
 ## Distribution
@@ -76,3 +76,5 @@ including e.g. solutions that were not shown because -c)
 * sort again functions alphabetically in their files
 * **more stuff to load at start (or when suitable command is called) rather
   than when called directly, to avoid nasty problems with threading**
+* unniss and inverse_alg work differently (one in place, the other makes
+  a copy and returns).
