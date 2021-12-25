@@ -147,7 +147,7 @@ solve_parse_args(int c, char **v)
 	a->opts->max_moves     = 20;
 	a->opts->max_solutions = 1;
 	a->opts->nthreads      = 1;
-	a->opts->optimal_only  = false;
+	a->opts->optimal       = -1;
 	a->opts->can_niss      = false;
 	a->opts->verbose       = false;
 	a->opts->all           = false;
@@ -163,7 +163,7 @@ solve_parse_args(int c, char **v)
 			if (val < 0 || val > 100) {
 				fprintf(stderr,
 					"Invalid min number of moves"
-					"(0 <= m <= 100).\n");
+					"(0 <= N <= 100).\n");
 				return a;
 			}
 			a->opts->min_moves = val;
@@ -172,7 +172,7 @@ solve_parse_args(int c, char **v)
 			if (val < 0 || val > 100) {
 				fprintf(stderr,
 					"Invalid max number of moves"
-					"(0 <= M <= 100).\n");
+					"(0 <= N <= 100).\n");
 				return a;
 			}
 			a->opts->max_moves = val;
@@ -196,7 +196,18 @@ solve_parse_args(int c, char **v)
 			a->opts->max_solutions = val;
 			fixedmsols = true;
 		} else if (!strcmp(v[i], "-o")) {
-			a->opts->optimal_only = true;
+			a->opts->optimal = 0;
+			infinitesols = true;
+		} else if (!strcmp(v[i], "-O") && i+1 < c) {
+			val = strtol(v[++i], NULL, 10);
+			if (val < 0 || val > 100 ||
+			    (val == 0 && strcmp("0", v[i]))) {
+				fprintf(stderr,
+					"Invalid max number of moves"
+					" (0 <= N <= 100).\n");
+				return a;
+			}
+			a->opts->optimal = val;
 			infinitesols = true;
 		} else if (!strcmp(v[i], "-N")) {
 			a->opts->can_niss = true;
@@ -447,7 +458,8 @@ read_scramble(int c, char **v, CommandArgs *args)
 	for(i = 0; i < c; i++) {
 		aux = new_alg(v[i]);
 		if (aux->len == 0) {
-			fprintf(stderr, "Error: %s unrecognized\n", v[i]);
+			fprintf(stderr, "Error: %s or its argument"
+			    "unrecognized\n", v[i]);
 			free(aux);
 			return false;
 		}

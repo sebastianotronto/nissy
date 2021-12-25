@@ -373,7 +373,7 @@ niss_makes_sense(DfsArg *arg)
 AlgList *
 solve(Cube cube, Step *step, SolveOptions *opts)
 {
-	int d;
+	int d, op;
 	AlgList *sols;
 	Cube c;
 
@@ -396,16 +396,19 @@ solve(Cube cube, Step *step, SolveOptions *opts)
 		return sols;
 	}
 
+	op = -1;
 	for (d = opts->min_moves;
 	     d <= opts->max_moves &&
-	         !(sols->len && opts->optimal_only) &&
-		 sols->len < opts->max_solutions;
+	       !(opts->optimal != -1 && op != -1 && opts->optimal + op < d) &&
+	       sols->len < opts->max_solutions;
 	     d++) {
 		if (opts->verbose)
 			fprintf(stderr,
 				"Found %d solutions, searching depth %d...\n",
 				sols->len, d);
 		multidfs(c, step, opts, sols, d);
+		if (sols->len > 0 && op == -1)
+			op = d;
 	}
 
 	return sols;

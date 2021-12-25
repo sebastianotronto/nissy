@@ -279,7 +279,7 @@ solveoptions
 	int                       max_moves;
 	int                       max_solutions;
 	int                       nthreads;
-	bool                      optimal_only;
+	int                       optimal;
 	bool                      can_niss;
 	bool                      verbose;
 	bool                      all;

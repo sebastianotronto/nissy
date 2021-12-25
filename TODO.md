@@ -26,11 +26,9 @@ including e.g. solutions that were not shown because -c)
 * solve should try up to a small bound without loading the large pruning table
 * **drfin for HTR scrambles should try all 3 axis and pick the best solutions;
   in general every step that automatically detects orientation should do this**
-* **solve -O N find solutions within N moves from optimal
-  (-o is the same as -O 0)**
 
 ### New features
-* **cleanup: translate an alg to the standard HTM moveset + reorient at the end**
+* cleanup: translate an alg to the standard HTM moveset + reorient at the end
 * configurability: add an `alias` command, run config file at startup
 * configure max ram to be used (via config file and/or command line option)
 * transform alg, rufify etc...
@@ -43,6 +41,7 @@ including e.g. solutions that were not shown because -c)
 * webapp (cgi)
 * **Re-upload tables**
 * **fix README.md**
+* **fix examples in manpage**
 
 ## Technical stuff
 
