@@ -3,42 +3,46 @@
 This is a list of things that I would like to add or change at some point.
 It's more of a personal reminder than anything else.
 
+**Things in bold: to do before 2.0 release**
+
 ## Commands
 
 ### Commands that are available in nissy 1.0, but not in this version (yet):
 * drcorners (solve corners after dr)
 * search and improve non-optimal subsequences
-* unniss (rewrite A (B) -> B' A)
-* scramble [dr, corners only, edges only, htr, ...]
+* **unniss (rewrite A (B) -> B' A)**
+* **fast non-optimal solver (also needed for scramble)**
+* **scramble [dr, corners only, edges only, htr, fmc(RUF)...]**
 * save and edit algs as "variables"
-* invert an alg
+  (or just use a "logging system" to keep info about previously run commands,
+including e.g. solutions that were not shown because -c)
 
 ### More steps for `solve`
-* QTM optimal solving (important: fix possible_next, which works only for HTM now)
+* QTM optimal solving
 * Block-building steps (cross, roux blocks, ...)
 * Other common steps (LSE, ...)
 
 ### Improvements to currently implemented commands
-* solve should re-orient first if needed and not just give up if centers are off
+* **solve should re-orient first if needed and not just give up if centers are off**
 * solve should try up to a small bound without loading the large pruning table
-* drfin for HTR scrambles should try all 3 axis and pick the best solutions;
-  in general every step that automatically detects orientation should do this
-* for solve -v, print certain info like average branching value
-* solve -O n find solutions within n moves from optimal
-  (-o is the same as -O 0)
+* **drfin for HTR scrambles should try all 3 axis and pick the best solutions;
+  in general every step that automatically detects orientation should do this**
+* **solve -O N find solutions within N moves from optimal
+  (-o is the same as -O 0)**
 
 ### New features
-* cleanup: translate an alg to the standard HTM moveset + reorient at the end
+* **cleanup: translate an alg to the standard HTM moveset + reorient at the end**
 * configurability: add an `alias` command, run config file at startup
 * configure max ram to be used (via config file and/or command line option)
-* command to transform cube and alg
-* command notation to list available moves
+* **invert an alg, transform, rufify etc...**
+* **command notation to list available moves**
 
 ## Distribution
 
 * Add EXAMPLES.md file
 * webapp (cgi)
-* Re-upload tables, fix README.md
+* **Re-upload tables**
+* **fix README.md**
 
 ## Technical stuff
 
@@ -70,5 +74,5 @@ It's more of a personal reminder than anything else.
 ### Cleanup
 * Remove khuge from everywhere
 * sort again functions alphabetically in their files
-* more stuff to load at start (or when suitable command is called) rather
-  than when called directly, to avoid nasty problems with threading
+* **more stuff to load at start (or when suitable command is called) rather
+  than when called directly, to avoid nasty problems with threading**
