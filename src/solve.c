@@ -139,14 +139,25 @@ dfs_check_solved(DfsArg *arg)
 	if (arg->current_alg->len == arg->d) {
 		if ((arg->step->is_valid(arg->current_alg) || arg->opts->all)
 		    && (!arg->step->final || !cancel_niss(arg))) {
+
 			pthread_mutex_lock(arg->sols_mutex);
-			if (arg->sols->len < arg->opts->max_solutions)
+
+			if (arg->sols->len < arg->opts->max_solutions) {
 				append_alg(arg->sols, arg->current_alg);
+
+				transform_alg(
+				    inverse_trans(arg->step->pre_trans), 
+				    arg->sols->last->alg
+				);
+				if (arg->step->final)
+					unniss(arg->sols->last->alg);
+
+				if (arg->opts->verbose)
+					print_alg(arg->sols->last->alg, false);
+			}
+
 			pthread_mutex_unlock(arg->sols_mutex);
 		}
-
-		if (arg->opts->verbose)
-			print_alg(arg->current_alg, false);
 	}
 
 	return true;
@@ -364,7 +375,6 @@ solve(Cube cube, Step *step, SolveOptions *opts)
 {
 	int d;
 	AlgList *sols;
-	AlgListNode *node;
 	Cube c;
 
 	prepare_step(step, opts);
@@ -396,12 +406,6 @@ solve(Cube cube, Step *step, SolveOptions *opts)
 				"Found %d solutions, searching depth %d...\n",
 				sols->len, d);
 		multidfs(c, step, opts, sols, d);
-	}
-
-	for (node = sols->first; node != NULL; node = node->next) {
-		transform_alg(inverse_trans(step->pre_trans), node->alg);
-		if (step->final)
-			unniss(node->alg);
 	}
 
 	return sols;

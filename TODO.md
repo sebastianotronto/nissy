@@ -23,8 +23,6 @@ It's more of a personal reminder than anything else.
 * solve should try up to a small bound without loading the large pruning table
 * drfin for HTR scrambles should try all 3 axis and pick the best solutions;
   in general every step that automatically detects orientation should do this
-* for solve -v, solving in different orientation does not give meaningful info,
-  because I need to transform the alg as I go.
 * for solve -v, print certain info like average branching value
 * solve -O n find solutions within n moves from optimal
   (-o is the same as -O 0)
