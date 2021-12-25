@@ -26,6 +26,8 @@ It's more of a personal reminder than anything else.
 * for solve -v, solving in different orientation does not give meaningful info,
   because I need to transform the alg as I go.
 * for solve -v, print certain info like average branching value
+* solve -O n find solutions within n moves from optimal
+  (-o is the same as -O 0)
 
 ### New features
 * cleanup: translate an alg to the standard HTM moveset + reorient at the end
@@ -33,7 +35,6 @@ It's more of a personal reminder than anything else.
 * configure max ram to be used (via config file and/or command line option)
 * command to transform cube and alg
 * command notation to list available moves
-*
 
 ## Distribution
 

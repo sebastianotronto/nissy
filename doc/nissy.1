@@ -99,18 +99,9 @@ Only look for solution that are at most
 .Ar MAX
 moves long.
 .
-.It Fl n
-Allow use of NISS.
-.
-.It Fl o
-Only find solutions that require the minimum number of moves.
-.
-.It Fl p
-Plain style: do not print the number of moves.
-.
-.It Fl s Ar n
+.It Fl n Ar N
 Try to find
-.Ar n
+.Ar N
 solutions. By default and unless the
 .Fl M
 or
@@ -124,12 +115,21 @@ is used, all the solutions found within the given bounds are returned.
 The option
 .Fl s
 overwrites these default behaviors and at most
-.Ar n
+.Ar N
 solutions are returned, still satisfiyng the other constraints.
 .
-.It Fl t Ar n
+.It Fl N
+Allow use of NISS.
+.
+.It Fl o
+Only find solutions that require the minimum number of moves.
+.
+.It Fl p
+Plain style: do not print the number of moves.
+.
+.It Fl t Ar N
 Use
-.Ar n
+.Ar N
 CPU threads. By default nissy uses only 1 thread. Using more than one
 thread will improve performance, but the optimal number depends on your
 machine and operating system. Generally, using one less than the number

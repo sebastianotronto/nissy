@@ -163,7 +163,7 @@ solve_parse_args(int c, char **v)
 				return a;
 			}
 			a->opts->nthreads = val;
-		} else if (!strcmp(v[i], "-s") && i+1 < c) {
+		} else if (!strcmp(v[i], "-n") && i+1 < c) {
 			val = strtol(v[++i], NULL, 10);
 			if (val < 1 || val > 1000000) {
 				fprintf(stderr,
@@ -175,7 +175,7 @@ solve_parse_args(int c, char **v)
 		} else if (!strcmp(v[i], "-o")) {
 			a->opts->optimal_only = true;
 			infinitesols = true;
-		} else if (!strcmp(v[i], "-n")) {
+		} else if (!strcmp(v[i], "-N")) {
 			a->opts->can_niss = true;
 		} else if (!strcmp(v[i], "-v")) {
 			a->opts->verbose = true;
