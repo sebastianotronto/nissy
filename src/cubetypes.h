@@ -100,7 +100,7 @@ typedef bool                 (*Validator)        (Alg *);
 typedef void                 (*Exec)             (CommandArgs *);
 typedef uint64_t             (*Indexer)          (Cube);
 typedef CommandArgs *        (*ArgParser)        (int, char **);
-typedef Trans                (*TransDetector)    (Cube);
+typedef int                  (*TransDetector)    (Cube, Trans *);
 typedef int                  (*TransFinder)      (uint64_t, Trans *);
 
 
@@ -202,6 +202,7 @@ dfsarg
 {
 	Step *                    step;
 	SolveOptions *            opts;
+	Trans                     t;
 	Cube                      cube;
 	Cube                      inverse;
 	int                       d;
@@ -323,6 +324,7 @@ struct
 threaddatasolve
 {
 	int                       thid;
+	Trans                     t;
 	Cube                      cube;
 	Step *                    step;
 	int                       depth;

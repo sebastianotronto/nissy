@@ -5,30 +5,22 @@
 /* Checkers, estimators and validators ***************************************/
 
 static bool             check_centers(Cube cube);
-static bool             check_coany_HTM(Cube cube);
 static bool             check_coud_HTM(Cube cube);
-static bool             check_coany_URF(Cube cube);
 static bool             check_coud_URF(Cube cube);
 static bool             check_corners_HTM(Cube cube);
 static bool             check_corners_URF(Cube cube);
 static bool             check_cornershtr(Cube cube);
-static bool             check_eoany(Cube cube);
 static bool             check_eofb(Cube cube);
-static bool             check_drany(Cube cube);
 static bool             check_drud(Cube cube);
 static bool             check_htr(Cube cube);
 
-static int              estimate_eoany_HTM(DfsArg *arg);
 static int              estimate_eofb_HTM(DfsArg *arg);
-static int              estimate_coany_HTM(DfsArg *arg);
 static int              estimate_coud_HTM(DfsArg *arg);
-static int              estimate_coany_URF(DfsArg *arg);
 static int              estimate_coud_URF(DfsArg *arg);
 static int              estimate_corners_HTM(DfsArg *arg);
 static int              estimate_cornershtr_HTM(DfsArg *arg);
 static int              estimate_corners_URF(DfsArg *arg);
 static int              estimate_cornershtr_URF(DfsArg *arg);
-static int              estimate_drany_HTM(DfsArg *arg);
 static int              estimate_drud_HTM(DfsArg *arg);
 static int              estimate_drud_eofb(DfsArg *arg);
 static int              estimate_dr_eofb(DfsArg *arg);
@@ -46,8 +38,9 @@ static bool             validate_singlecw_ending(Alg *alg);
 
 /* Pre-transformation detectors **********************************************/
 
-static Trans            detect_pretrans_eofb(Cube cube);
-static Trans            detect_pretrans_drud(Cube cube);
+static int              detect_pretrans_eofb(Cube cube, Trans *ret);
+static int              detect_pretrans_drud(Cube cube, Trans *ret);
+static int              detect_pretrans_void_3axis(Cube cube, Trans *ret);
 
 /* Messages for when cube is not ready ***************************************/
 
@@ -206,14 +199,14 @@ eoany_HTM = {
 	.name      = "EO on any axis",
 
 	.final     = false,
-	.is_done   = check_eoany,
-	.estimate  = estimate_eoany_HTM,
+	.is_done   = check_eofb,
+	.estimate  = estimate_eofb_HTM,
 	.ready     = check_centers,
 	.ready_msg = check_centers_msg,
 	.is_valid  = validate_singlecw_ending,
 	.moveset   = &moveset_HTM,
 
-	.pre_trans = uf,
+	.detect    = detect_pretrans_void_3axis,
 
 	.tables    = {&pd_eofb_HTM},
 	.ntables   = 1,
@@ -283,13 +276,13 @@ coany_HTM = {
 	.name      = "CO on any axis",
 
 	.final     = false,
-	.is_done   = check_coany_HTM,
-	.estimate  = estimate_coany_HTM,
+	.is_done   = check_coud_HTM,
+	.estimate  = estimate_coud_HTM,
 	.ready     = NULL,
 	.is_valid  = validate_singlecw_ending,
 	.moveset   = &moveset_HTM,
 
-	.pre_trans = uf,
+	.detect    = detect_pretrans_void_3axis,
 
 	.tables    = {&pd_coud_HTM},
 	.ntables   = 1,
@@ -355,13 +348,13 @@ coany_URF = {
 	.name      = "CO any axis (URF moveset)",
 
 	.final     = false,
-	.is_done   = check_coany_URF,
-	.estimate  = estimate_coany_URF,
+	.is_done   = check_coud_URF,
+	.estimate  = estimate_coud_URF,
 	.ready     = NULL,
 	.is_valid  = validate_singlecw_ending,
 	.moveset   = &moveset_URF,
 
-	.pre_trans = uf,
+	.detect    = detect_pretrans_void_3axis,
 
 	.tables    = {&pd_coud_HTM},
 	.ntables   = 1,
@@ -501,14 +494,14 @@ drany_HTM = {
 	.name      = "DR on any axis",
 
 	.final     = false,
-	.is_done   = check_drany,
-	.estimate  = estimate_drany_HTM,
+	.is_done   = check_drud,
+	.estimate  = estimate_drud_HTM,
 	.ready     = check_centers,
 	.ready_msg = check_centers_msg,
 	.is_valid  = validate_singlecw_ending,
 	.moveset   = &moveset_HTM,
 
-	.pre_trans = uf,
+	.detect    = detect_pretrans_void_3axis,
 
 	.tables    = {&pd_drud_sym16_HTM},
 	.ntables   = 1,
@@ -1003,28 +996,9 @@ check_centers(Cube cube)
 }
 
 static bool
-check_coany_HTM(Cube cube)
-{
-	return cube.cofb == 0 || cube.corl == 0 || cube.coud == 0;
-}
-
-static bool
 check_coud_HTM(Cube cube)
 {
 	return cube.coud == 0;
-}
-
-static bool
-check_coany_URF(Cube cube)
-{
-	Cube c2, c3;
-
-	c2 = apply_move(y, apply_move(z, cube));
-	c3 = apply_move(y, apply_move(x, cube));
-
-	return check_coany_HTM(cube) ||
-	       check_coany_HTM(c2)   ||
-	       check_coany_HTM(c3);
 }
 
 static bool
@@ -1066,23 +1040,9 @@ check_cornershtr(Cube cube)
 }
 
 static bool
-check_eoany(Cube cube)
-{
-	return cube.eofb == 0 || cube.eorl == 0 || cube.eoud == 0;
-}
-
-static bool
 check_eofb(Cube cube)
 {
 	return cube.eofb == 0;
-}
-
-static bool
-check_drany(Cube cube)
-{
-	return (cube.eofb == 0 && cube.eorl == 0 && cube.coud == 0) ||
-	       (cube.eorl == 0 && cube.eoud == 0 && cube.cofb == 0) ||
-	       (cube.eoud == 0 && cube.eofb == 0 && cube.corl == 0);
 }
 
 static bool
@@ -1098,58 +1058,15 @@ check_htr(Cube cube)
 }
 
 static int
-estimate_eoany_HTM(DfsArg *arg)
-{
-	int r1, r2, r3;
-
-	r1 = ptableval(&pd_eofb_HTM, arg->cube);
-	r2 = ptableval(&pd_eofb_HTM, apply_trans(ur, arg->cube));
-	r3 = ptableval(&pd_eofb_HTM, apply_trans(fd, arg->cube));
-
-	return MIN(r1, MIN(r2, r3));
-}
-
-static int
 estimate_eofb_HTM(DfsArg *arg)
 {
 	return ptableval(&pd_eofb_HTM, arg->cube);
 }
 
 static int
-estimate_coany_HTM(DfsArg *arg)
-{
-	int r1, r2, r3;
-
-	r1 = ptableval(&pd_coud_HTM, arg->cube);
-	r2 = ptableval(&pd_coud_HTM, apply_trans(rf, arg->cube));
-	r3 = ptableval(&pd_coud_HTM, apply_trans(fd, arg->cube));
-
-	return MIN(r1, MIN(r2, r3));
-}
-
-static int
 estimate_coud_HTM(DfsArg *arg)
 {
 	return ptableval(&pd_coud_HTM, arg->cube);
-}
-
-static int
-estimate_coany_URF(DfsArg *arg)
-{
-	int r1, r2, r3;
-	Cube c;
-
-	c = arg->cube;
-
-	r1 = estimate_coud_URF(arg);
-	arg->cube = apply_trans(rf, c);
-	r2 = estimate_coud_URF(arg);
-	arg->cube = apply_trans(fd, c);
-	r3 = estimate_coud_URF(arg);
-
-	arg->cube = c;
-
-	return MIN(r1, MIN(r2, r3));
 }
 
 static int
@@ -1229,18 +1146,6 @@ estimate_corners_URF(DfsArg *arg)
 	arg->cube = c;
 
 	return ret;
-}
-
-static int
-estimate_drany_HTM(DfsArg *arg)
-{
-	int r1, r2, r3;
-
-	r1 = ptableval(&pd_drud_sym16_HTM, arg->cube);
-	r2 = ptableval(&pd_drud_sym16_HTM, apply_trans(rf, arg->cube));
-	r3 = ptableval(&pd_drud_sym16_HTM, apply_trans(fd, arg->cube));
-
-	return MIN(r1, MIN(r2, r3));
 }
 
 static int
@@ -1515,28 +1420,40 @@ validate_singlecw_ending(Alg *alg)
 
 /* Pre-transformation detectors **********************************************/
 
-static Trans
-detect_pretrans_eofb(Cube cube)
+static int
+detect_pretrans_eofb(Cube cube, Trans *ret)
 {
-	Trans i;
+	int i, n;
+	static Trans tt[3] = {uf, ur, fd};
 
-	for (i = 0; i < NROTATIONS; i++)
-		if (check_eofb(apply_trans(i, cube)))
-			return i;
+	for (i = 0, n = 0; i < 3; i++)
+		if (check_eofb(apply_trans(tt[i], cube)))
+			ret[n++] = tt[i];
 
-	return 0;
+	return n;
 }
 
-static Trans
-detect_pretrans_drud(Cube cube)
+static int
+detect_pretrans_drud(Cube cube, Trans *ret)
 {
-	Trans i;
+	int i, n;
+	static Trans tt[3] = {uf, ur, fd};
 
-	for (i = 0; i < NROTATIONS; i++)
-		if (check_drud(apply_trans(i, cube)))
-			return i;
+	for (i = 0, n = 0; i < 3; i++)
+		if (check_drud(apply_trans(tt[i], cube)))
+			ret[n++] = tt[i];
 
-	return 0;
+	return n;
+}
+
+static int
+detect_pretrans_void_3axis(Cube cube, Trans *ret)
+{
+	ret[0] = uf;
+	ret[1] = fr;
+	ret[2] = rd;
+
+	return 3;
 }
 
 /* Public functions **********************************************************/

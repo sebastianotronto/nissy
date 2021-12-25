@@ -24,8 +24,6 @@ including e.g. solutions that were not shown because -c)
 ### Improvements to currently implemented commands
 * **solve should re-orient first if needed and not just give up if centers are off**
 * solve should try up to a small bound without loading the large pruning table
-* **drfin for HTR scrambles should try all 3 axis and pick the best solutions;
-  in general every step that automatically detects orientation should do this**
 
 ### New features
 * cleanup: translate an alg to the standard HTM moveset + reorient at the end
@@ -33,7 +31,7 @@ including e.g. solutions that were not shown because -c)
 * configure max ram to be used (via config file and/or command line option)
 * transform alg, rufify etc...
 * more scramble stuff (scramble FMC with rufify...)
-* **command notation to list available moves**
+* command notation to list available moves
 
 ## Distribution
 
@@ -73,7 +71,7 @@ including e.g. solutions that were not shown because -c)
 ### Cleanup
 * Remove khuge from everywhere
 * sort again functions alphabetically in their files
-* **more stuff to load at start (or when suitable command is called) rather
-  than when called directly, to avoid nasty problems with threading**
+* more stuff to load at start (or when suitable command is called) rather
+  than when called directly, to avoid nasty problems with threading
 * unniss and inverse_alg work differently (one in place, the other makes
-  a copy and returns).
+  a copy and returns) changing inverse_alg seems the best option.

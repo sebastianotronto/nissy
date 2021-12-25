@@ -13,8 +13,10 @@ static void        dfs_niss(DfsArg *arg);
 static bool        dfs_stop(DfsArg *arg);
 static void *      instance_thread(void *arg);
 static void        invert_branch(DfsArg *arg);
-static void        multidfs(Cube c, Step *s, SolveOptions *opts, AlgList *sols, int d);
+static void        multidfs(Cube c, Trans t, Step *s, SolveOptions *opts,
+                            AlgList *sols, int d);
 static bool        niss_makes_sense(DfsArg *arg);
+static bool        solvestop(int d, int op, SolveOptions *opts, AlgList *sols);
 
 /* Local functions ***********************************************************/
 
@@ -62,6 +64,7 @@ copy_dfsarg(DfsArg *src, DfsArg *dst)
 {
 	dst->step          = src->step;
 	dst->opts          = src->opts;
+	dst->t             = src->t;
 	dst->cube          = src->cube;
 	dst->inverse       = src->inverse;
 	dst->d             = src->d;
@@ -146,7 +149,7 @@ dfs_check_solved(DfsArg *arg)
 				append_alg(arg->sols, arg->current_alg);
 
 				transform_alg(
-				    inverse_trans(arg->step->pre_trans), 
+				    inverse_trans(arg->t), 
 				    arg->sols->last->alg
 				);
 				if (arg->step->final)
@@ -260,6 +263,7 @@ instance_thread(void *arg)
 
 		darg.step            = td->step;
 		darg.opts            = td->opts;
+		darg.t               = td->t;
 		darg.cube            = c;
 		darg.d               = td->depth;
 		darg.niss            = node->alg->inv[0];
@@ -304,7 +308,7 @@ invert_branch(DfsArg *arg)
 }
 
 static void
-multidfs(Cube c, Step *s, SolveOptions *opts, AlgList *sols, int d)
+multidfs(Cube c, Trans tr, Step *s, SolveOptions *opts, AlgList *sols, int d)
 {
 	int i;
 	Alg *alg;
@@ -324,8 +328,6 @@ multidfs(Cube c, Step *s, SolveOptions *opts, AlgList *sols, int d)
 
 	for (i = 0; s->moveset->sorted_moves[i] != NULLMOVE; i++) {
 		alg = new_alg("");
-		/* TODO: start on inverse also in case of final step
-		   and ed->sw true */
 		append_move(alg, s->moveset->sorted_moves[i], false);
 		append_alg(start, alg);
 		if (opts->can_niss) {
@@ -338,6 +340,7 @@ multidfs(Cube c, Step *s, SolveOptions *opts, AlgList *sols, int d)
 
 	for (i = 0; i < opts->nthreads; i++) {
 		td[i].thid          = i;
+		td[i].t             = tr;
 		td[i].cube          = c;
 		td[i].step          = s;
 		td[i].depth         = d;
@@ -368,47 +371,69 @@ niss_makes_sense(DfsArg *arg)
 	return arg->current_alg->len == 0 || arg->step->is_done(testcube);
 }
 
+static bool
+solvestop(int d, int op, SolveOptions *opts, AlgList *sols)
+{
+	bool opt_done, max_moves_exceeded, max_sols_exceeded;
+
+	opt_done = opts->optimal != -1 && op != -1 && d > opts->optimal + op;
+	max_moves_exceeded = d > opts->max_moves;
+	max_sols_exceeded = sols->len >= opts->max_solutions;
+
+	return opt_done || max_moves_exceeded || max_sols_exceeded;
+}
+
 /* Public functions **********************************************************/
 
 AlgList *
 solve(Cube cube, Step *step, SolveOptions *opts)
 {
-	int d, op;
+	bool ready;
+	int i, d, op, nt;
 	AlgList *sols;
 	Cube c;
+	Trans tt[NTRANS];
 
 	prepare_step(step, opts);
 
-	if (step->detect != NULL)
-		step->pre_trans = step->detect(cube);
-	c = apply_trans(step->pre_trans, cube);
+	if (step->detect != NULL) {
+		nt = step->detect(cube, tt);
+	} else {
+		tt[0] = step->pre_trans;
+		ready = step->ready == NULL ||
+		        step->ready(apply_trans(tt[0], cube));
+		nt = ready ? 1 : 0;
+	}
 
 	sols = new_alglist();
 
-	if (step->ready != NULL && !step->ready(c)) {
+	if (nt == 0) {
 		fprintf(stderr, "Cube not ready for solving step: ");
 		fprintf(stderr, "%s\n", step->ready_msg);
 		return sols;
 	}
 
-	if (opts->min_moves == 0 && step->is_done(cube)) {
-		append_alg(sols, new_alg(""));
-		return sols;
+	if (opts->min_moves == 0) {
+		for (i = 0; i < nt; i++) {
+			c = apply_trans(tt[i], cube);
+			if (step->is_done(c)) {
+				append_alg(sols, new_alg(""));
+				return sols;
+			}
+		}
 	}
 
 	op = -1;
-	for (d = opts->min_moves;
-	     d <= opts->max_moves &&
-	       !(opts->optimal != -1 && op != -1 && opts->optimal + op < d) &&
-	       sols->len < opts->max_solutions;
-	     d++) {
+	for (d = opts->min_moves; !solvestop(d, op, opts, sols); d++) {
 		if (opts->verbose)
-			fprintf(stderr,
-				"Found %d solutions, searching depth %d...\n",
-				sols->len, d);
-		multidfs(c, step, opts, sols, d);
-		if (sols->len > 0 && op == -1)
-			op = d;
+			fprintf(stderr, "Searching depth %d\n", d);
+
+		for (i = 0; i < nt && !solvestop(d, op, opts, sols); i++) {
+			c = apply_trans(tt[i], cube);
+			multidfs(c, tt[i], step, opts, sols, d);
+			if (sols->len > 0 && op == -1)
+				op = d;
+		}
 	}
 
 	return sols;
