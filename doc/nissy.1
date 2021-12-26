@@ -71,7 +71,26 @@ Display a text-only description of the cube obtained after applying
 .It Nm quit
 Quit nissy.
 .
-.It Nm solve Ar step Oo Ar options Oc Ar scramble
+.It Nm scramble Oo Fl n Ar N Oc Oo Ar type Oc
+Print a randomly-generated (random position) scramble
+.
+If
+.Ar N
+is given, it produces
+.Ar N
+scrambles.
+.Ar type
+can be specified to be one of the following:
+.Bl -tag -width Ds
+.It Ar eo
+Scramble with solved EO on F/B axis.
+.It Ar corners
+Scramble with solved edges (only cornes are scrambled).
+.It Ar edges
+Scramble with solved corners (only edges are scrambled).
+.El
+.
+.It Nm solve Ar step Oo Ar options Oc Ar scramble.
 Solve the given
 .Ar step
 on the given

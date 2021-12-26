@@ -10,7 +10,6 @@ It's more of a personal reminder than anything else.
 ### Commands that are available in nissy 1.0, but not in this version (yet):
 * drcorners (solve corners after dr)
 * search and improve non-optimal subsequences
-* **scramble [dr, corners only, edges only, htr, fmc(RUF)...]**
 * save and edit algs as "variables"
   (or just use a "logging system" to keep info about previously run commands,
 including e.g. solutions that were not shown because -c)
@@ -21,7 +20,8 @@ including e.g. solutions that were not shown because -c)
 * Other common steps (LSE, ...)
 
 ### Improvements to currently implemented commands
-* **solve should re-orient first if needed and not just give up if centers are off**
+* solve should re-orient first if needed and not just give up if centers are off
+* more scramble types (dr, htr, fmc(rufify)...)
 * solve should try up to a small bound without loading the large pruning table
 
 ### New features
@@ -29,7 +29,6 @@ including e.g. solutions that were not shown because -c)
 * configurability: add an `alias` command, run config file at startup
 * configure max ram to be used (via config file and/or command line option)
 * transform alg, rufify etc...
-* more scramble stuff (scramble FMC with rufify...)
 * command notation to list available moves
 * make multi-step solve much more general and create command
 

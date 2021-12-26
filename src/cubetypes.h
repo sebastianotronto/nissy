@@ -156,6 +156,8 @@ commandargs
 	SolveOptions *            opts;
 	Step *                    step;
 	Command *                 command; /* For help */
+	int                       n;
+	int                       scrt;
 };
 
 struct

@@ -8,6 +8,10 @@
 #include "pf.h"
 #include "utils.h"
 
+#define     NSCRTYPES 3
+
+extern char *scrtypes[NSCRTYPES];
+
 Cube        admissible_ep(Cube cube, PieceFilter f);
 int         array_ep_to_epos(int *ep, int *eps_solved);
 Cube        arrays_to_cube(CubeArray *arr, PieceFilter f);
@@ -28,7 +32,7 @@ void        free_cubearray(CubeArray *arr, PieceFilter f);
 Cube        move_via_arrays(CubeArray *arr, Cube c, PieceFilter pf);
 CubeArray * new_cubearray(Cube cube, PieceFilter f);
 void        print_cube(Cube cube);
-Cube        random_cube();
+Cube        random_cube(int scrt);
 Center      what_center_at(Cube cube, Center c);
 Corner      what_corner_at(Cube cube, Corner c);
 Edge        what_edge_at(Cube cube, Edge e);

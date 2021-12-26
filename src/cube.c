@@ -2,6 +2,9 @@
 
 /* Local functions ***********************************************************/
 
+static void             fix_eorleoud(CubeArray *arr);
+static void             fix_cofbcorl(CubeArray *arr);
+static Cube             fourval_to_cube(int eofb, int ep, int coud, int cp);
 static void             init_inverse();
 static bool             read_invtables_file();
 static bool             write_invtables_file();
@@ -14,6 +17,8 @@ static uint16_t         eo_invtable_m[POW2TO11][BINOM12ON4*FACTORIAL4];
 static uint16_t         co_invtable[POW3TO7][FACTORIAL8];
 static uint16_t         cp_invtable[FACTORIAL8];
 static uint16_t         cpos_invtable[FACTORIAL6];
+
+char *scrtypes[NSCRTYPES] = { "eo", "corners", "edges" };
 
 /* Functions implementation **************************************************/
 
@@ -137,6 +142,71 @@ epos_to_partial_ep(int epos, int *ep, int *ss)
 	for (i = 0, is = 0; i < 12; i++)
 		if (eposs[i])
 			ep[i] = ss[eps[is++]];
+}
+
+static void
+fix_eorleoud(CubeArray *arr)
+{
+	int i;
+
+	for (i = 0; i < 12; i++) {
+		if ((edge_slice(i) == 0 && edge_slice(arr->ep[i]) != 0) ||
+		    (edge_slice(i) != 0 && edge_slice(arr->ep[i]) == 0)) {
+			arr->eorl[i] = 1 - arr->eofb[i];
+		} else {
+			arr->eorl[i] = arr->eofb[i];
+		}
+
+		if ((edge_slice(i) == 2 && edge_slice(arr->ep[i]) != 2) ||
+		    (edge_slice(i) != 2 && edge_slice(arr->ep[i]) == 2)) {
+			arr->eoud[i] = 1 - arr->eofb[i];
+		} else {
+			arr->eoud[i] = arr->eofb[i];
+		}
+	}
+}
+
+static void
+fix_cofbcorl(CubeArray *arr)
+{
+	int i;
+
+	for (i = 0; i < 8; i++) {
+		if (i % 2 == arr->cp[i] % 2) {
+			arr->cofb[i] = arr->coud[i];
+			arr->corl[i] = arr->coud[i];
+		} else {
+			if (arr->cp[i] % 2 == 0) {
+				arr->cofb[i] = (arr->coud[i]+1)%3;
+				arr->corl[i] = (arr->coud[i]+2)%3;
+			} else {
+				arr->cofb[i] = (arr->coud[i]+2)%3;
+				arr->corl[i] = (arr->coud[i]+1)%3;
+			}
+		}
+	}
+}
+
+static Cube
+fourval_to_cube(int eofb, int ep, int coud, int cp)
+{
+	CubeArray *arr;
+
+	arr = new_cubearray((Cube){0}, pf_all);
+
+	index_to_perm(ep, 12, arr->ep);
+	index_to_perm(cp,  8, arr->cp);
+	int_to_sum_zero_array(eofb, 2, 12, arr->eofb);
+	int_to_sum_zero_array(coud, 3,  8, arr->coud);
+
+	/* fix parity */
+	if (perm_sign(arr->ep, 12) != perm_sign(arr->cp, 8))
+		swap(&(arr->ep[0]), &(arr->ep[1]));
+
+	fix_eorleoud(arr);
+	fix_cofbcorl(arr);
+
+	return arrays_to_cube(arr, pf_all);
 }
 
 void
@@ -475,10 +545,8 @@ print_cube(Cube cube)
 }
 
 Cube
-random_cube()
+random_cube(int scrt)
 {
-	CubeArray *arr = new_cubearray((Cube){0}, pf_4val);
-	Cube ret;
 	int ep, cp, eo, co;
 
 	ep = rand() % FACTORIAL12;
@@ -486,18 +554,17 @@ random_cube()
 	eo = rand() % POW2TO11;
 	co = rand() % POW3TO7;
 
-	index_to_perm(ep, 12, arr->ep);
-	index_to_perm(cp,  8, arr->cp);
-	int_to_sum_zero_array(eo, 2, 12, arr->eofb);
-	int_to_sum_zero_array(co, 3,  8, arr->coud);
+	if (scrt == 0) {        /* EO */
+		eo = 0;
+	} else if (scrt == 1) { /* corners */
+		eo = 0;
+		ep = 0;
+	} else if (scrt == 2) { /* edges */
+		co = 0;
+		cp = 0;
+	}
 
-	if (perm_sign(arr->ep, 12) != perm_sign(arr->cp, 8))
-		swap(&(arr->ep[0]), &(arr->ep[1]));
-
-	ret = arrays_to_cube(arr, pf_4val);
-	free_cubearray(arr, pf_4val);
-
-	return ret;
+	return fourval_to_cube(eo, ep, co, cp);
 }
 
 Center

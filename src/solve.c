@@ -452,7 +452,7 @@ solve_2phase(Cube cube, int nthreads)
 
 	opts1.min_moves     = 0;
 	opts1.max_moves     = 13;
-	opts1.max_solutions = 100;
+	opts1.max_solutions = 20;
 	opts1.nthreads      = nthreads;
 	opts1.optimal       = 3;
 	opts1.can_niss      = false;

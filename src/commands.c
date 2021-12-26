@@ -8,12 +8,14 @@ CommandArgs *           print_parse_args(int c, char **v);
 CommandArgs *           parse_only_scramble(int c, char **v);
 CommandArgs *           parse_no_arg(int c, char **v);
 CommandArgs *           solve_parse_args(int c, char **v);
+CommandArgs *           scramble_parse_args(int c, char **v);
 
 /* Exec functions ************************************************************/
 
 static void             gen_exec(CommandArgs *args);
 static void             invert_exec(CommandArgs *args);
 static void             solve_exec(CommandArgs *args);
+static void             scramble_exec(CommandArgs *args);
 static void             steps_exec(CommandArgs *args);
 static void             commands_exec(CommandArgs *args);
 static void             print_exec(CommandArgs *args);
@@ -26,6 +28,7 @@ static void             version_exec(CommandArgs *args);
 /* Local functions ***********************************************************/
 
 static bool             read_step(CommandArgs *args, char *str);
+static bool             read_scrtype(CommandArgs *args, char *str);
 static bool             read_scramble(int c, char **v, CommandArgs *args);
 
 /* Commands ******************************************************************/
@@ -37,6 +40,15 @@ solve_cmd = {
 	.description = "Solve a step; see command steps for a list of steps",
 	.parse_args  = solve_parse_args,
 	.exec        = solve_exec
+};
+
+Command
+scramble_cmd = {
+	.name        = "scramble",
+	.usage       = "scramble [TYPE] [-n N]",
+	.description = "Get a random-position scramble",
+	.parse_args  = scramble_parse_args,
+	.exec        = scramble_exec,
 };
 
 Command
@@ -137,6 +149,7 @@ Command *commands[NCOMMANDS] = {
 	&print_cmd,
 	&quit_cmd,
 	&solve_cmd,
+	&scramble_cmd,
 	&steps_cmd,
 	&twophase_cmd,
 	&unniss_cmd,
@@ -243,6 +256,37 @@ solve_parse_args(int c, char **v)
 }
 
 CommandArgs *
+scramble_parse_args(int c, char **v)
+{
+	int i;
+	long val;
+
+	CommandArgs *a = new_args();
+
+	a->success = true;
+	a->n       = 1;
+	a->scrt    = -1;
+
+	for (i = 0; i < c; i++) {
+		if (!strcmp(v[i], "-n") && i+1 < c) {
+			val = strtol(v[++i], NULL, 10);
+			if (val < 1 || val > 1000000) {
+				fprintf(stderr,
+					"Invalid number of scrambles.\n");
+				a->success = false;
+				return a;
+			}
+			a->n = val;
+		} else if (!read_scrtype(a, v[i])) {
+			a->success = false;
+			return a;
+		}
+	}
+
+	return a;
+}
+
+CommandArgs *
 gen_parse_args(int c, char **v)
 {
 	int val;
@@ -339,6 +383,26 @@ solve_exec(CommandArgs *args)
 		print_alglist(sols, args->opts->print_number);
 
 	free_alglist(sols);
+}
+
+static void
+scramble_exec(CommandArgs *args)
+{
+	Cube cube;
+	Alg *scr;
+	int i;
+
+	init_movesets();
+	init_symcoord();
+
+	srand(time(NULL));
+
+	for (i = 0; i < args->n; i++) {
+		cube = random_cube(args->scrt);
+		scr = solve_2phase(cube, 1);
+		print_alg(scr, false);
+		free_alg(scr);
+	}
 }
 
 static void
@@ -454,21 +518,6 @@ version_exec(CommandArgs *args)
 /* Local functions implementation ********************************************/
 
 static bool
-read_step(CommandArgs *args, char *str)
-{
-	int i;
-
-	for (i = 0; i < NSTEPS; i++) {
-		if (steps[i] != NULL && !strcmp(steps[i]->shortname, str)) {
-			args->step = steps[i];
-			return true;
-		}
-	}
-
-	return false;
-}
-
-static bool
 read_scramble(int c, char **v, CommandArgs *args)
 {
 	int i, k, n;
@@ -508,6 +557,34 @@ read_scramble(int c, char **v, CommandArgs *args)
 		fprintf(stderr, "Error reading scramble\n");
 
 	return args->scramble->len > 0;
+}
+
+static bool
+read_scrtype(CommandArgs *args, char *str)
+{
+	int i;
+
+	args->scrt = -1;
+	for (i = 0; i < NSCRTYPES; i++)
+		if (!strcmp(scrtypes[i], str))
+			args->scrt = i;
+
+	return args->scrt != -1;
+}
+
+static bool
+read_step(CommandArgs *args, char *str)
+{
+	int i;
+
+	for (i = 0; i < NSTEPS; i++) {
+		if (steps[i] != NULL && !strcmp(steps[i]->shortname, str)) {
+			args->step = steps[i];
+			return true;
+		}
+	}
+
+	return false;
 }
 
 /* Public functions implementation *******************************************/
