@@ -19,6 +19,7 @@ void        append_move(Alg *alg, Move m, bool inverse);
 Move        base_move(Move m);
 void        compose_alg(Alg *alg1, Alg *alg2);
 bool        commute(Move m1, Move m2);
+void        copy_alg(Alg *src, Alg *dst);
 void        free_alg(Alg *alg);
 void        free_alglist(AlgList *l);
 Alg *       inverse_alg(Alg *alg);

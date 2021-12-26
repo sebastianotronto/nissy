@@ -107,36 +107,6 @@ allowed_next_HTM(Move l2, Move l1, Move m)
 	return !(p || (commute(l1, l2) && q));
 }
 
-static int
-axis(Move m)
-{
-	if (m == NULLMOVE)
-		return 0;
-
-	if (m >= U && m <= B3)
-		return (m-1)/6 + 1;
-	
-	if (m >= Uw && m <= Bw3)
-		return (m-1)/6 - 2;
-
-	if (base_move(m) == E || base_move(m) == y)
-		return 1;
-
-	if (base_move(m) == M || base_move(m) == x)
-		return 2;
-
-	if (base_move(m) == S || base_move(m) == z)
-		return 3;
-
-	return -1;
-}
-
-bool
-commute(Move m1, Move m2)
-{
-	return axis(m1) == axis(m2);
-}
-
 void
 append_alg(AlgList *l, Alg *alg)
 {
@@ -166,6 +136,30 @@ append_move(Alg *alg, Move m, bool inverse)
 	alg->len++;
 }
 
+static int
+axis(Move m)
+{
+	if (m == NULLMOVE)
+		return 0;
+
+	if (m >= U && m <= B3)
+		return (m-1)/6 + 1;
+	
+	if (m >= Uw && m <= Bw3)
+		return (m-1)/6 - 2;
+
+	if (base_move(m) == E || base_move(m) == y)
+		return 1;
+
+	if (base_move(m) == M || base_move(m) == x)
+		return 2;
+
+	if (base_move(m) == S || base_move(m) == z)
+		return 3;
+
+	return -1;
+}
+
 Move
 base_move(Move m)
 {
@@ -175,6 +169,12 @@ base_move(Move m)
 		return m - (m-1)%3;
 }
 
+bool
+commute(Move m1, Move m2)
+{
+	return axis(m1) == axis(m2);
+}
+
 void
 compose_alg(Alg *alg1, Alg *alg2)
 {
@@ -182,6 +182,13 @@ compose_alg(Alg *alg1, Alg *alg2)
 
 	for (i = 0; i < alg2->len; i++)
 		append_move(alg1, alg2->move[i], alg2->inv[i]);
+}
+
+void
+copy_alg(Alg *src, Alg *dst)
+{
+	dst->len = 0; /* Overwrites */
+	compose_alg(dst, src);
 }
 
 void

@@ -438,3 +438,54 @@ solve(Cube cube, Step *step, SolveOptions *opts)
 
 	return sols;
 }
+
+/* TODO: make more general! */
+Alg *
+solve_2phase(Cube cube, int nthreads)
+{
+	int bestlen, newb;
+	Alg *bestalg;
+	AlgList *sols1, *sols2;
+	AlgListNode *i;
+	Cube c;
+	SolveOptions opts1, opts2;
+
+	opts1.min_moves     = 0;
+	opts1.max_moves     = 13;
+	opts1.max_solutions = 100;
+	opts1.nthreads      = nthreads;
+	opts1.optimal       = 3;
+	opts1.can_niss      = false;
+	opts1.verbose       = false;
+	opts1.all           = true;
+
+	opts2.min_moves     = 0;
+	opts2.max_moves     = 19;
+	opts2.max_solutions = 1;
+	opts2.nthreads      = nthreads;
+	opts2.can_niss      = false;
+	opts2.verbose       = false;
+
+	sols1 = solve(cube, &drany_HTM, &opts1);
+	bestalg = new_alg("");
+	bestlen = 999;
+	for (i = sols1->first; i != NULL; i = i->next) {
+		c = apply_alg(i->alg, cube);
+		sols2 = solve(c, &dranyfin_DR, &opts2);
+		
+		if (sols2->len > 0) {
+			newb = i->alg->len + sols2->first->alg->len;
+			if (newb < bestlen) {
+				bestlen = newb;
+				copy_alg(i->alg, bestalg);
+				compose_alg(bestalg, sols2->first->alg);
+			}
+		}
+
+		free_alglist(sols2);
+	}
+
+	free_alglist(sols1);
+
+	return bestalg;
+}

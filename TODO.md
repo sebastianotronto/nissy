@@ -10,7 +10,6 @@ It's more of a personal reminder than anything else.
 ### Commands that are available in nissy 1.0, but not in this version (yet):
 * drcorners (solve corners after dr)
 * search and improve non-optimal subsequences
-* **fast non-optimal solver (also needed for scramble)**
 * **scramble [dr, corners only, edges only, htr, fmc(RUF)...]**
 * save and edit algs as "variables"
   (or just use a "logging system" to keep info about previously run commands,
@@ -32,6 +31,7 @@ including e.g. solutions that were not shown because -c)
 * transform alg, rufify etc...
 * more scramble stuff (scramble FMC with rufify...)
 * command notation to list available moves
+* make multi-step solve much more general and create command
 
 ## Distribution
 

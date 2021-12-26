@@ -2,12 +2,12 @@
 
 /* Arg parsing functions *****************************************************/
 
-CommandArgs *           solve_parse_args(int c, char **v);
 CommandArgs *           gen_parse_args(int c, char **v);
 CommandArgs *           help_parse_args(int c, char **v);
 CommandArgs *           print_parse_args(int c, char **v);
 CommandArgs *           parse_only_scramble(int c, char **v);
 CommandArgs *           parse_no_arg(int c, char **v);
+CommandArgs *           solve_parse_args(int c, char **v);
 
 /* Exec functions ************************************************************/
 
@@ -17,6 +17,7 @@ static void             solve_exec(CommandArgs *args);
 static void             steps_exec(CommandArgs *args);
 static void             commands_exec(CommandArgs *args);
 static void             print_exec(CommandArgs *args);
+static void             twophase_exec(CommandArgs *args);
 static void             help_exec(CommandArgs *args);
 static void             quit_exec(CommandArgs *args);
 static void             unniss_exec(CommandArgs *args);
@@ -93,6 +94,15 @@ help_cmd = {
 };
 
 Command
+twophase_cmd = {
+	.name        = "twophase",
+	.usage       = "twophase",
+	.description = "Find a solution quickly using a 2-phase method",
+	.parse_args  = parse_only_scramble,
+	.exec        = twophase_exec,
+};
+
+Command
 quit_cmd = {
 	.name        = "quit",
 	.usage       = "quit",
@@ -128,6 +138,7 @@ Command *commands[NCOMMANDS] = {
 	&quit_cmd,
 	&solve_cmd,
 	&steps_cmd,
+	&twophase_cmd,
 	&unniss_cmd,
 	&version_cmd,
 };
@@ -381,6 +392,22 @@ print_exec(CommandArgs *args)
 {
 	init_moves();
 	print_cube(apply_alg(args->scramble, (Cube){0}));
+}
+
+static void
+twophase_exec(CommandArgs *args)
+{
+	Cube c;
+	Alg *sol;
+
+	init_movesets();
+	init_symcoord();
+
+	c = apply_alg(args->scramble, (Cube){0});
+	sol = solve_2phase(c, 1);
+
+	print_alg(sol, false);
+	free_alg(sol);
 }
 
 static void

@@ -1437,7 +1437,7 @@ static int
 detect_pretrans_drud(Cube cube, Trans *ret)
 {
 	int i, n;
-	static Trans tt[3] = {uf, ur, fd};
+	static Trans tt[3] = {uf, fr, rd};
 
 	for (i = 0, n = 0; i < 3; i++)
 		if (check_drud(apply_trans(tt[i], cube)))
