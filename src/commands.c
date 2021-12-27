@@ -4,7 +4,6 @@
 
 CommandArgs *           gen_parse_args(int c, char **v);
 CommandArgs *           help_parse_args(int c, char **v);
-CommandArgs *           print_parse_args(int c, char **v);
 CommandArgs *           parse_only_scramble(int c, char **v);
 CommandArgs *           parse_no_arg(int c, char **v);
 CommandArgs *           solve_parse_args(int c, char **v);
@@ -92,7 +91,7 @@ print_cmd = {
 	.name        = "print",
 	.usage       = "print SCRAMBLE",
 	.description = "Print written description of the cube",
-	.parse_args  = print_parse_args,
+	.parse_args  = parse_only_scramble,
 	.exec        = print_exec,
 };
 
@@ -235,6 +234,8 @@ solve_parse_args(int c, char **v)
 			infinitesols = true;
 		} else if (!strcmp(v[i], "-N")) {
 			a->opts->can_niss = true;
+		} else if (!strcmp(v[i], "-i")) {
+			a->scrstdin = true;
 		} else if (!strcmp(v[i], "-v")) {
 			a->opts->verbose = true;
 		} else if (!strcmp(v[i], "-a")) {
@@ -251,7 +252,7 @@ solve_parse_args(int c, char **v)
 	if (infinitesols && !fixedmsols)
 		a->opts->max_solutions = 1000000; /* 1M = +infty */
 
-	a->success = read_scramble(c-i, &v[i], a);
+	a->success = (a->scrstdin && i == c) || read_scramble(c-i, &v[i], a);
 	return a;
 }
 
@@ -338,7 +339,12 @@ parse_only_scramble(int c, char **v)
 {
 	CommandArgs *a = new_args();
 
-	a->success = read_scramble(c, v, a);
+	if (!strcmp(v[0], "-i")) {
+		a->scrstdin = true;
+		a->success = c == 1;
+	} else {
+		a->success = read_scramble(c, v, a);
+	}
 
 	return a;
 }
@@ -349,16 +355,6 @@ parse_no_arg(int c, char **v)
 	CommandArgs *a = new_args();
 
 	a->success = true;
-
-	return a;
-}
-
-CommandArgs *
-print_parse_args(int c, char **v)
-{
-	CommandArgs *a = new_args();
-
-	a->success = read_scramble(c, v, a);
 
 	return a;
 }
@@ -611,6 +607,7 @@ new_args()
 	CommandArgs *args = malloc(sizeof(CommandArgs));
 
 	args->success = false;
+	args->scrstdin = false;
 	args->scramble = NULL; /* initialized in read_scramble */
 	args->opts = malloc(sizeof(SolveOptions));
 

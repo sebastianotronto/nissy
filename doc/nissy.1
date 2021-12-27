@@ -192,6 +192,13 @@ Display version information.
 .
 .El
 .
+.Sh SCRAMBLES
+All the commands above that accept a scramble also accept a
+.Fl Nm i
+option with no arguments.
+If this option is given, multiple scrambles are read from standard
+input (one per line) until and EOF is found, at which point stdin is cleared.
+.
 .Sh ENVIRONMENT
 Data is stored in the folder pointed to by
 .Nm $NISSYDATA.
@@ -203,7 +210,6 @@ is used instead. If none of this environment variables is defined
 (e.g. in a non-UNIX system), the current folder is used.
 .
 .Sh EXAMPLES
-.
 The command:
 .Dl nissy solve -v \(dqR\(aqU\(aqFD2L2FR2U2R2BD2LB2D\(aqB2L\(aqR\(aqBD2BU2LU2R\(aqU\(aqF\(dq
 .

@@ -158,6 +158,8 @@ commandargs
 	Command *                 command; /* For help */
 	int                       n;
 	int                       scrt;
+	bool                      scrstdin;
+	bool                      header;
 };
 
 struct

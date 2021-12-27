@@ -8,6 +8,6 @@
 #define MAXNTOKENS          255
 
 void        exec_args(int c, char **v);
-void        launch(bool prompt);
+void        launch(bool batchmode);
 
 #endif

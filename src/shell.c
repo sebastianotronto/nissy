@@ -32,8 +32,10 @@ void
 exec_args(int c, char **v)
 {
 	int i;
+	char line[MAXLINELEN];
 	Command *cmd = NULL;
 	CommandArgs *args;
+	Alg *scramble;
 
 	for (i = 0; i < NCOMMANDS; i++)
 		if (commands[i] != NULL && !strcmp(v[0], commands[i]->name))
@@ -50,7 +52,27 @@ exec_args(int c, char **v)
 		return;
 	}
 
-	cmd->exec(args);
+	if (args->scrstdin) {
+		while (true) {
+			if (fgets(line, MAXLINELEN, stdin) == NULL) {
+				clearerr(stdin);
+				break;
+			}
+			
+			scramble = new_alg(line);
+
+			printf(">>> Line: %s", line);
+
+			if (scramble != NULL && scramble->len > 0) {
+				args->scramble = scramble;
+				cmd->exec(args);
+				free_alg(scramble);
+				args->scramble = NULL;
+			} 
+		}
+	} else {
+		cmd->exec(args);
+	}
 	free_args(args);
 }
 
