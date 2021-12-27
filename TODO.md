@@ -36,7 +36,6 @@ including e.g. solutions that were not shown because -c)
 * webapp (cgi)
 * genptable: stop early if gone above base+3 (can be checked while generating)
 * installation: get ptables with curl or similar (on Windows what?)
-* **fix examples in manpage**
 
 ## Technical stuff
 

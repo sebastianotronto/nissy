@@ -31,7 +31,7 @@ debug:
 	${CC} ${DBGFLAGS} -o nissy src/*.c
 
 clean:
-	rm -rf nissy nissy-${VERSION}.tar.gz
+	rm -rf nissy nissy-*.tar.gz
 
 dist: clean
 	mkdir -p nissy-${VERSION}
