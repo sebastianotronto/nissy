@@ -210,27 +210,38 @@ is used instead. If none of this environment variables is defined
 (e.g. in a non-UNIX system), the current folder is used.
 .
 .Sh EXAMPLES
+.Pp
 The command:
-.Dl nissy solve -v \(dqR\(aqU\(aqFD2L2FR2U2R2BD2LB2D\(aqB2L\(aqR\(aqBD2BU2LU2R\(aqU\(aqF\(dq
-.
+.Dl nissy solve -v -O 1 \(dqR\(aqU\(aqFD2L2FR2U2R2BD2LB2D\(aqB2L\(aqR\(aqBD2BU2LU2R\(aqU\(aqF\(dq
 Returns:
-.Dl Found 0 solutions, searching depth 0...
-.Dl Found 0 solutions, searching depth 1...
+.Dl Searching depth 0
+.Dl Searching depth 1
 .Dl (some more lines)
-.Dl Found 0 solutions, searching depth 16...
+.Dl Searching depth 16
 .Dl D2 F\(aq U2 D2 F\(aq L2 D R2 D F B2 R\(aq L2 F\(aq U\(aq D
+.Dl Searching depth 17
 .Dl D2 F\(aq U2 D2 F\(aq L2 D R2 D F B2 R\(aq L2 F\(aq U\(aq D (16)
-.
+Notice that the solution is printed twice: the first time it is printed as soon
+as it is found as requested by the -v option.
+.Pp
 The command:
-.Dl nissy solve eofb -m 4 -M 5 -n -s 6 \(dqR\(aqU\(aqFD2L2 FR2 U2R2BD2 L B2 D\(aq B2 L\(aq R\(aq\(dq
-.
+.Dl nissy solve eofb -m 4 -M 5 -N -n 6 \(dqR\(aqU\(aqFD2L2 FR2 U2R2BD2 L B2 D\(aq B2 L\(aq R\(aq\(dq
 Returns:
 .Dl U B U\(aq B (4)
-.Dl U2 D2 B (B) (4)
+.Dl U (B R\(aq B) (4)
+.Dl (U B R\(aq B) (4)
 .Dl U2 F R2 F (4)
 .Dl U2 B U2 B (4)
-.Dl U2 B (U B) (4)
-.Dl U\(aq B U B (4)
+.Dl (U2 B R\(aq B) (4)
+.Pp
+On a UNIX shell, the composite command
+.Dl nissy scramble -n 2 | nissy solve -i > file.txt
+Generates two random scrambles, solves them and saves the result to file.txt.
+The file will look something like this:
+.Dl >>> Line: D U2 F D B\(aq F L2 D\(aq F2 R2 L B2 L\(aq U2 B2 R F2 L\(aq D2
+.Dl U2 R2 F2 L B2 D\(aq R2 D\(aq F U L2 B\(aq U\(aq R2 D2 R2 U (17)
+.Dl >>> Line: D B R U\(aq B\(aq L2 U L U D2 R L B2 U2 L2 U2 R U2 B2 L F2
+.Dl D\(aq F R\(aq D B L2 B R2 L U L U2 B D\(aq U R U F2 (18)
 .
 .Sh AUTHORS
 .An Sebastiano Tronto Aq Mt sebastiano.tronto@gmail.com
