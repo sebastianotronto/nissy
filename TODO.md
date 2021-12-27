@@ -3,8 +3,6 @@
 This is a list of things that I would like to add or change at some point.
 It's more of a personal reminder than anything else.
 
-**Things in bold: to do before 2.0 release**
-
 ## Commands
 
 ### Commands that are available in nissy 1.0, but not in this version (yet):
@@ -36,8 +34,8 @@ including e.g. solutions that were not shown because -c)
 
 * Add EXAMPLES.md file
 * webapp (cgi)
-* **Re-upload tables**
-* **fix README.md**
+* genptable: stop early if gone above base+3 (can be checked while generating)
+* installation: get ptables with curl or similar (on Windows what?)
 * **fix examples in manpage**
 
 ## Technical stuff

@@ -21,17 +21,11 @@ solutions for EO/DR/HTR or similar substeps.
 
 ## Requirements
 
-** Warning: ** *This section is not up to date with the code. In nissy-2.0beta8
-or later the only way to get the table files is to generate them yourself.
-All but the huge table just requires a few minutes; the huge table for 
-optimal solving can require a couple of hours. Use more than 1 thread
-if you can.*
-
-A full installation of Nissy requires a little more than 2Gb of space,
-of which 1.6Gb are occupied by the huge pruning table for fast optimal solving,
+A full installation of nissy requires about 3Gb of space,
+of which 2.3Gb are occupied by the huge pruning table for fast optimal solving,
 and running it requires the same amount of RAM.
 One can choose to never use this function and not to install the relative
-pruning table. There is an alternative (about 5 times slower)
+pruning table. There is an alternative (slower)
 optimal solving function that uses about 500Mb of RAM.
 
 ## Installation
@@ -55,14 +49,14 @@ Follows the instructions below to install the pruning tables.
 ### Tables
 Nissy needs to generate certain large tables to work. These tables are by default
 generated the first time they are needed (e.g the first time you ask to solve a
-certain step) and then saved to a file. The following times Nissy simply loads the
-corresponding file from the hard disk.
+certain step) and then saved to a file. Whenever these tables are needed again,
+nissy simply loads the corresponding file from the hard disk.
 
-The very large table for optimal solving can take some time to generate (about 20
-minutes on my fairly old but decent laptop, using 8 CPU threads). All other
-tables are much faster.
+The very large table for optimal solving can take some time to generate
+(about 1.5 hours on my fairly old but decent laptop, using 8 CPU threads).
+All other tables are much faster.
 
-You can ask Nissy to generate all the tables it will ever need with the **gen**
+You can ask Nissy to generate all the tables it will ever need with the `gen`
 command. It is recommended to use more than one thread, if your CPU has them.
 For example, you can run:
 
@@ -73,17 +67,17 @@ nissy gen -t 8
 to generate all tables using 8 threads.
 
 Alternatively, you can simply download all the tables and copy them into the
-correct folder (see manual page, `ENVIRONMENT` section).
-Choose one of the following:
+correct folder (see manual page, `ENVIRONMENT` section). On UNIX operating
+systems this folder is either `.nissy/tables` in the user's home directory or
+`$XDG_DATA_HOME/nissy/tables` if the XDG variable is configured. On Windows
+it is the same directory as the nissy.exe executable file.
 
-| |.zip|.tar.gz|
-|-|-|-|
-|Full (~720Mb)|[full.zip](https://math.uni.lu/tronto/nissy/nissy-tables-full.zip)|[full.tar.gz](https://math.uni.lu/tronto/nissy/nissy-tables-full.tar.gz)|
-|No huge table (~90Mb)|[nohuge.zip](https://math.uni.lu/tronto/nissy/nissy-tables-nohuge.zip)|[nohuge.tar.gz](https://math.uni.lu/tronto/nissy/nissy-tables-nohuge.tar.gz)|
-
-extract the archive and copy the tables folder into `NISSIDATA` (paste there
-the whole folder, not file by file). The "nohuge" files are much smaller and do not
-contain the huge pruning table for the optimal solver.
+Choose either the
+[zip](https://math.uni.lu/tronto/nissy/nissy-tables-2.0.zip)
+or the
+[tar.gz](https://math.uni.lu/tronto/nissy/nissy-tables-2.0.tar.gz)
+file (click the links to download) and
+extract them in the correct folder.
 
 ## Structure of the code
 
