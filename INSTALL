@@ -33,6 +33,7 @@ nissy simply loads the corresponding file from the hard disk.
 
 The very large table for optimal solving can take some time to generate
 (about 1.5 hours on my fairly old but decent laptop, using 8 CPU threads).
+In order to generate it you need at least 5Gb or RAM.
 All other tables are much faster.
 
 You can ask nissy to generate all the tables it will ever need with the gen
