@@ -5,7 +5,7 @@ For optimal HTM solving Nissy uses techniquest from Herbert Kociemba's
 [Cube Explorer](http://kociemba.org/cube.htm) and Tomas Rokicki's
 [nxopt](https://github.com/rokicki/cube20src/blob/master/nxopt.md).
 With 4 cores at 2.5GHz and using less than 3Gb of RAM, Nissy can find an
-optimal solution in less than a minute (18 moves or less) to a few minutes.
+optimal solution in about a minute on average.
 
 Nissy can also solve many different substeps of Thistlethwaite's algorithm
 (DR/HTR), and can use NISS (Normal-Inverse Scramble Switch).
