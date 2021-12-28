@@ -135,7 +135,7 @@ pruning table to solving EO with HTM moveset and this coordinate would have valu
 The values for most pruning tables are memorized modulo 16, so they only occupy
 4 bits per entry, and values larger than 15 are saved as 15. This is good enough
 for most applications.
-Some large tables are memorized in compact form using only 4 bits, similarly
+Some large tables are memorized in compact form using only 2 bits, similarly
 to what [nxopt](https://github.com/rokicki/cube20src/blob/master/nxopt.md) does:
 a base value `b` is picked and a value of `n` is saved as `MIN(3,MAX(0,n-b))`.
 When a value of `v=1,2,3` is read it is simply returned as `v+b`, while if
