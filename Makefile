@@ -36,8 +36,10 @@ clean:
 dist: clean
 	mkdir -p nissy-${VERSION}
 	cp -R LICENSE Makefile INSTALL doc src nissy-${VERSION}
-	groff -Tpdf   -mandoc doc/nissy.1 > nissy-${VERSION}/doc/nissy.pdf 
-	groff -Thtml  -mandoc doc/nissy.1 > nissy-${VERSION}/doc/nissy.html 
+	groff -Tpdf   -mandoc doc/nissy.1 > doc/nissy.pdf 
+	groff -Thtml  -mandoc doc/nissy.1 > doc/nissy.html 
+	cp doc/nissy.pdf nissy-${VERSION}/doc/nissy.pdf 
+	cp doc/nissy.html nissy-${VERSION}/doc/nissy.html 
 	tar -cf nissy-${VERSION}.tar nissy-${VERSION}
 	gzip nissy-${VERSION}.tar
 	rm -rf nissy-${VERSION}
