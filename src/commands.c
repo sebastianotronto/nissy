@@ -367,7 +367,7 @@ solve_exec(CommandArgs *args)
 	Cube c;
 	AlgList *sols;
 
-	init_movesets();
+	init_all_movesets();
 	init_symcoord();
 
 	c = apply_alg(args->scramble, (Cube){0});
@@ -388,7 +388,7 @@ scramble_exec(CommandArgs *args)
 	Alg *scr;
 	int i;
 
-	init_movesets();
+	init_all_movesets();
 	init_symcoord();
 
 	srand(time(NULL));
@@ -407,7 +407,7 @@ gen_exec(CommandArgs *args)
 	int i;
 
 	fprintf(stderr, "Generating coordinates...\n");
-	init_movesets();
+	init_all_movesets();
 	init_symcoord();
 
 	fprintf(stderr, "Generating pruning tables...\n");
@@ -460,7 +460,7 @@ twophase_exec(CommandArgs *args)
 	Cube c;
 	Alg *sol;
 
-	init_movesets();
+	init_all_movesets();
 	init_symcoord();
 
 	c = apply_alg(args->scramble, (Cube){0});

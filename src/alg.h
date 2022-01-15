@@ -35,7 +35,8 @@ void        print_alglist(AlgList *al, bool l);
 void        swapmove(Move *m1, Move *m2);
 void        unniss(Alg *alg);
 
-void        init_movesets();
+void        init_moveset(Moveset *ms);
+void        init_all_movesets();
 
 #endif
 

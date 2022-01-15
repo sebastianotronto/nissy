@@ -474,32 +474,36 @@ unniss(Alg *alg)
 }
 
 void
-init_movesets()
+init_moveset(Moveset *ms)
 {
-	int i, j;
+	int j;
 	uint64_t l, one;
 	Move m, l2, l1;
-	Moveset *ms;
 
 	one = 1;
 
-	for (i = 0; i < nmoveset; i++) {
-		ms = all_ms[i];
+	for (j = 0, m = U; m < NMOVES; m++)
+		if (ms->allowed(m))
+			ms->sorted_moves[j++] = m;
+	ms->sorted_moves[j] = NULLMOVE;
 
-		for (j = 0, m = U; m < NMOVES; m++)
-			if (ms->allowed(m))
-				ms->sorted_moves[j++] = m;
-		ms->sorted_moves[j] = NULLMOVE;
-
-		for (l1 = 0; l1 < NMOVES; l1++) { 
-			for (l2 = 0; l2 < NMOVES; l2++) { 
-				ms->mask[l2][l1] = 0;
-				for (l=0; ms->sorted_moves[l]!=NULLMOVE; l++) {
-					m = ms->sorted_moves[l];
-					if (ms->allowed_next(l2, l1, m))
-						ms->mask[l2][l1] |= (one<<m);
-				}
+	for (l1 = 0; l1 < NMOVES; l1++) { 
+		for (l2 = 0; l2 < NMOVES; l2++) { 
+			ms->mask[l2][l1] = 0;
+			for (l=0; ms->sorted_moves[l]!=NULLMOVE; l++) {
+				m = ms->sorted_moves[l];
+				if (ms->allowed_next(l2, l1, m))
+					ms->mask[l2][l1] |= (one<<m);
 			}
 		}
 	}
+}
+
+void
+init_all_movesets()
+{
+	int i;
+
+	for (i = 0; i < nmoveset; i++)
+		init_moveset(all_ms[i]);
 }

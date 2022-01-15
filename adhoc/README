@@ -1,0 +1,3 @@
+This folder contains some ad-hoc code that is not included in the main nissy
+program. You probably don't need it, but it may be worth looking into if you
+are trying to extend nissy by writing your own steps or other functions.
