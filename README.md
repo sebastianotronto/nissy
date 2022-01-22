@@ -1,7 +1,7 @@
 # Nissy
 
 A Rubik's cube solver and FMC assistant.
-For optimal HTM solving Nissy uses techniquest from Herbert Kociemba's
+For optimal HTM solving Nissy uses techniques from Herbert Kociemba's
 [Cube Explorer](http://kociemba.org/cube.htm) and Tomas Rokicki's
 [nxopt](https://github.com/rokicki/cube20src/blob/master/nxopt.md).
 With 4 cores at 2.5GHz and using less than 3Gb of RAM, Nissy can find an
@@ -74,9 +74,9 @@ systems this folder is either `.nissy/tables` in the user's home directory or
 it is the same directory as the nissy.exe executable file.
 
 Choose either the
-[zip](https://math.uni.lu/tronto/nissy/nissy-tables-2.0.zip)
+[zip](https://nissy.tronto.net/nissy-tables-2.0.zip)
 or the
-[tar.gz](https://math.uni.lu/tronto/nissy/nissy-tables-2.0.tar.gz)
+[tar.gz](https://nissy.tronto.net/nissy-tables-2.0.tar.gz)
 file (click the links to download) and
 extract them in the correct folder.
 

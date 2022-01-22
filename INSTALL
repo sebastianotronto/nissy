@@ -51,7 +51,7 @@ $XDG_DATA_HOME/nissy/tables if the XDG variable is configured. On Windows
 it is the same directory as the nissy.exe executable file.
 
 Choose either (zip format)
-	https://math.uni.lu/tronto/nissy/nissy-tables-2.0.zip
+	https://nissy.tronto.net/nissy-tables-2.0.zip
 or (tar.gz format)
-	https://math.uni.lu/tronto/nissy/nissy-tables-2.0.tar.gz
+	https://nissy.tronto.net/nissy-tables-2.0.tar.gz
 and extract the archive into the correct folder.

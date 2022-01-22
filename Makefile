@@ -57,5 +57,5 @@ uninstall:
 	rm -rf ${DESTDIR}${PREFIX}/bin/nissy ${DESTDIR}${MANPREFIX}/man1/nissy.1
 	for s in ${SCRIPTS}; do rm -rf ${DESTDIR}${PREFIX}/bin/$$s; done
 
-.PHONY: all options nissy win debug clean dist install uninstall
+.PHONY: all options win debug clean dist install uninstall
 
