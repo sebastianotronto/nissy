@@ -14,6 +14,7 @@ It can be useful to analyze your DR solves (and more, once I implement more feat
 ## Why should I use Nissy?
 
 You should use Nissy if you:
+
 * Want to analyze your DR solutions or check for multiple optimal (or sub-optimal)
 solutions for EO/DR/HTR or similar substeps.
 * You just want a Rubik's cube solver and you like command line interfaces.
@@ -89,6 +90,7 @@ I'll try to explain here the main parts of the program.
 ### Cube, moves and transformations
 
 There are many ways to represent a cube. In Nissy I use two:
+
 * An array representation `CubeArray`: 3 arrays representing the permutation
 of corners, edges and centers and 2 arrays for the orientation of corners and edges.
 * An 11-integers representation `Cube`: 3 integers for edge orientation (with respect
