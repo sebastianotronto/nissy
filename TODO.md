@@ -38,6 +38,7 @@ including e.g. solutions that were not shown because -c)
 * solve should re-orient first if needed and not just give up if centers are off
 * more scramble types (dr, htr, fmc(rufify)...)
 * solve should try up to a small bound without loading the large pruning table
+* silent batch mode without >>>
 
 ### New features
 * cleanup: translate an alg to the standard HTM moveset + reorient at the end
@@ -52,6 +53,7 @@ including e.g. solutions that were not shown because -c)
 * Add EXAMPLES.md file
 * webapp (cgi)
 * installation: get ptables with curl or similar (on Windows what?)
+  also, keep only one compressed format (+uncompressed?) on server
 
 ## Technical stuff
 
