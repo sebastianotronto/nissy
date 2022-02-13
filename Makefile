@@ -14,26 +14,21 @@ DBGFLAGS = -std=c99 -pthread -pedantic -Wall -Wextra \
 CC = cc
 
 
-all: options nissy
-
-options:
-	@echo nissy build options:
-	@echo "CFLAGS   = ${CFLAGS}"
-	@echo "CC       = ${CC}"
+all: nissy
 
 nissy:
 	${CC} ${CFLAGS} -o nissy src/*.c
 
-win:
+nissy.exe:
 	x86_64-w64-mingw32-gcc ${CFLAGS} -static -o nissy.exe src/*.c
 
 debug:
 	${CC} ${DBGFLAGS} -o nissy src/*.c
 
 clean:
-	rm -rf nissy nissy-*.tar.gz
+	rm -rf nissy nissy*.exe nissy*.tar.gz
 
-dist: clean
+dist: clean nissy.exe
 	mkdir -p nissy-${VERSION}
 	cp -R LICENSE Makefile INSTALL doc src nissy-${VERSION}
 	groff -Tpdf   -mandoc doc/nissy.1 > doc/nissy.pdf 
@@ -43,6 +38,7 @@ dist: clean
 	tar -cf nissy-${VERSION}.tar nissy-${VERSION}
 	gzip nissy-${VERSION}.tar
 	rm -rf nissy-${VERSION}
+	mv nissy.exe nissy-${VERSION}.exe
 
 install: nissy
 	mkdir -p ${DESTDIR}${PREFIX}/bin
@@ -57,5 +53,5 @@ uninstall:
 	rm -rf ${DESTDIR}${PREFIX}/bin/nissy ${DESTDIR}${MANPREFIX}/man1/nissy.1
 	for s in ${SCRIPTS}; do rm -rf ${DESTDIR}${PREFIX}/bin/$$s; done
 
-.PHONY: all options win debug clean dist install uninstall
+.PHONY: all debug clean dist install uninstall
 
