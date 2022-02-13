@@ -19,6 +19,7 @@ It's more of a personal reminder than anything else.
 * More screenshots!
 ### More
 * Anything quick and easy from the sections below
+* fix LICENSE file
 
 ## Commands
 
