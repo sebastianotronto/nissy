@@ -268,27 +268,31 @@ move_string(Move m)
 Alg *
 new_alg(char *str)
 {
-	Alg *alg = malloc(sizeof(Alg));
+	Alg *alg;
 	int i;
-	bool niss = false, move_read;
+	bool niss, move_read;
 	Move j, m;
 
+	alg = malloc(sizeof(Alg));
 	alg->move      = malloc(30 * sizeof(Move));
 	alg->inv       = malloc(30 * sizeof(bool));
 	alg->allocated = 30;
 	alg->len       = 0;
 
+	niss = false;
 	for (i = 0; str[i]; i++) {
 		if (str[i] == ' ' || str[i] == '\t' || str[i] == '\n')
 			continue;
 
 		if (str[i] == '(' && niss) {
 			fprintf(stderr, "Error reading moves: nested ( )\n");
+			alg->len = 0;
 			return alg;
 		}
 
 		if (str[i] == ')' && !niss) {
 			fprintf(stderr, "Error reading moves: unmatched )\n");
+			alg->len = 0;
 			return alg;
 		}
 
@@ -351,6 +355,11 @@ new_alg(char *str)
 			free(alg);
 			return new_alg("");
 		}
+	}
+
+	if (niss) {
+		fprintf(stderr, "Error reading moves: unmatched (\n");
+		alg->len = 0;
 	}
 
 	return alg;

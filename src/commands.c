@@ -519,25 +519,14 @@ read_scramble(int c, char **v, CommandArgs *args)
 	int i, k, n;
 	unsigned int j;
 	char *algstr;
-	Alg *aux;
 
 	if (c < 1) {
 		fprintf(stderr, "Error: no scramble given?\n");
 		return false;
 	}
 
-	n = 0;
-	for(i = 0; i < c; i++) {
-		aux = new_alg(v[i]);
-		if (aux->len == 0) {
-			fprintf(stderr, "Error: %s or its argument"
-			    "unrecognized\n", v[i]);
-			free(aux);
-			return false;
-		}
-		free(aux);
+	for(n = 0, i = 0; i < c; i++)
 		n += strlen(v[i]);
-	}
 
 	algstr = malloc((n + 1) * sizeof(char));
 	k = 0;

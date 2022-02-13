@@ -4,6 +4,9 @@ This is a list of things that I would like to add or change at some point.
 It's more of a personal reminder than anything else.
 
 ## For version 2.1
+### Bugs
+* when reading scramble, unmatched ( does not produce any error, unmatched )
+produces TWO errors but it goes on anyway
 ### Scrambles
 * Better two-phase solver, make sure to not have cancelling moves
   (possibly use cleanup function)
