@@ -1,0 +1,190 @@
+<!doctype html>
+<html>
+<head>
+	<title> Download | Nissy </title>
+<meta name="viewport" content="width=device-width" />	<link rel="stylesheet" type="text/css" href="/style.css">
+	<link rel="icon" href="/favicon.png">
+	<meta charset="utf-8">
+</head>
+
+<body>
+
+<nav class="top">
+	<table class="menu">
+	<tr>
+	<td class="logo"> <a href="/"><img src="/favicon.png"></a> </td>
+	<td class="links">
+		<a href="/download/">Download</a> |
+		<a href="/examples/">Examples</a>
+	</td>
+	</tr>
+	</table>
+</nav>
+
+<hr class="line">
+
+
+<h1>Get Nissy</h1>
+
+<table class="dltable">
+<tr>
+	<td></td>
+	<td><strong>Source code</strong></td>
+	<td><strong>Windows executable</strong></td>
+</tr>
+<tr>
+	<td><strong>Latest version</strong></td>
+	<td><a href="/nissy-2.0.1.tar.gz">nissy-2.0.1.tar.gz (63Kb)</a></td>
+	<td><a href="/nissy-2.0.1.exe">nissy-2.0.1.exe (770Kb)</a></td>
+</tr>
+</table>
+
+<p>
+In this page you can find download links (see above)
+and installation instructions (see below) for
+nissy. If instead you wish to clone the
+<a href="https://git.tronto.net/nissy/">git repository</a>, use
+<pre>
+<code>git clone https://git.tronto.net/nissy</code>
+</pre>
+</p>
+
+<p>
+For a summary of changes and a list of older versions see below. Some versions
+(for example 1.0) are not available directly, but can be obtained from
+the git repository.
+</p>
+
+<h2>Installation</h2>
+
+<h3>System requirements</h3>
+
+<p>
+A full installation of nissy requires about 3Gb of space,
+of which 2.3Gb are occupied by the huge pruning table for fast optimal solving,
+and running it requires the same amount of RAM.
+One can choose to never use this function and not to install the relative
+pruning table. There is an alternative (slower)
+optimal solving function that uses about 500Mb of RAM.
+</p>
+
+<h3>Windows</h3>
+
+<p>
+Try downloading and executing in a terminal the file <code>nissy.exe</code>,
+then follow the instructions in the <strong>Tables</strong> section below for
+installing the pruning tables.
+If <code>nissy.exe</code> does not work, you can try following the UNIX instructions
+in WSL (Windows Subsystem for Linux) or in a similar environment.
+</p>
+
+<h3>UNIX (Linux, MacOS, *BSD...)</h3>
+<p>
+Edit the <code>Makefile</code> to match your local configuration
+(this is usually not necessary, but you may want to change the
+<code>PREFIX</code> variable to change the installation path)
+and run <code>make</code>, followed by <code>make install</code>.
+Follow the instructions below to install the pruning tables.
+
+<h3>Tables</h3>
+
+<table class="dltable">
+<tr>
+	<td></td> <td><strong>Zip file</strong></td>
+</tr>
+<tr>
+	<td><strong>Tables</strong></td>
+	<td><a href="/nissy-tables-2.0.zip">nissy-tables.2.0.zip (63Kb)</a></td>
+</tr>
+</table>
+<p>
+<strong>Note:</strong> the version 2.0 at the end of the file name is
+only indicative. Later versionw will use the same tables, unless
+otherwise specified.
+</p>
+
+<p>
+Nissy needs certain large tables to work. These tables are by default
+generated the first time they are needed (e.g the first time you ask to solve a
+certain step) and then saved to a file. Whenever these tables are needed again,
+nissy simply loads the corresponding file from the hard disk.
+</p>
+
+<p>
+The very large table for optimal solving can take some time to generate
+(about 1.5 hours on my fairly old but decent laptop, using 8 CPU threads).
+In order to generate it you need at least 5Gb of RAM.
+All other tables are much faster.
+</p>
+
+<p>
+You can ask nissy to generate all the tables it will ever need with the gen
+command. It is recommended to use more than one thread, if your CPU has them.
+For example, you can run:
+</p>
+
+<pre><code>nissy gen -t 8</pre></code>
+
+<p>
+to generate all tables using 8 threads. You can change 8 to any number
+your CPU supports, up to 64.
+</p>
+
+<p>
+Alternatively, you can simply download all the tables and copy them into the
+correct folder (see manual page, <code>ENVIRONMENT</code> section). On UNIX
+operating systems this folder is either <code>.nissy/tables</code> in the
+user's home directory or <code>$XDG_DATA_HOME/nissy/tables</code> if the
+XDG variable is configured. On Windows it is the same directory as the
+<code>nissy.exe</code> executable file.
+</p>
+
+<h2>Version history</h2>
+
+<h3>Nissy v2</h3>
+
+<table class=dltable>
+<tr>
+	<td><strong>Version</strong></td>
+	<td><strong>Date</strong></td>
+	<td><strong>Comment</strong></td>
+</tr>
+<tr>
+	<td><a href="/nissy-2.0.1.tar.gz">2.0.1</a></td>
+	<td>2022-02-22</td>
+	<td>Bugfix release</td>
+</tr>
+<tr>
+	<td>2.0</td>
+	<td>2021-12-29</td>
+	<td>Rewritten from scratch; much faster optimal solver</td>
+</tr>
+</table>
+
+<h3>Nissy v1</h3>
+
+<p>
+Nissy v1 was released in 2020. It was slow, full of bugs and the code
+was quite terrible. But in practice it got its job done most of the time.
+</p>
+
+
+<hr class="line">
+
+<nav class="bottom">
+	<table class="footer">
+	<tr>
+	<td class="contact">
+		<a href="https://sebastiano.tronto.net">sebastiano.tronto.net</a>
+	</td>
+	<td class="hosted">
+		<a href="mailto:sebastiano@tronto.net">
+			sebastiano@tronto.net
+		</a>
+	</td>
+	</tr>
+	</table>
+</nav>
+
+</body>
+</html>

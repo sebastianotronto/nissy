@@ -1,6 +1,6 @@
 # See LICENSE file for copyright and license details.
 
-VERSION = 2.0
+VERSION = 2.0.1
 
 PREFIX = /usr/local
 MANPREFIX = ${PREFIX}/share/man
@@ -40,6 +40,16 @@ dist: clean nissy.exe
 	rm -rf nissy-${VERSION}
 	mv nissy.exe nissy-${VERSION}.exe
 
+upload: dist
+	rsync -v --rsync-path=openrsync nissy-${VERSION}.exe \
+		tronto.net:/var/www/htdocs/nissy.tronto.net/
+	rsync -v --rsync-path=openrsync nissy-${VERSION}.tar.gz \
+		tronto.net:/var/www/htdocs/nissy.tronto.net/
+
+website:
+	rsync -rv --rsync-path=openrsync \
+		www/ tronto.net:/var/www/htdocs/nissy.tronto.net
+
 install: nissy
 	mkdir -p ${DESTDIR}${PREFIX}/bin
 	cp -f nissy ${DESTDIR}${PREFIX}/bin/nissy
@@ -53,5 +63,5 @@ uninstall:
 	rm -rf ${DESTDIR}${PREFIX}/bin/nissy ${DESTDIR}${MANPREFIX}/man1/nissy.1
 	for s in ${SCRIPTS}; do rm -rf ${DESTDIR}${PREFIX}/bin/$$s; done
 
-.PHONY: all debug clean dist install uninstall
+.PHONY: all debug clean dist install uninstall upload
 
