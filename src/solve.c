@@ -368,7 +368,7 @@ niss_makes_sense(DfsArg *arg)
 	Cube testcube;
 
 	testcube = apply_move(inverse_move(arg->last1), (Cube){0});
-	return arg->current_alg->len == 0 || arg->step->is_done(testcube);
+	return arg->current_alg->len == 0 || !arg->step->is_done(testcube);
 }
 
 static bool

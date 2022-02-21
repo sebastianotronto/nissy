@@ -13,7 +13,10 @@ It's more of a personal reminder than anything else.
 * Free large tables from memory before exit (this is not strictly necessary,
   but can help with WSL bugs)
 ### Installation
-* Automatically download tables as an option for gen command
+* At startup, check if tables are all there; if not, print an error message
+  suggesting to run `nissy gen -t 8` (or more than 8). Is it actually
+  possible to make table generation at least 3x faster?
+* make 8 threads default for gen?
 ### Documentation
 * Write an examples.md file
 * More screenshots!
