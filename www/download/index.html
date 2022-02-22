@@ -12,7 +12,7 @@
 <nav class="top">
 	<table class="menu">
 	<tr>
-	<td class="logo"> <a href="/"><img src="/favicon.png"></a> </td>
+	<td class="logo"> <a href="/"><img src="/favicon.png" alt="logo"></a> </td>
 	<td class="links">
 		<a href="/download/">Download</a> |
 		<a href="/examples/">Examples</a>
@@ -44,10 +44,11 @@ In this page you can find download links (see above)
 and installation instructions (see below) for
 nissy. If instead you wish to clone the
 <a href="https://git.tronto.net/nissy/">git repository</a>, use
+</p>
+
 <pre>
 <code>git clone https://git.tronto.net/nissy</code>
 </pre>
-</p>
 
 <p>
 For a summary of changes and a list of older versions see below. Some versions
@@ -88,9 +89,7 @@ with your favorite archive program, for example with
 Open a terminal in the directory just extracted.
 If you wish, edit the <code>Makefile</code> to match your local configuration
 (this is usually not necessary, but you may want to change the
-<code>PREFIX</code> variable to change the installation path)
-and run
-</code>
+<code>PREFIX</code> variable to change the installation path) and run
 <pre><code>make</code></pre>
 <p>
 followed by
@@ -137,7 +136,7 @@ command. It is recommended to use more than one thread, if your CPU has them.
 For example, you can run:
 </p>
 
-<pre><code>nissy gen -t 8</pre></code>
+<pre><code>nissy gen -t 8</code></pre>
 
 <p>
 to generate all tables using 8 threads. You can change 8 to any number

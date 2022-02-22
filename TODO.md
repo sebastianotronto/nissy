@@ -14,17 +14,15 @@ It's more of a personal reminder than anything else.
   but can help with WSL bugs)
 ### Installation
 * At startup, check if tables are all there; if not, print an error message
-  suggesting to run `nissy gen -t 8` (or more than 8). Is it actually
+  suggesting to run `nissy gen -t 8` (or more than 8). Is it
   possible to make table generation at least 3x faster?
 * make 8 threads default for gen?
 ### Documentation
+* Instructions on how to update on the website
 * Write an examples.md file
 * More screenshots!
 ### More
 * Anything quick and easy from the sections below
-* fix LICENSE file
-* Download page at nissy.tronto.net, upload every dist version there
-  (and then always run make clean before git push)
 
 ## Commands
 
