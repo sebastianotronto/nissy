@@ -5,8 +5,6 @@ It's more of a personal reminder than anything else.
 
 ## For version 2.1
 ### Scrambles
-* Better two-phase solver, make sure to not have cancelling moves
-  (possibly use cleanup function)
 * dr and htr scrambles
 * rufify
 ### Memory management
@@ -45,7 +43,6 @@ including e.g. solutions that were not shown because -c)
 * silent batch mode without >>>
 
 ### New features
-* cleanup: translate an alg to the standard HTM moveset + reorient at the end
 * configurability: add an `alias` command, run config file at startup
 * configure max ram to be used (via config file and/or command line option)
 * transform alg, rufify etc...

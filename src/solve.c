@@ -444,7 +444,7 @@ Alg *
 solve_2phase(Cube cube, int nthreads)
 {
 	int bestlen, newb;
-	Alg *bestalg;
+	Alg *bestalg, *ret;
 	AlgList *sols1, *sols2;
 	AlgListNode *i;
 	Cube c;
@@ -487,5 +487,8 @@ solve_2phase(Cube cube, int nthreads)
 
 	free_alglist(sols1);
 
-	return bestalg;
+	ret = cleanup(bestalg);
+	free_alg(bestalg);
+
+	return ret;
 }
