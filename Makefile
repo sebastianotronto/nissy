@@ -1,6 +1,6 @@
 # See LICENSE file for copyright and license details.
 
-VERSION = 2.0.1
+VERSION = 2.1-current
 
 PREFIX = /usr/local
 MANPREFIX = ${PREFIX}/share/man
@@ -16,7 +16,7 @@ CC = cc
 
 all: nissy
 
-nissy:
+nissy: clean
 	${CC} ${CFLAGS} -o nissy src/*.c
 
 nissy.exe:

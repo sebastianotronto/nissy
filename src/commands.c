@@ -12,6 +12,7 @@ CommandArgs *           scramble_parse_args(int c, char **v);
 /* Exec functions ************************************************************/
 
 static void             gen_exec(CommandArgs *args);
+static void             cleanup_exec(CommandArgs *args);
 static void             invert_exec(CommandArgs *args);
 static void             solve_exec(CommandArgs *args);
 static void             scramble_exec(CommandArgs *args);
@@ -123,6 +124,15 @@ quit_cmd = {
 };
 
 Command
+cleanup_cmd = {
+	.name        = "cleanup",
+	.usage       = "cleanup SCRAMBLE",
+	.description = "Rewrite a scramble using only standard moves (HTM)",
+	.parse_args  = parse_only_scramble,
+	.exec        = cleanup_exec,
+};
+
+Command
 unniss_cmd = {
 	.name        = "unniss",
 	.usage       = "unniss SCRAMBLE",
@@ -151,6 +161,7 @@ Command *commands[NCOMMANDS] = {
 	&scramble_cmd,
 	&steps_cmd,
 	&twophase_cmd,
+	&cleanup_cmd,
 	&unniss_cmd,
 	&version_cmd,
 };
@@ -496,6 +507,19 @@ static void
 quit_exec(CommandArgs *args)
 {
 	exit(0);
+}
+
+static void
+cleanup_exec(CommandArgs *args)
+{
+	Alg *alg;
+
+	init_moves();
+
+	alg = cleanup(args->scramble);
+	print_alg(alg, false);
+
+	free_alg(alg);
 }
 
 static void

@@ -62,14 +62,18 @@ including e.g. solutions that were not shown because -c)
 ## Technical stuff
 
 ### Memory management
-* free pruning table after solve is done? if so, I need to add another way
-  of doing batch solving (I don't want to re-load the tables every time);
-  for example I could add the possibility of reading scrambles from file,
-  and execute the same solve command to every line; also improve multi-threading:
-  I can just solve one scramble per thread, it's better because there is no lock.
+* free pruning table after solve is done? if I do this I need to deafault to a
+  small table for < 8 moves solutions or smth
+* improve multi-threading when solving multiple scrambles
 * alternative: just add a command "free" to free up memory; it is not
   user friendly (who wants to manage memory manually?) but on the other hand
   it will only be used by the few who have less than 4(?) Gb of ram.
+* nissy -M maxmem option for running with at most maxmem memory; if exceeded
+  when loading a pruning table, return failure (or make every solve command
+  use tiny tables instead?); if maxmem is very 600Mb or
+  less do not use invtables (the performance loss is minimal anyway). If the
+  limit is really tiny, do not use mtables or ttables (but this would be
+  very slow and probably nobody will ever use it)
 * Check if memory is enough for loading pruning tables; if not, abort
 * For optimal solver: choose largest that fits in memory between nxopt and light
 
@@ -93,3 +97,5 @@ including e.g. solutions that were not shown because -c)
   than when called directly, to avoid nasty problems with threading
 * unniss and inverse_alg work differently (one in place, the other makes
   a copy and returns) changing inverse_alg seems the best option.
+* parse command args: one function per arg type, then each command has
+  a list of options that it accepts (as a string)

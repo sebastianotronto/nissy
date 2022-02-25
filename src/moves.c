@@ -3,6 +3,7 @@
 /* Local functions ***********************************************************/
 
 static Cube        apply_move_cubearray(Move m, Cube cube, PieceFilter f);
+static void        cleanup_aux(Alg *alg, Alg *ret, bool inv);
 static bool        read_mtables_file();
 static bool        write_mtables_file();
 
@@ -219,6 +220,125 @@ apply_move(Move m, Cube cube)
 		.cp    = cp_mtable[m][cube.cp],
 		.cpos  = cpos_mtable[m][cube.cpos]
 	};
+}
+
+Alg *
+cleanup(Alg *alg)
+{
+	int i, j, k, b[2], n, L;
+	Move bb, m;
+	Alg *ret;
+
+	ret = new_alg("");
+	cleanup_aux(alg, ret, false);
+	cleanup_aux(alg, ret, true);
+
+	do {
+		for (i = 0, j = 0, n = 0; i < ret->len; i = j) {
+			if (ret->move[i] > B3) {
+				ret->move[n] = ret->move[i];
+				ret->inv[n] = ret->inv[i];
+				n++;
+				j++;
+				continue;
+			}
+
+			bb = 1 + ((base_move(ret->move[i]) - 1)/6)*6;
+			while (j < ret->len &&
+			       ret->move[j] <= B3 &&
+			       ret->inv[j] == ret->inv[i] &&
+			       1 + ((base_move(ret->move[j]) - 1)/6)*6 == bb)
+				j++;
+			
+			for (k = i, b[0] = 0, b[1] = 0; k < j; k++) {
+				m = ret->move[k];
+				if (base_move(m) == bb)
+					b[0] = (b[0]+1+m-base_move(m)) % 4;
+				else
+					b[1] = (b[1]+1+m-base_move(m)) % 4;
+			}
+
+			for (k = 0; k < 2; k++) {
+				if (b[k] != 0) {
+					ret->move[n] = bb + b[k] - 1 + 3*k;
+					ret->inv[n] = ret->inv[i];
+					n++;
+				}
+			}
+		}
+
+		L = ret->len;
+		ret->len = n;
+	} while (L != n);
+
+	return ret;
+}
+
+static void
+cleanup_aux(Alg *alg, Alg *ret, bool inv)
+{
+	int i, j;
+	Cube c, d;
+	Move m, mm;
+	Alg *equiv_alg;
+	
+	c = (Cube){0};
+	for (i = 0; i < alg->len; i++) {
+		if (alg->inv[i] != inv)
+			continue;
+
+		equiv_alg = new_alg(equiv_alg_string[alg->move[i]]);
+
+		for (j = 0; j < equiv_alg->len; j++) {
+			m = equiv_alg->move[j];
+			if (m == U) {
+				mm = 3*what_center_at(c, U_center) + 1;
+				append_move(ret, mm, inv);
+			} else {
+				c = apply_move(m, c);
+			}
+		}
+
+		free_alg(equiv_alg);
+	}
+
+	m = NULLMOVE;
+	switch (what_center_at(c, F_center)) {
+	case U_center:
+		m = x3;
+		break;
+	case D_center:
+		m = x;
+		break;
+	case R_center:
+		m = y;
+		break;
+	case L_center:
+		m = y3;
+		break;
+	case B_center:
+		if (what_center_at(c, U_center) == U_center)
+			m = y2;
+		else
+			m = x2;
+		break;
+	default:
+		break;
+	}
+	d = apply_move(m, (Cube){0});
+	if (m != NULLMOVE)
+		append_move(ret, m, inv);
+
+	m = NULLMOVE;
+	if (what_center_at(c, U_center) == what_center_at(d, D_center)) {
+		m = z2;
+	} else if (what_center_at(c, U_center) == what_center_at(d, R_center)) {
+		m = z3;
+	} else if (what_center_at(c, U_center) == what_center_at(d, L_center)) {
+		m = z;
+	}
+	if (m != NULLMOVE)
+		append_move(ret, m, inv);
 }
 
 static bool
