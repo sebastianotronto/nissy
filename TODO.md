@@ -16,7 +16,6 @@ It's more of a personal reminder than anything else.
   possible to make table generation at least 3x faster?
 * make 8 threads default for gen?
 ### Documentation
-* Instructions on how to update on the website
 * Write an examples.md file
 * More screenshots!
 ### More
@@ -92,7 +91,5 @@ including e.g. solutions that were not shown because -c)
 * sort again functions alphabetically in their files
 * more stuff to load at start (or when suitable command is called) rather
   than when called directly, to avoid nasty problems with threading
-* unniss and inverse_alg work differently (one in place, the other makes
-  a copy and returns) changing inverse_alg seems the best option.
 * parse command args: one function per arg type, then each command has
   a list of options that it accepts (as a string)

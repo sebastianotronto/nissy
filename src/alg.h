@@ -22,6 +22,7 @@ bool        commute(Move m1, Move m2);
 void        copy_alg(Alg *src, Alg *dst);
 void        free_alg(Alg *alg);
 void        free_alglist(AlgList *l);
+void        inplace(Alg * (*f)(Alg *), Alg *alg);
 Alg *       inverse_alg(Alg *alg);
 Move        inverse_move(Move m);
 char *      move_string(Move m);
@@ -33,7 +34,7 @@ Alg *       on_inverse(Alg *alg);
 void        print_alg(Alg *alg, bool l);
 void        print_alglist(AlgList *al, bool l);
 void        swapmove(Move *m1, Move *m2);
-void        unniss(Alg *alg);
+Alg *       unniss(Alg *alg);
 
 void        init_moveset(Moveset *ms);
 void        init_all_movesets();

@@ -525,8 +525,11 @@ cleanup_exec(CommandArgs *args)
 static void
 unniss_exec(CommandArgs *args)
 {
-	unniss(args->scramble);
-	print_alg(args->scramble, false);
+	Alg *aux;
+
+	aux = unniss(args->scramble);
+	print_alg(aux, false);
+	free(aux);
 }
 
 static void

@@ -153,7 +153,7 @@ dfs_check_solved(DfsArg *arg)
 				    arg->sols->last->alg
 				);
 				if (arg->step->final)
-					unniss(arg->sols->last->alg);
+					inplace(unniss, arg->sols->last->alg);
 
 				if (arg->opts->verbose)
 					print_alg(arg->sols->last->alg, false);

@@ -219,6 +219,16 @@ free_alglistnode(AlgListNode *aln)
 	free(aln);
 }
 
+void
+inplace(Alg * (*f)(Alg *), Alg *alg)
+{
+	Alg *aux;
+
+	aux = f(alg);
+	copy_alg(aux, alg);
+	free(aux);
+}
+
 Alg *
 inverse_alg(Alg *alg)
 {
@@ -459,27 +469,23 @@ swapmove(Move *m1, Move *m2)
 	*m2 = aux;
 }
 
-void
+Alg *
 unniss(Alg *alg)
 {
 	int i;
-	Alg *aux;
+	Alg *ret;
 
-	aux = new_alg("");
+	ret = new_alg("");
 
 	for (i = 0; i < alg->len; i++)
 		if (!alg->inv[i])
-			append_move(aux, alg->move[i], false);
+			append_move(ret, alg->move[i], false);
 	
 	for (i = alg->len-1; i >= 0; i--)
 		if (alg->inv[i])
-			append_move(aux, inverse_move(alg->move[i]), false);
+			append_move(ret, inverse_move(alg->move[i]), false);
 	
-	for (i = 0; i < alg->len; i++) {
-		alg->move[i] = aux->move[i];
-		alg->inv[i]  = false;
-	}
-	free(aux);
+	return ret;
 }
 
 void
