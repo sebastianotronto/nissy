@@ -98,7 +98,7 @@ pd_nxopt31_HTM = {
 	.fbmod    = BINOM8ON4,
 };
 
-PruneData * allpd[NPTABLES] = {
+PruneData * allpd[] = {
 	&pd_eofb_HTM,
 	&pd_coud_HTM,
 	&pd_cornershtr_HTM,
@@ -110,6 +110,7 @@ PruneData * allpd[NPTABLES] = {
 	&pd_htrfin_htr,
 /*	&pd_khuge_HTM,*/
 	&pd_nxopt31_HTM,
+	NULL
 };
 
 /* Functions *****************************************************************/

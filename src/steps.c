@@ -929,7 +929,7 @@ htrfin_htr = {
 	.ntables   = 1,
 };
 
-Step *steps[NSTEPS] = {
+Step *steps[] = {
 	&optimal_HTM, /* first is default */
 	&optimal_light_HTM,
 
@@ -985,6 +985,8 @@ Step *steps[NSTEPS] = {
 	&cornershtr_URF,
 	&corners_HTM,
 	&corners_URF,
+
+	NULL
 };
 
 /* Checkers, estimators and validators ***************************************/

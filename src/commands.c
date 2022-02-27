@@ -150,7 +150,7 @@ version_cmd = {
 	.exec        = version_exec,
 };
 
-Command *commands[NCOMMANDS] = {
+Command *commands[] = {
 	&commands_cmd,
 	&gen_cmd,
 	&help_cmd,
@@ -164,6 +164,7 @@ Command *commands[NCOMMANDS] = {
 	&cleanup_cmd,
 	&unniss_cmd,
 	&version_cmd,
+	NULL
 };
 
 /* Other constants ***********************************************************/
@@ -336,9 +337,8 @@ help_parse_args(int c, char **v)
 	CommandArgs *a = new_args();
 
 	if (c == 1) {
-		for (i = 0; i < NCOMMANDS; i++)
-			if (commands[i] != NULL &&
-			    !strcmp(v[0], commands[i]->name))
+		for (i = 0; commands[i] != NULL; i++)
+			if (!strcmp(v[0], commands[i]->name))
 				a->command = commands[i];
 		if (a->command == NULL)
 			fprintf(stderr, "%s: command not found\n", v[0]);
@@ -473,7 +473,7 @@ gen_exec(CommandArgs *args)
 	init_symcoord();
 
 	fprintf(stderr, "Generating pruning tables...\n");
-	for (i = 0; i < NPTABLES && allpd[i] != NULL; i++)
+	for (i = 0; allpd[i] != NULL; i++)
 		genptable(allpd[i], args->opts->nthreads);
 
 	fprintf(stderr, "Done!\n");
@@ -495,7 +495,7 @@ steps_exec(CommandArgs *args)
 {
 	int i;
 
-	for (i = 0; i < NSTEPS && steps[i] != NULL; i++)
+	for (i = 0; steps[i] != NULL; i++)
 		printf("%-15s %s\n", steps[i]->shortname, steps[i]->name);
 }
 
@@ -504,7 +504,7 @@ commands_exec(CommandArgs *args)
 {
 	int i;
 
-	for (i = 0; i < NCOMMANDS && commands[i] != NULL; i++)
+	for (i = 0; commands[i] != NULL; i++)
 		printf("%s\n", commands[i]->usage);
 
 }
@@ -642,8 +642,8 @@ read_step(CommandArgs *args, char *str)
 {
 	int i;
 
-	for (i = 0; i < NSTEPS; i++) {
-		if (steps[i] != NULL && !strcmp(steps[i]->shortname, str)) {
+	for (i = 0; steps[i] != NULL; i++) {
+		if (!strcmp(steps[i]->shortname, str)) {
 			args->step = steps[i];
 			return true;
 		}

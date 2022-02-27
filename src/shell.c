@@ -37,8 +37,8 @@ exec_args(int c, char **v)
 	CommandArgs *args;
 	Alg *scramble;
 
-	for (i = 0; i < NCOMMANDS; i++)
-		if (commands[i] != NULL && !strcmp(v[0], commands[i]->name))
+	for (i = 0; commands[i] != NULL; i++)
+		if (!strcmp(v[0], commands[i]->name))
 			cmd = commands[i];
 
 	if (cmd == NULL) {
