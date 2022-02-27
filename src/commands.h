@@ -1,6 +1,8 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
 
+#include <time.h>
+
 #include "solve.h"
 #include "steps.h"
 

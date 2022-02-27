@@ -6,7 +6,6 @@ It's more of a personal reminder than anything else.
 ## For version 2.1
 ### Scrambles
 * dr and htr scrambles
-* rufify
 ### Memory management
 * Free large tables from memory before exit (this is not strictly necessary,
   but can help with WSL bugs)
@@ -37,7 +36,6 @@ including e.g. solutions that were not shown because -c)
 
 ### Improvements to currently implemented commands
 * solve should re-orient first if needed and not just give up if centers are off
-* more scramble types (dr, htr, fmc(rufify)...)
 * solve should try up to a small bound without loading the large pruning table
 * silent batch mode without >>>
 
@@ -88,6 +86,7 @@ including e.g. solutions that were not shown because -c)
 
 ### Cleanup
 * Remove khuge from everywhere
+* Arrays (commands, steps...): end with NULL and remove size constant
 * sort again functions alphabetically in their files
 * more stuff to load at start (or when suitable command is called) rather
   than when called directly, to avoid nasty problems with threading

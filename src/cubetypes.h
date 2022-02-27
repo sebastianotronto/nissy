@@ -157,7 +157,7 @@ commandargs
 	Step *                    step;
 	Command *                 command; /* For help */
 	int                       n;
-	int                       scrt;
+	char                      scrtype[20];
 	bool                      scrstdin;
 	bool                      header;
 };

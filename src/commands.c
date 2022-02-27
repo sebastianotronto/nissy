@@ -166,6 +166,10 @@ Command *commands[NCOMMANDS] = {
 	&version_cmd,
 };
 
+/* Other constants ***********************************************************/
+
+char *scrtypes[20] = { "eo", "corners", "edges", "fmc", NULL };
+
 /* Arg parsing functions implementation **************************************/
 
 CommandArgs *
@@ -277,7 +281,6 @@ scramble_parse_args(int c, char **v)
 
 	a->success = true;
 	a->n       = 1;
-	a->scrt    = -1;
 
 	for (i = 0; i < c; i++) {
 		if (!strcmp(v[i], "-n") && i+1 < c) {
@@ -396,8 +399,8 @@ static void
 scramble_exec(CommandArgs *args)
 {
 	Cube cube;
-	Alg *scr;
-	int i;
+	Alg *scr, *ruf, *aux;
+	int i, j, eo, ep, co, cp, a[12];
 
 	init_all_movesets();
 	init_symcoord();
@@ -405,8 +408,56 @@ scramble_exec(CommandArgs *args)
 	srand(time(NULL));
 
 	for (i = 0; i < args->n; i++) {
-		cube = random_cube(args->scrt);
+		eo = rand() % POW2TO11;
+		ep = rand() % FACTORIAL12;
+		co = rand() % POW3TO7;
+		cp = rand() % FACTORIAL8;
+
+		if (!strcmp(args->scrtype, "eo")) {
+			eo = 0;
+		} else if (!strcmp(args->scrtype, "corners")) {
+			eo = 0;
+			ep = 0;
+			index_to_perm(cp, 8, a);
+			if (perm_sign(a, 8) == 1) {
+				swap(&a[0], &a[1]);
+				cp = perm_to_index(a, 8);
+			}
+		} else if (!strcmp(args->scrtype, "edges")) {
+			co = 0;
+			cp = 0;
+			index_to_perm(ep, 12, a);
+			if (perm_sign(a, 12) == 1) {
+				swap(&a[0], &a[1]);
+				ep = perm_to_index(a, 12);
+			}
+		}
+
+		cube = fourval_to_cube(eo, ep, co, cp);
 		scr = solve_2phase(cube, 1);
+
+		if (!strcmp(args->scrtype, "fmc")) {
+			aux = new_alg("");
+			copy_alg(scr, aux);
+			/* Trick to rufify for free: rotate the scramble  *
+			 * so that it does not start with F or end with R */
+			for (j = 0; j < NROTATIONS; j++) {
+				if (base_move(scr->move[0]) != F &&
+				    base_move(scr->move[0]) != B &&
+				    base_move(scr->move[scr->len-1]) != R &&
+				    base_move(scr->move[scr->len-1]) != L)
+					break;
+				copy_alg(aux, scr);
+				transform_alg(j, scr);
+			}
+			copy_alg(scr, aux);
+			ruf = new_alg("R' U' F");
+			copy_alg(ruf, scr);
+			compose_alg(scr, aux);
+			compose_alg(scr, ruf);
+			free_alg(aux);
+			free_alg(ruf);
+		}
 		print_alg(scr, false);
 		free_alg(scr);
 	}
@@ -576,12 +627,14 @@ read_scrtype(CommandArgs *args, char *str)
 {
 	int i;
 
-	args->scrt = -1;
-	for (i = 0; i < NSCRTYPES; i++)
-		if (!strcmp(scrtypes[i], str))
-			args->scrt = i;
+	for (i = 0; scrtypes[i] != NULL; i++) {
+		if (!strcmp(scrtypes[i], str)) {
+			strcpy(args->scrtype, scrtypes[i]);
+			return true;
+		}
+	}
 
-	return args->scrt != -1;
+	return false;
 }
 
 static bool

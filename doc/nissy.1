@@ -43,6 +43,13 @@ are the following:
 .
 .Bl -tag -width Ds
 .
+.It Nm cleanup Ar scramble
+Rewrites the given scramble using only the 18 base (HTM) moves and at most two
+rotations at the end. If
+Ar scramble
+uses NISS, all moves done on normal scramble are written first, followed by
+all moves done on inverse.
+.
 .It Nm commands
 List all available commands.
 .
@@ -83,15 +90,18 @@ scrambles.
 .Ar type
 can be specified to be one of the following:
 .Bl -tag -width Ds
-.It Ar eo
-Scramble with solved EO on F/B axis.
 .It Ar corners
 Scramble with solved edges (only cornes are scrambled).
 .It Ar edges
 Scramble with solved corners (only edges are scrambled).
+.It Ar eo
+Scramble with solved EO on F/B axis.
+.It Ar fmc
+Scramble the full cube and the resulting scramble starts and ends with
+the moves R\(aq U\(aq F.
 .El
 .
-.It Nm solve Ar step Oo Ar options Oc Ar scramble.
+.It Nm solve Ar step Oo Ar options Oc Ar scramble
 Solve the given
 .Ar step
 on the given

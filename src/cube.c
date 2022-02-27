@@ -4,7 +4,6 @@
 
 static void             fix_eorleoud(CubeArray *arr);
 static void             fix_cofbcorl(CubeArray *arr);
-static Cube             fourval_to_cube(int eofb, int ep, int coud, int cp);
 static void             init_inverse();
 static bool             read_invtables_file();
 static bool             write_invtables_file();
@@ -17,8 +16,6 @@ static uint16_t         eo_invtable_m[POW2TO11][BINOM12ON4*FACTORIAL4];
 static uint16_t         co_invtable[POW3TO7][FACTORIAL8];
 static uint16_t         cp_invtable[FACTORIAL8];
 static uint16_t         cpos_invtable[FACTORIAL6];
-
-char *scrtypes[NSCRTYPES] = { "eo", "corners", "edges" };
 
 /* Functions implementation **************************************************/
 
@@ -187,7 +184,7 @@ fix_cofbcorl(CubeArray *arr)
 	}
 }
 
-static Cube
+Cube
 fourval_to_cube(int eofb, int ep, int coud, int cp)
 {
 	CubeArray *arr;
@@ -542,29 +539,6 @@ print_cube(Cube cube)
 	for (int i = 0; i < 6; i++)
 		printf("  %s ", center_string[what_center_at(cube, i)]);
 	printf("\n");
-}
-
-Cube
-random_cube(int scrt)
-{
-	int ep, cp, eo, co;
-
-	ep = rand() % FACTORIAL12;
-	cp = rand() % FACTORIAL8;
-	eo = rand() % POW2TO11;
-	co = rand() % POW3TO7;
-
-	if (scrt == 0) {        /* EO */
-		eo = 0;
-	} else if (scrt == 1) { /* corners */
-		eo = 0;
-		ep = 0;
-	} else if (scrt == 2) { /* edges */
-		co = 0;
-		cp = 0;
-	}
-
-	return fourval_to_cube(eo, ep, co, cp);
 }
 
 Center
