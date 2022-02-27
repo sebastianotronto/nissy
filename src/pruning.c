@@ -78,15 +78,6 @@ pd_htrfin_htr = {
 	.moveset  = &moveset_htr,
 };
 
-/*
-PruneData
-pd_khuge_HTM = {
-	.filename = "pt_khuge_HTM",
-	.coord    = &coord_khuge,
-	.moveset  = &moveset_HTM,
-};
-*/
-
 PruneData
 pd_nxopt31_HTM = {
 	.filename = "pt_nxopt31_HTM",
@@ -108,7 +99,6 @@ PruneData * allpd[] = {
 	&pd_drudfin_noE_sym16_drud,
 	&pd_htr_drud,
 	&pd_htrfin_htr,
-/*	&pd_khuge_HTM,*/
 	&pd_nxopt31_HTM,
 	NULL
 };

@@ -8,19 +8,16 @@ static Cube        antindex_cp_sym16(uint64_t ind);
 static Cube        antindex_eofbepos_sym16(uint64_t ind);
 static Cube        antindex_drud_sym16(uint64_t ind);
 static Cube        antindex_drudfin_noE_sym16(uint64_t ind);
-/*static Cube        antindex_khuge(uint64_t ind);*/
 static Cube        antindex_nxopt31(uint64_t ind);
 
 static uint64_t    index_cp_sym16(Cube cube);
 static uint64_t    index_eofbepos_sym16(Cube cube);
 static uint64_t    index_drud_sym16(Cube cube);
 static uint64_t    index_drudfin_noE_sym16(Cube cube);
-/*static uint64_t    index_khuge(Cube cube);*/
 static uint64_t    index_nxopt31(Cube cube);
 
 static int         transfinder_drud_sym16(uint64_t ind, Trans *ret);
 static int         transfinder_drudfin_noE_sym16(uint64_t ind, Trans *ret);
-/*static int         transfinder_khuge(uint64_t ind, Trans *ret);*/
 static int         transfinder_nxopt31(uint64_t ind, Trans *ret);
 
 static void        gensym(SymData *sd);
@@ -93,16 +90,6 @@ coord_drudfin_noE_sym16 = {
 	.trans  = transfinder_drudfin_noE_sym16,
 };
 
-/*
-Coordinate
-coord_khuge = {
-	.index  = index_khuge,
-	.cube   = antindex_khuge,
-	.max    = POW3TO7 * FACTORIAL4 * CLASSES_EOFBEPOS_16,
-	.trans  = transfinder_khuge,
-};
-*/
-
 Coordinate
 coord_nxopt31 = {
 	.index  = index_nxopt31,
@@ -150,20 +137,6 @@ antindex_drudfin_noE_sym16(uint64_t ind)
 	return c1;
 }
 
-/*
-static Cube
-antindex_khuge(uint64_t ind)
-{
-	Cube c;
-
-	c = antindex_eofbepos_sym16(ind/(FACTORIAL4*POW3TO7));
-	c.epose = ((c.epose / 24) * 24) + ((ind/POW3TO7) % 24);
-	c.coud = ind % POW3TO7;
-
-	return c;
-}
-*/
-
 static Cube
 antindex_nxopt31(uint64_t ind)
 {
@@ -186,12 +159,10 @@ static uint64_t
 index_drud_sym16(Cube cube)
 {
 	Trans t;
-	Cube c;
 
 	t = sd_eofbepos_16.transtorep[coord_eofbepos.index(cube)];
-	c = apply_trans(t, cube);
 
-	return index_eofbepos_sym16(c) * POW3TO7 + c.coud;
+	return index_eofbepos_sym16(cube) * POW3TO7 + co_ttable[t][cube.coud];
 }
 
 static uint64_t
@@ -212,34 +183,19 @@ index_eofbepos_sym16(Cube cube)
 	return sd_eofbepos_16.class[coord_eofbepos.index(cube)];
 }
 
-/*
-static uint64_t
-index_khuge(Cube cube)
-{
-	Trans t;
-	Cube c;
-	uint64_t a;
-
-	t = sd_eofbepos_16.transtorep[coord_eofbepos.index(cube)];
-	c = apply_trans(t, cube);
-	a = (index_eofbepos_sym16(c) * 24) + (c.epose % 24);
-
-	return a * POW3TO7 + c.coud;
-}
-*/
-
 static uint64_t
 index_nxopt31(Cube cube)
 {
 	Trans t;
-	Cube c;
 	uint64_t a;
-
+	int coud, cp;
+	
 	t = sd_eofbepos_16.transtorep[coord_eofbepos.index(cube)];
-	c = apply_trans(t, cube);
-	a = (index_eofbepos_sym16(c)*POW3TO7) + c.coud;
+	coud = co_ttable[t][cube.coud];
+	cp   = cp_ttable[t][cube.cp];
+	a = (index_eofbepos_sym16(cube)*POW3TO7) + coud;
 
-	return a * BINOM8ON4 + coord_cpud_separate.index(c);
+	return a * BINOM8ON4 + coord_cpud_separate.index((Cube){.cp = cp});
 }
 
 static int
@@ -285,30 +241,6 @@ transfinder_drudfin_noE_sym16(uint64_t ind, Trans *ret)
 		ret[j] = retaux[trueind][j];
 	return naux[trueind];
 }
-
-/*
-static int
-transfinder_khuge(uint64_t ind, Trans *ret)
-{
-	uint64_t i, trueind;
-	int j;
-	static bool initialized = false;
-	static int naux[CLASSES_EOFBEPOS_16];
-	static Trans retaux[CLASSES_EOFBEPOS_16][NTRANS];
-
-	if (!initialized) {
-		for (i = 0; i < CLASSES_EOFBEPOS_16; i++)
-			naux[i] = selfsims(&sd_eofbepos_16, i, retaux[i]);
-
-		initialized = true;
-	}
-
-	trueind = ind/(FACTORIAL4*POW3TO7);
-	for (j = 0; j < naux[trueind]; j++)
-		ret[j] = retaux[trueind][j];
-	return naux[trueind];
-}
-*/
 
 static int
 transfinder_nxopt31(uint64_t ind, Trans *ret)

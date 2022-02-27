@@ -7,7 +7,6 @@ extern Coordinate       coord_cp_sym16;
 extern Coordinate       coord_eofbepos_sym16;
 extern Coordinate       coord_drud_sym16;
 extern Coordinate       coord_drudfin_noE_sym16;
-extern Coordinate       coord_khuge;
 extern Coordinate       coord_nxopt31;
 
 void                    init_symcoord();

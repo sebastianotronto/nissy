@@ -44,14 +44,14 @@ static int              coud_source[NTRANS];   /* 0=coud,  1=corl,  2=cofb  */
 static int              cofb_source[NTRANS];
 static int              corl_source[NTRANS];
 
-static int              epose_ttable[NTRANS][FACTORIAL12/FACTORIAL8];
-static int              eposs_ttable[NTRANS][FACTORIAL12/FACTORIAL8];
-static int              eposm_ttable[NTRANS][FACTORIAL12/FACTORIAL8];
-static int              eo_ttable[NTRANS][POW2TO11];
-static int              cp_ttable[NTRANS][FACTORIAL8];
-static int              co_ttable[NTRANS][POW3TO7];
-static int              cpos_ttable[NTRANS][FACTORIAL6];
-static Move             moves_ttable[NTRANS][NMOVES];
+int                     epose_ttable[NTRANS][FACTORIAL12/FACTORIAL8];
+int                     eposs_ttable[NTRANS][FACTORIAL12/FACTORIAL8];
+int                     eposm_ttable[NTRANS][FACTORIAL12/FACTORIAL8];
+int                     eo_ttable[NTRANS][POW2TO11];
+int                     cp_ttable[NTRANS][FACTORIAL8];
+int                     co_ttable[NTRANS][POW3TO7];
+int                     cpos_ttable[NTRANS][FACTORIAL6];
+Move                    moves_ttable[NTRANS][NMOVES];
 
 /* Local functions implementation ********************************************/
 
