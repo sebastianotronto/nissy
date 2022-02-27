@@ -40,10 +40,12 @@
 </table>
 
 <p>
-In this page you can find download links (see above)
-and installation instructions (see below) for
-nissy. If instead you wish to clone the
-<a href="https://git.tronto.net/nissy/">git repository</a>, use
+In this page you can find download links (see above),
+<a href="#Installation">installation instructions</a> and
+<a href="#Upgrade">upgrade instructions</a>
+for nissy. If instead you wish to clone the
+<a href="https://git.tronto.net/nissy/">git repository</a>,
+you can use git:
 </p>
 
 <pre>
@@ -56,7 +58,7 @@ For a summary of changes and a list of older versions see below. Some versions
 the git repository.
 </p>
 
-<h2>Installation</h2>
+<h2 id="Installation">Installation</h2>
 
 <h3>System requirements</h3>
 
@@ -150,6 +152,24 @@ operating systems this folder is either <code>.nissy/tables</code> in the
 user's home directory or <code>$XDG_DATA_HOME/nissy/tables</code> if the
 XDG variable is configured. On Windows it is the same directory as the
 <code>nissy.exe</code> executable file.
+</p>
+
+<h2 id="Upgrade">Upgrading</h2>
+<p>
+If you already have nissy installed and you want to upgrade to a more
+recent version, you can simply repeat the installation process:
+</p>
+<ul>
+<li>
+On Windows: simply replace nissy.exe with the new file with the same name.
+</li>
+<li>
+On UNIX systems: download the new version of the source code, extract it in
+a new folder and run <code>make</code> and <code>make install</code> again.
+</li>
+</ul>
+<p>
+In all cases the table files do not need to be upgraded.
 </p>
 
 <h2>Version history</h2>
