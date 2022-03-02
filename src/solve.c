@@ -466,7 +466,13 @@ solve_2phase(Cube cube, int nthreads)
 	opts2.can_niss      = false;
 	opts2.verbose       = false;
 
-	sols1 = solve(cube, &drany_HTM, &opts1);
+	/* We skip step1 if it is solved on any axis */
+	if (drany_HTM.is_done(cube)) {
+		sols1 = new_alglist();
+		append_alg(sols1, new_alg(""));
+	} else {
+		sols1 = solve(cube, &drany_HTM, &opts1);
+	}
 	bestalg = new_alg("");
 	bestlen = 999;
 	for (i = sols1->first; i != NULL; i = i->next) {

@@ -56,10 +56,6 @@ including e.g. solutions that were not shown because -c)
 ## Technical stuff
 
 ### Memory management
-* Optimization: allow coordinates do define how moves and trans are applied on
-  them; if not then just move the cube normally.
-  This can speedup things, for example in computing coordinates (no need to apply
-  trans_to_rep) and of course in optimal solver.
 * free pruning table after solve is done? if I do this I need to deafault to a
   small table for < 8 moves solutions or smth
 * improve multi-threading when solving multiple scrambles

@@ -413,6 +413,8 @@ is_admissible(Cube cube) {
 	         perm_sign(a->cp,   8) +
 	         perm_sign(a->cpos, 6);
 
+	free_cubearray(a, pf_all);
+
 	return perm && parity % 2 == 0;
 }
 

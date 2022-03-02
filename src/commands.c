@@ -169,7 +169,7 @@ Command *commands[] = {
 
 /* Other constants ***********************************************************/
 
-char *scrtypes[20] = { "eo", "corners", "edges", "fmc", NULL };
+char *scrtypes[20] = { "eo", "corners", "edges", "fmc", "dr", "htr", NULL };
 
 /* Arg parsing functions implementation **************************************/
 
@@ -401,6 +401,7 @@ scramble_exec(CommandArgs *args)
 	Cube cube;
 	Alg *scr, *ruf, *aux;
 	int i, j, eo, ep, co, cp, a[12];
+	uint64_t ui, uj;
 
 	init_all_movesets();
 	init_symcoord();
@@ -408,32 +409,56 @@ scramble_exec(CommandArgs *args)
 	srand(time(NULL));
 
 	for (i = 0; i < args->n; i++) {
-		eo = rand() % POW2TO11;
-		ep = rand() % FACTORIAL12;
-		co = rand() % POW3TO7;
-		cp = rand() % FACTORIAL8;
 
-		if (!strcmp(args->scrtype, "eo")) {
-			eo = 0;
-		} else if (!strcmp(args->scrtype, "corners")) {
-			eo = 0;
-			ep = 0;
-			index_to_perm(cp, 8, a);
-			if (perm_sign(a, 8) == 1) {
-				swap(&a[0], &a[1]);
-				cp = perm_to_index(a, 8);
+		if (!strcmp(args->scrtype, "dr")) {
+			/* Warning: cube is inconsistent because of side CO  *
+			 * and EO on U/D. But solve_2phase only solves drfin *
+			 * in this case, so it should be ok.                 *
+			 * TODO: check this properly                         *
+			 * Moreover we again need to fix parity after        *
+			 * generating epose manually                         */
+			do {
+				ui = rand() % coord_drudfin_noE_sym16.max;
+				uj = rand() % FACTORIAL4;
+				cube = coord_drudfin_noE_sym16.cube(ui);
+				cube.epose += uj;
+			} while (!is_admissible(cube));
+		} else if (!strcmp(args->scrtype, "htr")) {
+			/* antindex_htrfin() returns a consistent *
+			 * cube, except possibly for parity       */
+			do {
+				ui = rand() % coord_htrfin.max;
+				cube = coord_htrfin.cube(ui);
+			} while (!is_admissible(cube));
+		} else {
+			eo = rand() % POW2TO11;
+			ep = rand() % FACTORIAL12;
+			co = rand() % POW3TO7;
+			cp = rand() % FACTORIAL8;
+
+			if (!strcmp(args->scrtype, "eo")) {
+				eo = 0;
+			} else if (!strcmp(args->scrtype, "corners")) {
+				eo = 0;
+				ep = 0;
+				index_to_perm(cp, 8, a);
+				if (perm_sign(a, 8) == 1) {
+					swap(&a[0], &a[1]);
+					cp = perm_to_index(a, 8);
+				}
+			} else if (!strcmp(args->scrtype, "edges")) {
+				co = 0;
+				cp = 0;
+				index_to_perm(ep, 12, a);
+				if (perm_sign(a, 12) == 1) {
+					swap(&a[0], &a[1]);
+					ep = perm_to_index(a, 12);
+				}
 			}
-		} else if (!strcmp(args->scrtype, "edges")) {
-			co = 0;
-			cp = 0;
-			index_to_perm(ep, 12, a);
-			if (perm_sign(a, 12) == 1) {
-				swap(&a[0], &a[1]);
-				ep = perm_to_index(a, 12);
-			}
+			cube = fourval_to_cube(eo, ep, co, cp);
 		}
 
-		cube = fourval_to_cube(eo, ep, co, cp);
+		/* TODO: can be optimized for htr and dr using htrfin, drfin */
 		scr = solve_2phase(cube, 1);
 
 		if (!strcmp(args->scrtype, "fmc")) {
