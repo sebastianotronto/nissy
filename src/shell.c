@@ -3,6 +3,27 @@
 static void             cleanwhitespaces(char *line);
 static int              parseline(char *line, char **v);
 
+bool
+checkfiles()
+{
+	/* TODO: add more checks (other files, use checksum...) */
+	FILE *f;
+	char fname[strlen(tabledir)+100];
+	int i;
+
+	for (i = 0; allpd[i] != NULL; i++) {
+		strcpy(fname, tabledir);
+		strcpy(fname, "/");
+		strcpy(fname, allpd[i]->filename);
+		if ((f = fopen(fname, "rb")) == NULL)
+			return false;
+		else
+			fclose(f);
+	}
+
+	return true;
+}
+
 static void
 cleanwhitespaces(char *line)
 {
@@ -119,6 +140,19 @@ launch(bool batchmode)
 int
 main(int argc, char *argv[])
 {
+	init_env();
+
+	if (!checkfiles()) {
+		fprintf(stderr,
+			"--- Warning ---\n"
+			"Some pruning tables are missing or unreadable."
+			"You can generate them with `nissy gen -t 4'\n"
+			"Here `4' is the number of threads. Use more if your"
+			"CPU has them, or expect it to take a while.\n"
+			"---------------\n\n"
+		);
+	}
+
 	if (argc > 1) {
 		if (!strcmp(argv[1], "-b")) {
 			launch(true);

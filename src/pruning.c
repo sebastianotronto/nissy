@@ -135,6 +135,18 @@ genptable(PruneData *pd, int nthreads)
 		return;
 	}
 
+	if (nthreads < 4) {
+		fprintf(stderr,
+			"--- Warning ---\n"
+			"You are using only %d threads to generate the pruning"
+			"tables. This can take a while."
+			"Unless you did this intentionally, you should re-run"
+			"this command with `-t 4' or more.\n"
+			"---------------\n\n", nthreads
+		);
+	}
+
+
 	/* For the first steps we proceed the same way for compact and not */
 	compact = pd->compact;
 	pd->compact = false;
@@ -143,6 +155,7 @@ genptable(PruneData *pd, int nthreads)
 	nchunks = MIN(ptablesize(pd), 100000);
 	fprintf(stderr, "Cannot load %s, generating it with %d threads\n",
 			pd->filename, nthreads); 
+
 
 	memset(pd->ptable, ~(uint8_t)0, ptablesize(pd)*sizeof(entry_group_t));
 

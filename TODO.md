@@ -4,16 +4,11 @@ This is a list of things that I would like to add or change at some point.
 It's more of a personal reminder than anything else.
 
 ## For version 2.1
-### Scrambles
-* dr and htr scrambles
 ### Memory management
 * Free large tables from memory before exit (this is not strictly necessary,
   but can help with WSL bugs)
 ### Installation
-* At startup, check if tables are all there; if not, print an error message
-  suggesting to run `nissy gen -t 8` (or more than 8). Is it
-  possible to make table generation at least 3x faster?
-* make 8 threads default for gen?
+* Is it possible to make table generation at least 3x faster?
 ### Documentation
 * Write an examples.md file
 * More screenshots!
@@ -85,7 +80,6 @@ including e.g. solutions that were not shown because -c)
   open up the door for a web-based version or graphical clients
 
 ### Cleanup
-* Remove khuge from everywhere
 * sort again functions alphabetically in their files
 * more stuff to load at start (or when suitable command is called) rather
   than when called directly, to avoid nasty problems with threading

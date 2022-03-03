@@ -53,10 +53,10 @@ sd_eofbepos_16 = {
 	.trans     = trans_group_udfix
 };
 
-static int nsymdata = 2;
 static SymData * all_sd[] = {
 	&sd_cp_16,
 	&sd_eofbepos_16,
+	NULL
 };
 
 
@@ -403,7 +403,7 @@ init_symcoord()
 
 	init_coord();
 
-	for (i = 0; i < nsymdata; i++)
+	for (i = 0; all_sd[i] != NULL; i++)
 		gensym(all_sd[i]);
 }
 
