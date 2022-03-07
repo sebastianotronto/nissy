@@ -163,5 +163,7 @@ main(int argc, char *argv[])
 		launch(false);
 	}
 
+	/* TODO: exec freemem */
+
 	return 0;
 }

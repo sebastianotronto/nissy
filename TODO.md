@@ -5,8 +5,7 @@ It's more of a personal reminder than anything else.
 
 ## For version 2.1
 ### Memory management
-* Free large tables from memory before exit (this is not strictly necessary,
-  but can help with WSL bugs)
+* freemem command: implement the 5 functions, execute at the end of shell.c
 ### Installation
 * Is it possible to make table generation at least 3x faster?
 ### Documentation
@@ -40,6 +39,8 @@ including e.g. solutions that were not shown because -c)
 * transform alg, rufify etc...
 * command notation to list available moves
 * make multi-step solve much more general and create command
+* input directly cube status instead of moves
+  (graphical: maybe there is a cubing.js function; command line: ???)
 
 ## Distribution
 

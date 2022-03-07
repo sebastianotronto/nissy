@@ -18,6 +18,7 @@ static void             solve_exec(CommandArgs *args);
 static void             scramble_exec(CommandArgs *args);
 static void             steps_exec(CommandArgs *args);
 static void             commands_exec(CommandArgs *args);
+static void             freemem_exec(CommandArgs *args);
 static void             print_exec(CommandArgs *args);
 static void             twophase_exec(CommandArgs *args);
 static void             help_exec(CommandArgs *args);
@@ -85,6 +86,15 @@ commands_cmd = {
 	.description = "List available commands",
 	.parse_args  = parse_no_arg,
 	.exec        = commands_exec
+};
+
+Command
+freemem_cmd = {
+	.name        = "freemem",
+	.usage       = "freemem",
+	.description = "free large tables from RAM",
+	.parse_args  = parse_no_arg,
+	.exec        = freemem_exec,
 };
 
 Command
@@ -532,6 +542,18 @@ commands_exec(CommandArgs *args)
 	for (i = 0; commands[i] != NULL; i++)
 		printf("%s\n", commands[i]->usage);
 
+}
+
+static void
+freemem_exec(CommandArgs *args)
+{
+/* TODO: implement these functions
+	free_allpd();
+	free_allsd();
+	free_invtables();
+	free_ttables();
+	free_mtables();
+*/
 }
 
 static void
