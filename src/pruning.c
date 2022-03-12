@@ -89,7 +89,7 @@ pd_nxopt31_HTM = {
 	.fbmod    = BINOM8ON4,
 };
 
-PruneData * allpd[] = {
+PruneData * all_pd[] = {
 	&pd_eofb_HTM,
 	&pd_coud_HTM,
 	&pd_cornershtr_HTM,
@@ -114,6 +114,15 @@ findchunk(PruneData *pd, int nchunks, uint64_t i)
 	chunksize += ENTRIES_PER_GROUP - (chunksize % ENTRIES_PER_GROUP);
 
 	return MIN(nchunks-1, (int)(i / chunksize));
+}
+
+void
+free_pd(PruneData *pd)
+{
+	if (pd->generated)
+		free(pd->ptable);
+
+	pd->generated = false;
 }
 
 void

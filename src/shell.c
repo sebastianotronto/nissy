@@ -11,10 +11,10 @@ checkfiles()
 	char fname[strlen(tabledir)+100];
 	int i;
 
-	for (i = 0; allpd[i] != NULL; i++) {
+	for (i = 0; all_pd[i] != NULL; i++) {
 		strcpy(fname, tabledir);
-		strcpy(fname, "/");
-		strcpy(fname, allpd[i]->filename);
+		strcat(fname, "/");
+		strcat(fname, all_pd[i]->filename);
 		if ((f = fopen(fname, "rb")) == NULL)
 			return false;
 		else
@@ -140,14 +140,16 @@ launch(bool batchmode)
 int
 main(int argc, char *argv[])
 {
+	char *closing_cmd[1] = { "freemem" };
+
 	init_env();
 
 	if (!checkfiles()) {
 		fprintf(stderr,
 			"--- Warning ---\n"
-			"Some pruning tables are missing or unreadable."
+			"Some pruning tables are missing or unreadable\n"
 			"You can generate them with `nissy gen -t 4'\n"
-			"Here `4' is the number of threads. Use more if your"
+			"Here `4' is the number of threads. Use more if your "
 			"CPU has them, or expect it to take a while.\n"
 			"---------------\n\n"
 		);
@@ -163,7 +165,7 @@ main(int argc, char *argv[])
 		launch(false);
 	}
 
-	/* TODO: exec freemem */
+	exec_args(1, closing_cmd);
 
 	return 0;
 }

@@ -162,6 +162,7 @@ version_cmd = {
 
 Command *commands[] = {
 	&commands_cmd,
+	&freemem_cmd,
 	&gen_cmd,
 	&help_cmd,
 	&invert_cmd,
@@ -508,8 +509,8 @@ gen_exec(CommandArgs *args)
 	init_symcoord();
 
 	fprintf(stderr, "Generating pruning tables...\n");
-	for (i = 0; allpd[i] != NULL; i++)
-		genptable(allpd[i], args->opts->nthreads);
+	for (i = 0; all_pd[i] != NULL; i++)
+		genptable(all_pd[i], args->opts->nthreads);
 
 	fprintf(stderr, "Done!\n");
 }
@@ -547,13 +548,16 @@ commands_exec(CommandArgs *args)
 static void
 freemem_exec(CommandArgs *args)
 {
-/* TODO: implement these functions
-	free_allpd();
-	free_allsd();
-	free_invtables();
-	free_ttables();
-	free_mtables();
-*/
+	int i;
+
+	for (i = 0; all_pd[i] != NULL; i++)
+		free_pd(all_pd[i]);
+
+	for (i = 0; all_sd[i] != NULL; i++)
+		free_sd(all_sd[i]);
+
+	/* TODO: invtables are also large, but for now they are *
+	 * statically allocated. Consider releasing those too.  */
 }
 
 static void

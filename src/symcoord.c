@@ -53,7 +53,7 @@ sd_eofbepos_16 = {
 	.trans     = trans_group_udfix
 };
 
-static SymData * all_sd[] = {
+SymData * all_sd[] = {
 	&sd_cp_16,
 	&sd_eofbepos_16,
 	NULL
@@ -265,6 +265,18 @@ transfinder_nxopt31(uint64_t ind, Trans *ret)
 }
 
 /* Other functions ***********************************************************/
+
+void
+free_sd(SymData *sd)
+{
+	if (sd->generated) {
+		free(sd->class);
+		free(sd->rep);
+		free(sd->transtorep);
+	}
+
+	sd->generated = false;
+}
 
 static void
 gensym(SymData *sd)

@@ -4,10 +4,11 @@ This is a list of things that I would like to add or change at some point.
 It's more of a personal reminder than anything else.
 
 ## For version 2.1
-### Memory management
-* freemem command: implement the 5 functions, execute at the end of shell.c
 ### Installation
-* Is it possible to make table generation at least 3x faster?
+* Implement coord->move to apply moves directly on coordinates
+  (can this be used to improve solving speed? Applying moves on
+   three coordinates is better than applying a move on a Cube and
+   then transforming it, but I still need to work with inverses...)
 ### Documentation
 * Write an examples.md file
 * More screenshots!
@@ -55,9 +56,6 @@ including e.g. solutions that were not shown because -c)
 * free pruning table after solve is done? if I do this I need to deafault to a
   small table for < 8 moves solutions or smth
 * improve multi-threading when solving multiple scrambles
-* alternative: just add a command "free" to free up memory; it is not
-  user friendly (who wants to manage memory manually?) but on the other hand
-  it will only be used by the few who have less than 4(?) Gb of ram.
 * nissy -M maxmem option for running with at most maxmem memory; if exceeded
   when loading a pruning table, return failure (or make every solve command
   use tiny tables instead?); if maxmem is very 600Mb or
