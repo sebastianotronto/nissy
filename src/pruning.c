@@ -263,12 +263,12 @@ genptable_fixnasty(PruneData *pd, int d)
 	Cube c, cc;
 	Trans t[NTRANS];
 
-	if (pd->coord->trans == NULL)
+	if (pd->coord->transfind == NULL)
 		return;
 
 	for (i = 0; i < pd->coord->max; i++) {
 		if (ptableval_index(pd, i) == d) {
-			n = pd->coord->trans(i, t);
+			n = pd->coord->transfind(i, t);
 			if (n == 1)
 				continue;
 

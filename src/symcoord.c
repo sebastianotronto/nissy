@@ -64,38 +64,38 @@ SymData * all_sd[] = {
 
 Coordinate
 coord_eofbepos_sym16 = {
-	.index  = index_eofbepos_sym16,
-	.cube   = antindex_eofbepos_sym16,
+	.index     = index_eofbepos_sym16,
+	.cube      = antindex_eofbepos_sym16,
 };
 
 Coordinate
 coord_cp_sym16 = {
-	.index  = index_cp_sym16,
-	.cube   = antindex_cp_sym16,
+	.index     = index_cp_sym16,
+	.cube      = antindex_cp_sym16,
 };
 
 Coordinate
 coord_drud_sym16 = {
-	.index  = index_drud_sym16,
-	.cube   = antindex_drud_sym16,
-	.max    = POW3TO7 * CLASSES_EOFBEPOS_16,
-	.trans  = transfinder_drud_sym16,
+	.index     = index_drud_sym16,
+	.cube      = antindex_drud_sym16,
+	.max       = POW3TO7 * CLASSES_EOFBEPOS_16,
+	.transfind = transfinder_drud_sym16,
 };
 
 Coordinate
 coord_drudfin_noE_sym16 = {
-	.index  = index_drudfin_noE_sym16,
-	.cube   = antindex_drudfin_noE_sym16,
-	.max    = FACTORIAL8 * CLASSES_CP_16,
-	.trans  = transfinder_drudfin_noE_sym16,
+	.index     = index_drudfin_noE_sym16,
+	.cube      = antindex_drudfin_noE_sym16,
+	.max       = FACTORIAL8 * CLASSES_CP_16,
+	.transfind = transfinder_drudfin_noE_sym16,
 };
 
 Coordinate
 coord_nxopt31 = {
-	.index  = index_nxopt31,
-	.cube   = antindex_nxopt31,
-	.max    = POW3TO7 * BINOM8ON4 * CLASSES_EOFBEPOS_16 ,
-	.trans  = transfinder_nxopt31,
+	.index     = index_nxopt31,
+	.cube      = antindex_nxopt31,
+	.max       = POW3TO7 * BINOM8ON4 * CLASSES_EOFBEPOS_16,
+	.transfind = transfinder_nxopt31,
 };
 
 /* Functions *****************************************************************/

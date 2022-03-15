@@ -138,17 +138,17 @@ static char equiv_alg_string[100][NMOVES] = {
 };
 
 /* Transition tables, to be loaded up at the beginning */
-static int              epose_mtable[NMOVES][FACTORIAL12/FACTORIAL8];
-static int              eposs_mtable[NMOVES][FACTORIAL12/FACTORIAL8];
-static int              eposm_mtable[NMOVES][FACTORIAL12/FACTORIAL8];
-static int              eofb_mtable[NMOVES][POW2TO11];
-static int              eorl_mtable[NMOVES][POW2TO11];
-static int              eoud_mtable[NMOVES][POW2TO11];
-static int              cp_mtable[NMOVES][FACTORIAL8];
-static int              coud_mtable[NMOVES][POW3TO7];
-static int              cofb_mtable[NMOVES][POW3TO7];
-static int              corl_mtable[NMOVES][POW3TO7];
-static int              cpos_mtable[NMOVES][FACTORIAL6];
+int              epose_mtable[NMOVES][FACTORIAL12/FACTORIAL8];
+int              eposs_mtable[NMOVES][FACTORIAL12/FACTORIAL8];
+int              eposm_mtable[NMOVES][FACTORIAL12/FACTORIAL8];
+int              eofb_mtable[NMOVES][POW2TO11];
+int              eorl_mtable[NMOVES][POW2TO11];
+int              eoud_mtable[NMOVES][POW2TO11];
+int              cp_mtable[NMOVES][FACTORIAL8];
+int              coud_mtable[NMOVES][POW3TO7];
+int              cofb_mtable[NMOVES][POW3TO7];
+int              corl_mtable[NMOVES][POW3TO7];
+int              cpos_mtable[NMOVES][FACTORIAL6];
 
 
 /* Local functions implementation ********************************************/

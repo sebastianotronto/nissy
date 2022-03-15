@@ -95,6 +95,8 @@ typedef struct threaddatagenpt    ThreadDataGenpt;
 
 typedef Cube                 (*AntiIndexer)      (uint64_t);
 typedef bool                 (*Checker)          (Cube);
+typedef uint64_t             (*CoordMover)       (Move, uint64_t);
+typedef uint64_t             (*CoordTransformer) (Trans, uint64_t);
 typedef int                  (*Estimator)        (DfsArg *);
 typedef bool                 (*Validator)        (Alg *);
 typedef void                 (*Exec)             (CommandArgs *);
@@ -168,7 +170,9 @@ coordinate
 	Indexer                   index;
 	AntiIndexer               cube;
 	uint64_t                  max;
-	TransFinder               trans;
+	TransFinder               transfind;
+	CoordMover                move;
+	CoordTransformer          transform;
 };
 
 struct

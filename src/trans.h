@@ -4,7 +4,7 @@
 #include "moves.h"
 
 /*
- * Tables are exposed to allow faster partial transofrmations in some
+ * Tables are exposed to allow faster partial transformations in some
  * specific cases (in symcoord)
  */
 extern int               epose_ttable[NTRANS][FACTORIAL12/FACTORIAL8];

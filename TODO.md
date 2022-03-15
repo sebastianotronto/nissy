@@ -4,11 +4,19 @@ This is a list of things that I would like to add or change at some point.
 It's more of a personal reminder than anything else.
 
 ## For version 2.1
-### Installation
+### Moving coordinates
 * Implement coord->move to apply moves directly on coordinates
-  (can this be used to improve solving speed? Applying moves on
-   three coordinates is better than applying a move on a Cube and
-   then transforming it, but I still need to work with inverses...)
+* add transformer to transform coordinate (optional, only for sym coordinates)
+* For each coordinate, manually disallow "bad" moves, or just ignore the error
+  (probably better to check: low performance cost, detect problems that I might
+  be overlooking)
+* remove selsims, do this directly inside transfinder
+* change genptable where needed
+* Remove coord->cube (and edit README.md accordingly)
+* Remove sym_data->rep (but keep transtorep)?
+* Use this to improve solver: add 2 or 3 helper coordinates to optimal solver,
+  to avoid transforming every time. We still need to transform when checking
+  inverse scramble, though.
 ### Documentation
 * Write an examples.md file
 * More screenshots!
@@ -44,13 +52,12 @@ including e.g. solutions that were not shown because -c)
   (graphical: maybe there is a cubing.js function; command line: ???)
 
 ## Distribution
-
-* Add EXAMPLES.md file
 * webapp (cgi)
-* installation: get ptables with curl or similar (on Windows what?)
-  also, keep only one compressed format (+uncompressed?) on server
 
 ## Technical stuff
+
+### Testing
+* write some proper tests, move test_coord to the testing module(s)
 
 ### Memory management
 * free pruning table after solve is done? if I do this I need to deafault to a
@@ -64,14 +71,6 @@ including e.g. solutions that were not shown because -c)
   very slow and probably nobody will ever use it)
 * Check if memory is enough for loading pruning tables; if not, abort
 * For optimal solver: choose largest that fits in memory between nxopt and light
-
-### Other optimal solvers
-* try htr corners + edges in slice but not oriented (300Mb table);
-  de Bondt's trick does not work, but I can use full symmetry and
-  take advantage of the fact that it is a subset invariant under half-turns
-  (like in light optimal solver)
-* Another idea: DR + cornershtr (5Gb table); same as above, de Bondt's trick
-  does not work but I can use half-turn trick
 
 ### Structural changes
 * client/server architecture: run a server process in the background so that
