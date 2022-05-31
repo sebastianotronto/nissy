@@ -410,9 +410,11 @@ static void
 scramble_exec(CommandArgs *args)
 {
 	Cube cube;
+	CubeArray *arr;
 	Alg *scr, *ruf, *aux;
 	int i, j, eo, ep, co, cp, a[12];
-	uint64_t ui, uj;
+	int eparr[12] = { [8] = 8, [9] = 9, [10] = 10, [11] = 11 };
+	uint64_t ui, uj, uk;
 
 	init_all_movesets();
 	init_symcoord();
@@ -429,17 +431,29 @@ scramble_exec(CommandArgs *args)
 			 * Moreover we again need to fix parity after        *
 			 * generating epose manually                         */
 			do {
-				ui = rand() % coord_drudfin_noE_sym16.max;
-				uj = rand() % FACTORIAL4;
-				cube = coord_drudfin_noE_sym16.cube(ui);
-				cube.epose += uj;
+				ui = rand() % FACTORIAL8;
+				uj = rand() % FACTORIAL8;
+				uk = rand() % FACTORIAL4;
+
+				index_to_perm(ui, 12, a);
+				arr = malloc(sizeof(CubeArray));
+				arr->ep = eparr;
+				cube = arrays_to_cube(arr, pf_ep);
+				free(arr);
+
+				cube.cp = uj;
+				cube.epose += uk;
 			} while (!is_admissible(cube));
 		} else if (!strcmp(args->scrtype, "htr")) {
 			/* antindex_htrfin() returns a consistent *
 			 * cube, except possibly for parity       */
 			do {
-				ui = rand() % coord_htrfin.max;
-				cube = coord_htrfin.cube(ui);
+				ui = rand() % (24*24/6);
+				cube = (Cube){0};
+				cube.cp = cornershtrfin_ant[ui];
+				cube.epose = rand() % 24;
+				cube.eposs = rand() % 24;
+				cube.eposm = rand() % 24;
 			} while (!is_admissible(cube));
 		} else {
 			eo = rand() % POW2TO11;

@@ -2,8 +2,6 @@
 
 /* Local functions ***********************************************************/
 
-static void             fix_eorleoud(CubeArray *arr);
-static void             fix_cofbcorl(CubeArray *arr);
 static void             init_inverse();
 static bool             read_invtables_file();
 static bool             write_invtables_file();
@@ -126,6 +124,30 @@ cube_to_arrays(Cube cube, CubeArray *arr, PieceFilter f)
 }
 
 void
+epos_to_compatible_ep(int epos, int *ep, int *ss)
+{
+	int i, j, k, other[8];
+	bool flag;
+
+	for (i = 0; i < 12; i++)
+		ep[i] = -1;
+
+	epos_to_partial_ep(epos, ep, ss);
+
+	for (i = 0, j = 0; i < 12; i++) {
+		flag = false;
+		for (k = 0; k < 4; k++)
+			flag = flag || (i == ss[k]);
+		if (!flag)
+			other[j++] = i;
+	}
+		
+	for (i = 0, j = 0; i < 12; i++)
+		if (ep[i] == -1)
+			ep[i] = other[j++];
+}
+
+void
 epos_to_partial_ep(int epos, int *ep, int *ss)
 {
 	int i, is, eposs[12], eps[4];
@@ -141,7 +163,7 @@ epos_to_partial_ep(int epos, int *ep, int *ss)
 			ep[i] = ss[eps[is++]];
 }
 
-static void
+void
 fix_eorleoud(CubeArray *arr)
 {
 	int i;
@@ -163,7 +185,7 @@ fix_eorleoud(CubeArray *arr)
 	}
 }
 
-static void
+void
 fix_cofbcorl(CubeArray *arr)
 {
 	int i;

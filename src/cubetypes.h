@@ -168,11 +168,10 @@ struct
 coordinate
 {
 	Indexer                   index;
-	AntiIndexer               cube;
 	uint64_t                  max;
-	TransFinder               transfind;
 	CoordMover                move;
 	CoordTransformer          transform;
+	SymData *                 sd;
 };
 
 struct
@@ -324,8 +323,10 @@ symdata
 	int                       ntrans;
 	Trans *                   trans;
 	uint64_t *                class;
-	Cube *                    rep;
+	uint64_t *                unsym;
 	Trans *                   transtorep;
+	uint64_t *                selfsim;
+	CoordTransformer          transform; /* TODO: remove, use that of base coord */
 };
 
 struct

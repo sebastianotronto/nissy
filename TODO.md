@@ -5,23 +5,45 @@ It's more of a personal reminder than anything else.
 
 ## For version 2.1
 ### Moving coordinates
-* Implement coord->move to apply moves directly on coordinates
-* add transformer to transform coordinate (optional, only for sym coordinates)
-* For each coordinate, manually disallow "bad" moves, or just ignore the error
-  (probably better to check: low performance cost, detect problems that I might
-  be overlooking)
-* remove selsims, do this directly inside transfinder
-* change genptable where needed
-* Remove coord->cube (and edit README.md accordingly)
-* Remove sym_data->rep (but keep transtorep)?
-* Use this to improve solver: add 2 or 3 helper coordinates to optimal solver,
-  to avoid transforming every time. We still need to transform when checking
-  inverse scramble, though.
+* general cleanup
+### Changes to Step and Solve
+* add a list of "helper" coordinates to every step
+* Probably nicer: instead of passing a cube pass a structure "cube description"
+  which can contain coordinates and one or more cubes.
+  This can also be used to avoid using index_epud too much in drfin
+  (it is slow because it goes through cubearray).
+* add a step->move(Cube) function, which may apply moves to the cube or just to
+  the coordinates
+* optimal solver: move the coordinates for the 3 orientations, but also the
+  cube so we can check the inverse
+### Tables management
+* Check files in tables directory, add command to remove old / extraneous files
+* Add checksum to check that tables are generated / downloaded correctly
 ### Documentation
+* Fix README.md with new coordinate system
 * Write an examples.md file
 * More screenshots!
 ### More
 * Anything quick and easy from the sections below
+
+## Refactor
+### Coordinates
+* Text (README.md) description of coordinate system with 3 (or 4) types of
+  coordinates: basic (+ fundamental), sym, composite (consisting of at most
+  one sym + one or more basic)
+* Use this to restructure the coordinate part; maybe fundamental coordinates
+  do not need to exist???
+* Add also "transform" for every coordinate. For example, for EO and similar
+  only allow transformations that fix the EO axis.
+* Also: "basic" symcoord do not allow trans, composite coordinates assume
+  the transformation fixes the basic sumcoord
+* For each coordinate, manually disallow "bad" moves, or just ignore the error
+  (probably better to check: low performance cost, detect problems that I might
+  be overlooking)
+### Loading at startup vs dynamically
+* Consider moving more things to the initial loading phase (i.e. remove
+  many of the "initialized" parts)
+
 
 ## Commands
 
@@ -34,6 +56,7 @@ including e.g. solutions that were not shown because -c)
 
 ### More steps for `solve`
 * QTM optimal solving
+* 5-side solve (for robots)
 * Block-building steps (cross, roux blocks, ...)
 * Other common steps (LSE, ...)
 

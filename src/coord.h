@@ -18,7 +18,10 @@ extern Coordinate       coord_htr_drud;
 extern Coordinate       coord_htrfin;
 extern Coordinate       coord_cpud_separate;
 
-void        test_coord(Coordinate *coord);
+extern int              cpud_separate_ant[BINOM8ON4];
+extern int              cpud_separate_ind[FACTORIAL8];
+extern int              cornershtrfin_ant[24*24/6];
+
 void        init_coord();
 
 #endif

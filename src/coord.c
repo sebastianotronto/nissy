@@ -1,20 +1,5 @@
 #include "coord.h"
 
-static Cube        antindex_eofb(uint64_t ind);
-static Cube        antindex_eofbepos(uint64_t ind);
-static Cube        antindex_epud(uint64_t ind);
-static Cube        antindex_coud(uint64_t ind);
-static Cube        antindex_corners(uint64_t ind);
-static Cube        antindex_cp(uint64_t ind);
-static Cube        antindex_cphtr(uint64_t);
-static Cube        antindex_cornershtr(uint64_t ind);
-static Cube        antindex_cornershtrfin(uint64_t ind);
-static Cube        antindex_drud(uint64_t ind);
-static Cube        antindex_drud_eofb(uint64_t ind);
-static Cube        antindex_htr_drud(uint64_t ind);
-static Cube        antindex_htrfin(uint64_t ind);
-static Cube        antindex_cpud_separate(uint64_t ind);
-
 static uint64_t    index_eofb(Cube cube);
 static uint64_t    index_eofbepos(Cube cube);
 static uint64_t    index_epud(Cube cube);
@@ -30,10 +15,27 @@ static uint64_t    index_htr_drud(Cube cube);
 static uint64_t    index_htrfin(Cube cube);
 static uint64_t    index_cpud_separate(Cube cube);
 
+static uint64_t    move_eofb(Move m, uint64_t ind);
+static uint64_t    move_eofbepos(Move m, uint64_t ind);
+static uint64_t    move_epud(Move m, uint64_t ind);
+static uint64_t    move_coud(Move m, uint64_t ind);
+static uint64_t    move_corners(Move m, uint64_t ind);
+static uint64_t    move_cp(Move m, uint64_t ind);
+static uint64_t    move_cphtr(Move m, uint64_t ind);
+static uint64_t    move_cornershtr(Move m, uint64_t ind);
+static uint64_t    move_cornershtrfin(Move m, uint64_t ind);
+static uint64_t    move_drud(Move m, uint64_t ind);
+static uint64_t    move_drud_eofb(Move m, uint64_t ind);
+static uint64_t    move_htr_drud(Move m, uint64_t ind);
+static uint64_t    move_htrfin(Move m, uint64_t ind);
+static uint64_t    move_cpud_separate(Move m, uint64_t ind);
+
 static void        init_cphtr_cosets();
 static void        init_cphtr_left_cosets_bfs(int i, int c);
 static void        init_cphtr_right_cosets_color(int i, int c);
+static void        init_cpud_separate();
 static void        init_cornershtrfin();
+static void        init_htr_eposs();
 
 
 /* All sorts of useful costants and tables  **********************************/
@@ -41,354 +43,112 @@ static void        init_cornershtrfin();
 static int              cphtr_left_cosets[FACTORIAL8];
 static int              cphtr_right_cosets[FACTORIAL8];
 static int              cphtr_right_rep[BINOM8ON4*6];
+int                     cpud_separate_ind[FACTORIAL8];
+int                     cpud_separate_ant[BINOM8ON4];
 static int              cornershtrfin_ind[FACTORIAL8];
-static int              cornershtrfin_ant[24*24/6];
+int                     cornershtrfin_ant[24*24/6];
+static int              htr_eposs_ind[BINOM12ON4];
+static int              htr_eposs_ant[BINOM8ON4];
 
 /* Coordinates and their implementation **************************************/
 
 Coordinate
 coord_eofb = {
 	.index  = index_eofb,
-	.cube   = antindex_eofb,
 	.max    = POW2TO11,
+	.move   = move_eofb,
 };
 
 Coordinate
 coord_eofbepos = {
 	.index  = index_eofbepos,
-	.cube   = antindex_eofbepos,
 	.max    = POW2TO11 * BINOM12ON4,
+	.move   = move_eofbepos,
 };
 
 Coordinate
 coord_coud = {
 	.index  = index_coud,
-	.cube   = antindex_coud,
 	.max    = POW3TO7,
+	.move   = move_coud,
 };
 
 Coordinate
 coord_corners = {
 	.index  = index_corners,
-	.cube   = antindex_corners,
 	.max    = POW3TO7 * FACTORIAL8,
+	.move   = move_corners,
 };
 
 Coordinate
 coord_cp = {
 	.index  = index_cp,
-	.cube   = antindex_cp,
 	.max    = FACTORIAL8,
+	.move   = move_cp,
 };
 
 Coordinate
 coord_cphtr = {
 	.index  = index_cphtr,
-	.cube   = antindex_cphtr,
 	.max    = BINOM8ON4 * 6,
+	.move   = move_cphtr,
 };
 
 Coordinate
 coord_cornershtr = {
 	.index  = index_cornershtr,
-	.cube   = antindex_cornershtr,
 	.max    = POW3TO7 * BINOM8ON4 * 6,
+	.move   = move_cornershtr,
 };
 
 Coordinate
 coord_cornershtrfin = {
 	.index  = index_cornershtrfin,
-	.cube   = antindex_cornershtrfin,
 	.max    = 24*24/6,
+	.move   = move_cornershtrfin,
 };
 
 Coordinate
 coord_epud = {
 	.index  = index_epud,
-	.cube   = antindex_epud,
 	.max    = FACTORIAL8,
+	.move   = move_epud,
 };
 
 Coordinate
 coord_drud = {
 	.index  = index_drud,
-	.cube   = antindex_drud,
 	.max    = POW2TO11 * POW3TO7 * BINOM12ON4,
+	.move   = move_drud,
 };
 
 Coordinate
 coord_htr_drud = {
 	.index  = index_htr_drud,
-	.cube   = antindex_htr_drud,
 	.max    = BINOM8ON4 * 6 * BINOM8ON4,
+	.move   = move_htr_drud,
 };
 
 Coordinate
 coord_htrfin = {
 	.index  = index_htrfin,
-	.cube   = antindex_htrfin,
 	.max    = 24 * 24 * 24 *24 * 24 / 6, /* should be /12 but it's ok */
+	.move   = move_htrfin,
 };
 
 Coordinate
 coord_drud_eofb = {
 	.index  = index_drud_eofb,
-	.cube   = antindex_drud_eofb,
 	.max    = POW3TO7 * BINOM12ON4,
+	.move   = move_drud_eofb,
 };
 
 Coordinate
 coord_cpud_separate = {
 	.index  = index_cpud_separate,
-	.cube   = antindex_cpud_separate,
 	.max    = BINOM8ON4,
+	.move   = move_cpud_separate,
 };
-
-/* Antindexers ***************************************************************/
-
-static Cube
-antindex_eofb(uint64_t ind)
-{
-	/* The returned cube is consistent */
-	Cube ret = {0};
-
-	ret.eofb = ind;
-	ret.eorl = ind;
-	ret.eoud = ind;
-
-	return ret;
-}
-
-static Cube
-antindex_eofbepos(uint64_t ind)
-{
-	/* The returned cube is NOT consistent: eoud can be wrong */
-	Cube ret = {0};
-
-	/* We need eorl for sym16 coordinate */
-	static int initialized = false;
-	static uint64_t eorl_a[POW2TO11][BINOM12ON4];
-	static int eo_aux[12], ep_aux[12];
-	unsigned int i, j, k;
-
-	if (!initialized) {
-		for (i = 0; i < POW2TO11; i++) {
-			for (j = 0; j < BINOM12ON4; j++) {
-				int_to_sum_zero_array(i, 2, 12, eo_aux);
-				index_to_subset(j, 12, 4, ep_aux);
-				for (k = 0; k < 12; k++)
-					if ((ep_aux[k] && k <  FR) ||
-					   (!ep_aux[k] && k >= FR))
-						eo_aux[k] = 1 - eo_aux[k];
-				eorl_a[i][j] = digit_array_to_int(eo_aux,11,2);
-			}
-		}
-
-		initialized = true;
-	}
-
-	ret.eofb = ind % POW2TO11;
-	ret.epose = (ind / POW2TO11) * 24;
-	ret.eorl = eorl_a[ret.eofb][ret.epose/24];
-
-	return ret;
-}
-
-static Cube
-antindex_epud(uint64_t ind)
-{
-	/* The returned cube is consistent */
-	static bool initialized = false;
-	static Cube epud_aux[FACTORIAL8];
-	int a[12];
-	uint64_t ui;
-	CubeArray arr;
-
-	if (!initialized) {
-		a[FR] = FR;
-		a[FL] = FL;
-		a[BL] = BL;
-		a[BR] = BR;
-		for (ui = 0; ui < FACTORIAL8; ui++) {
-			index_to_perm(ui, 8, a);
-			arr.ep = a;
-			epud_aux[ui] = arrays_to_cube(&arr, pf_ep);
-		}
-
-		initialized = true;
-	}
-
-	return epud_aux[ind];
-}
-
-static Cube
-antindex_coud(uint64_t ind)
-{
-	/* The returned cube is consistent */
-	Cube ret = {0};
-
-	ret.coud = ind;
-	ret.corl = ind;
-	ret.cofb = ind;
-
-	return ret;
-}
-
-static Cube
-antindex_corners(uint64_t ind)
-{
-	/* The returned cube is NOT consistent: corl and cofb can be wrong   */
-	/* TODO: remember to make this consistent if I use this for symcoord */
-	Cube ret = {0};
-
-	ret.coud = ind / FACTORIAL8;
-	ret.cp   = ind % FACTORIAL8;
-
-	return ret;
-}
-
-static Cube
-antindex_cp(uint64_t ind)
-{
-	/* The returned cube is NOT consistent: co can be wrong in all axes */
-	Cube ret = {0};
-
-	ret.cp = ind;
-
-	return ret;
-}
-
-static Cube
-antindex_cphtr(uint64_t ind)
-{
-	/* The returned cube is NOT consistent: co can be wrong in all axes */
-	Cube ret = {0};
-
-	ret.cp = cphtr_right_rep[ind];
-
-	return ret;
-}
-
-static Cube
-antindex_cornershtr(uint64_t ind)
-{
-	/* The returned cube is NOT consistent: corl and cofb can be wrong */
-	Cube ret = antindex_cphtr(ind % (BINOM8ON4 * 6));
-
-	ret.coud = ind / (BINOM8ON4 * 6);
-
-	return ret;
-}
-
-static Cube
-antindex_cornershtrfin(uint64_t ind)
-{
-	/* The returned cube is consistent */
-	Cube ret = {0};
-
-	ret.cp = cornershtrfin_ant[ind];
-
-	return ret;
-}
-
-static Cube
-antindex_drud(uint64_t ind)
-{
-	/* The returned cube is NOT consistent in the same way as eofbepos */
-	/* (see above). It works with sym16 coordinates                    */
-	uint64_t epos, eofb;
-	Cube ret = {0};
-
-	eofb = ind % POW2TO11;
-	epos = ind / (POW2TO11 * POW3TO7);
-	ret  = antindex_eofbepos(eofb + POW2TO11 * epos);
-
-	ret.coud = (ind / POW2TO11) % POW3TO7;
-	ret.corl = ret.coud;
-	ret.cofb = ret.coud;
-
-	return ret;
-}
-
-static Cube
-antindex_drud_eofb(uint64_t ind)
-{
-	/* The returned cube is NOT consistent (see antindex_drud) */
-	return antindex_drud(ind * POW2TO11);
-}
-
-static Cube
-antindex_htr_drud(uint64_t ind)
-{
-	/* The returned cube is NOT consistent: corl and cofb can be wrong */
-	/* (see cphtr) and eposm can be wrong too (not epose because dr).  */
-	Cube ret = {0};
-	static bool initialized = false;
-	static int aux[BINOM8ON4], ep[12], ep2[12];
-	static int eps_solved[4] = {UL, UR, DL, DR};
-	unsigned int i, j, k;
-
-	if (!initialized) {
-		for (i = 0; i < BINOM8ON4; i++) {
-			for (j = 0; j < 12; j++)
-				ep[j] = ep2[j] = 0;
-			index_to_subset(i, 8, 4, ep);
-			for (j = 0, k = 0; j < 8; j++)
-				ep2[j] = ep[j/2+4*(j%2)] ? eps_solved[k++] : 0;
-			aux[i] = array_ep_to_epos(ep2, eps_solved);
-		}
-
-		initialized = true;
-	}
-
-	ret       = antindex_cphtr(ind / BINOM8ON4);
-	ret.epose = 0;
-	ret.eposs = aux[ind % BINOM8ON4];
-
-	return ret;
-}
-
-static Cube
-antindex_htrfin(uint64_t ind)
-{
-	/* The returned cube is consistent */
-	Cube ret = {0};
-
-	ret = antindex_cornershtrfin(ind/(24*24*24));
-
-	ret.eposm = ind % 24;
-	ind /= 24;
-	ret.eposs = ind % 24;
-	ind /= 24;
-	ret.epose = ind % 24;
-
-	return ret;
-}
-
-static Cube
-antindex_cpud_separate(uint64_t ind)
-{
-	/* Not consistent because of side corner orientations and cp */
-	unsigned int ui;
-	int i, co[8], cp[8];
-	Corner u, d;
-
-	static Cube aux[BINOM8ON4];
-	static bool initialized = false;
-
-	if (!initialized) {
-		for (ui = 0; ui < BINOM8ON4; ui++) {
-			index_to_subset(ui, 8, 4, co);
-			for (i = 0, u = UFR, d = DFR; i < 8; i++)
-				cp[i] = co[i] ? d++ : u++;
-			aux[ui] = (Cube){.cp = perm_to_index(cp, 8)};
-		}
-
-		initialized = true;
-	}
-
-	return aux[ind];
-}
 
 /* Indexers ******************************************************************/
 
@@ -476,25 +236,12 @@ index_drud_eofb(Cube cube)
 static uint64_t
 index_htr_drud(Cube cube)
 {
-	static bool initialized = false;
-	static int aux[BINOM12ON4], ep[12], ep2[12];
-	static int eps_solved[4] = {UL, UR, DL, DR};
-	unsigned int i, j;
+	uint64_t a, b;
 
-	if (!initialized) {
-		for (i = 0; i < BINOM12ON4; i++) {
-			for (j = 0; j < 12; j++)
-				ep[j] = ep2[j] = 0;
-			epos_to_partial_ep(i*24, ep, eps_solved);
-			for (j = 0; j < 8; j++)
-				ep2[j/2 + 4*(j%2)] = ep[j] ? 1 : 0;
-			aux[i] = subset_to_index(ep2, 8, 4);
-		}
+	a = index_cphtr(cube);
+	b = htr_eposs_ind[cube.eposs/24];
 
-		initialized = true;
-	}
-
-	return index_cphtr(cube) * BINOM8ON4 + aux[cube.eposs/24];
+	return a * BINOM8ON4 + b;
 }
 
 static uint64_t
@@ -514,24 +261,190 @@ index_htrfin(Cube cube)
 static uint64_t
 index_cpud_separate(Cube cube)
 {
-	unsigned int ui;
-	int i, co[8];
+	return cpud_separate_ind[cube.cp];
+}
 
-	static int aux[FACTORIAL8];
+/* Coordinate movers *********************************************************/
+
+static uint64_t
+move_eofb(Move m, uint64_t ind)
+{
+	return eofb_mtable[m][ind];
+}
+
+static uint64_t
+move_eofbepos(Move m, uint64_t ind)
+{
+	uint64_t a, b;
+
+	a = epose_mtable[m][(ind / POW2TO11)*24];
+	b = eofb_mtable[m][ind % POW2TO11];
+
+	return a/24 + b;
+}
+
+static uint64_t
+move_epud(Move m, uint64_t ind)
+{
+	/* TODO: save to file? */
 	static bool initialized = false;
+	static int a[12] = { [8] = 8, [9] = 9, [10] = 10, [11] = 11 };
+	static int shortlist[NMOVES] = {
+		[U] = 0, [U2] = 1, [U3] = 2, [D] = 3, [D2] = 4, [D3] = 5,
+		[R2] = 6, [L2] = 7, [F2] = 8, [B2] = 9
+	};
+	static uint64_t aux[10][FACTORIAL8];
+	uint64_t ui;
+	int j;
+	Move mj;
+	Cube c;
+	CubeArray *arr, *auxarr;
+
+	if (!moveset_drud.allowed(m)) {
+		fprintf(stderr, "Move not allowed for epud\n"
+		                "This is a bug, please report\n");
+		return coord_epud.max;
+	}
 
 	if (!initialized) {
-		for (ui = 0; ui < FACTORIAL8; ui++) {
-			for (i = 0; i < 8; i++)
-				co[i] = what_corner_at((Cube){.cp=ui},i)>UBR ?
-					 1 : 0;
-			aux[ui] = subset_to_index(co, 8, 4);
+		auxarr = malloc(sizeof(CubeArray));
+		auxarr->ep = a;
+		for (ui = 0; ui < coord_epud.max; ui++) {
+			index_to_perm(ui, 8, a);
+			c = arrays_to_cube(auxarr, pf_ep);
+			for (j = 0; moveset_drud.sorted_moves[j] != NULLMOVE;
+			    j++) {
+				mj = moveset_drud.sorted_moves[j];
+				arr = new_cubearray(apply_move(mj, c), pf_ep);
+				aux[shortlist[mj]][ui] =
+				    perm_to_index(arr->ep, 8);
+				free_cubearray(arr, pf_ep);
+			}
 		}
-		
+		free(auxarr);
+
 		initialized = true;
 	}
 
-	return aux[cube.cp];
+	return aux[shortlist[m]][ind];
+}
+
+static uint64_t
+move_coud(Move m, uint64_t ind)
+{
+	return coud_mtable[m][ind];
+}
+
+static uint64_t
+move_corners(Move m, uint64_t ind)
+{
+	uint64_t a, b;
+
+	a = coud_mtable[m][ind / FACTORIAL8];
+	b = cp_mtable[m][ind % FACTORIAL8];
+
+	return a * FACTORIAL8 + b;
+}
+
+static uint64_t
+move_cp(Move m, uint64_t ind)
+{
+	return cp_mtable[m][ind];
+}
+
+static uint64_t
+move_cphtr(Move m, uint64_t ind)
+{
+	static bool initialized = false;
+	static uint64_t aux[NMOVES][BINOM8ON4*6];
+	uint64_t ui;
+	Move j;
+
+	if (!initialized) {
+		for (ui = 0; ui < BINOM8ON4*6; ui++)
+			for (j = U; j < NMOVES; j++)
+				aux[j][ui] =
+				    cp_mtable[j][cphtr_right_rep[ind]];
+
+		initialized = true;
+	}
+
+	return aux[m][ind];
+}
+
+static uint64_t
+move_cornershtr(Move m, uint64_t ind)
+{
+	uint64_t a, b;
+
+	a = coud_mtable[m][ind/(BINOM8ON4 * 6)];
+	b = move_cphtr(m, ind % (BINOM8ON4 * 6));
+
+	return a * BINOM8ON4 * 6 + b;
+}
+
+static uint64_t
+move_cornershtrfin(Move m, uint64_t ind)
+{
+	int a;
+
+	a = cp_mtable[m][cornershtrfin_ant[ind]];
+
+	return cornershtrfin_ind[a];
+}
+
+static uint64_t
+move_drud(Move m, uint64_t ind)
+{
+	uint64_t a, b, c;
+
+	a = eofb_mtable[m][ind % POW2TO11];
+	b = coud_mtable[m][(ind / POW2TO11) % POW3TO7];
+	c = epose_mtable[m][ind / (POW2TO11 * POW3TO7)];
+
+	return a + (b + c * POW3TO7) * POW2TO11;
+}
+
+static uint64_t
+move_drud_eofb(Move m, uint64_t ind)
+{
+	uint64_t a, b;
+
+	a = coud_mtable[m][ind % POW3TO7];
+	b = epose_mtable[m][ind / POW3TO7];
+
+	return a + b * POW3TO7;
+}
+
+static uint64_t
+move_htr_drud(Move m, uint64_t ind)
+{
+	uint64_t a, b;
+
+	a = move_cphtr(m, ind/BINOM8ON4);
+	b = eposs_mtable[m][htr_eposs_ant[ind%BINOM8ON4]];
+
+	return a*BINOM8ON4 + htr_eposs_ind[b/24];
+}
+
+static uint64_t
+move_htrfin(Move m, uint64_t ind)
+{
+	uint64_t a, b, bm, bs, be;
+
+	a = move_cornershtrfin(m, ind % (24*24*24));
+	bm = eposm_mtable[m][ind%24] % 24;
+	bs = eposs_mtable[m][(ind/24)%24] % 24;
+	be = epose_mtable[m][ind/(24*24)] % 24;
+	b = (be * 24 + bs) * 24 + bm;
+
+	return a * (24*24*24) + b;
+}
+
+static uint64_t
+move_cpud_separate(Move m, uint64_t ind)
+{
+	return cpud_separate_ind[cp_mtable[m][cpud_separate_ant[ind]]];
 }
 
 /* Init functions implementation *********************************************/
@@ -618,6 +531,20 @@ init_cphtr_right_cosets_color(int i, int d)
 }
 
 static void
+init_cpud_separate()
+{
+	unsigned int ui;
+	int i, co[8];
+
+	for (ui = 0; ui < FACTORIAL8; ui++) {
+		for (i = 0; i < 8; i++)
+			co[i] = what_corner_at((Cube){.cp=ui},i)>UBR ?  1 : 0;
+		cpud_separate_ind[ui] = subset_to_index(co, 8, 4);
+		cpud_separate_ant[cpud_separate_ind[ui]] = ui;
+	}
+}
+
+static void
 init_cornershtrfin()
 {
 	unsigned int i, j;
@@ -649,28 +576,21 @@ init_cornershtrfin()
 }
 
 void
-test_coord(Coordinate *coord)
+init_htr_eposs()
 {
-	bool passed;
-	uint64_t ui, failcount;
+	int ep[12], ep2[12];
+	int eps_solved[4] = {UL, UR, DL, DR};
+	unsigned int i, j;
 
-	if (!(passed = (coord->index((Cube){0}) == 0))) {
-		printf("Failed: coordinate of solved cube is "
-		       "%" PRIu64 "\n", coord->index((Cube){0}));
+	for (i = 0; i < BINOM12ON4; i++) {
+		for (j = 0; j < 12; j++)
+			ep[j] = ep2[j] = 0;
+		epos_to_partial_ep(i*24, ep, eps_solved);
+		for (j = 0; j < 8; j++)
+			ep2[j/2 + 4*(j%2)] = ep[j] ? 1 : 0;
+		htr_eposs_ind[i] = subset_to_index(ep2, 8, 4);
+		htr_eposs_ant[htr_eposs_ind[i]] = i*24;
 	}
-
-	printf("Testing %" PRIu64 " coordinates\n", coord->max);
-	for (failcount = 0, ui = 0; ui < coord->max; ui++) {
-		if (!(passed = (coord->index(coord->cube(ui)) == ui))) {
-			printf("Failed at %" PRIu64 "\n", ui);
-			failcount++;
-		}
-	}
-
-	if (passed)
-		printf("Ok\n");
-	else
-		printf("Test failed in %" PRIu64 " cases\n", failcount);
 }
 
 void
@@ -685,5 +605,7 @@ init_coord()
 
 	init_cphtr_cosets();
 	init_cornershtrfin();
+	init_htr_eposs();
+	init_cpud_separate();
 }
 

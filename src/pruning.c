@@ -258,25 +258,25 @@ genptable_compress(PruneData *pd)
 static void
 genptable_fixnasty(PruneData *pd, int d)
 {
-	uint64_t i;
-	int j, n;
-	Cube c, cc;
-	Trans t[NTRANS];
+	uint64_t i, ii, mask;
+	Trans t;
 
-	if (pd->coord->transfind == NULL)
+	if (pd->coord->sd == NULL)
 		return;
 
 	for (i = 0; i < pd->coord->max; i++) {
 		if (ptableval_index(pd, i) == d) {
-			n = pd->coord->transfind(i, t);
-			if (n == 1)
+			mask = pd->coord->sd->selfsim[i];
+			if (mask == (1 << uf))
 				continue;
 
-			c = pd->coord->cube(i);
-			for (j = 0; j < n; j++) {
-				cc = apply_trans(t[j], c);
-				if (ptableval(pd, cc) > d) {
-					ptable_update(pd, cc, d);
+			for (t = 0; t < NTRANS; t++) {
+				if (!((1 << t) & mask))
+					continue;
+
+				ii = pd->coord->transform(t, i);
+				if (ptableval_index(pd, ii) > d) {
+					ptable_update_index(pd, ii, d);
 					pd->n++;
 				}
 			}
@@ -306,7 +306,6 @@ instance_bfs(void *arg)
 	ThreadDataGenpt *td;
 	uint64_t i, ii, blocksize, rmin, rmax, updated;
 	int j, pval, ichunk;
-	Cube c, cc;
 	Move *ms;
 
 	td = (ThreadDataGenpt *)arg;
@@ -324,15 +323,14 @@ instance_bfs(void *arg)
 		pval = ptableval_index(td->pd, i);
 		pthread_mutex_unlock(td->mutex[ichunk]);
 		if (pval == td->d) {
-			c = td->pd->coord->cube(i);
 			for (j = 0; ms[j] != NULLMOVE; j++) {
-				cc = apply_move(ms[j], c);
-				ii = td->pd->coord->index(cc);
+				ii = td->pd->coord->move(ms[j], i);
 				ichunk = findchunk(td->pd, td->nchunks, ii);
 				pthread_mutex_lock(td->mutex[ichunk]);
 				pval = ptableval_index(td->pd, ii);
 				if (pval > td->d+1) {
-					ptable_update(td->pd, cc, td->d+1);
+					ptable_update_index(td->pd,
+					    ii, td->d+1);
 					updated++;
 				}
 				pthread_mutex_unlock(td->mutex[ichunk]);
