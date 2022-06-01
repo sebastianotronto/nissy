@@ -31,7 +31,11 @@ static void        gensym(SymData *sd);
 static void        init_symc_moves();
 static void        init_symc_trans();
 static bool        read_symdata_file(SymData *sd);
+static bool        read_symc_moves_file();
+static bool        read_symc_trans_file();
 static bool        write_symdata_file(SymData *sd);
+static bool        write_symc_moves_file();
+static bool        write_symc_trans_file();
 
 /* Some tables ***************************************************************/
 
@@ -420,26 +424,66 @@ read_symdata_file(SymData *sd)
 	return r;
 }
 
-/*
-static int
-selfsims(SymData *sd, uint64_t ind, Trans *ret)
+static bool
+read_symc_moves_file()
 {
-	Cube cube, tcube;
-	int i, n;
-	uint64_t indnosym;
+	init_env();
 
-	cube = sd->sym_coord->cube(ind);
-	indnosym = sd->coord->index(cube);
-	n = 0;
-	for (i = 0; i < sd->ntrans; i++) {
-		tcube = apply_trans(sd->trans[i], cube);
-		if (sd->coord->index(tcube) == indnosym)
-			ret[n++] = sd->trans[i];
+	Move m;
+	bool r = true;
+	FILE *f;
+	char fname[strlen(tabledir)+100];
+
+	strcpy(fname, tabledir);
+	strcat(fname, "/symc_moves");
+
+	if ((f = fopen(fname, "rb")) == NULL)
+		return false;
+
+	for (m = 0; m < NMOVES; m++) {
+		r = r && fread(move_cp_16[m], sizeof(uint64_t),
+		    CLASSES_CP_16, f) == CLASSES_CP_16;
+		r = r && fread(move_eofbepos_16[m], sizeof(uint64_t),
+		    CLASSES_EOFBEPOS_16, f) == CLASSES_EOFBEPOS_16;
+
+		r = r && fread(ttrep_move_cp_16[m], sizeof(Trans),
+		    CLASSES_CP_16, f) == CLASSES_CP_16;
+		r = r && fread(ttrep_move_eofbepos_16[m], sizeof(Trans),
+		    CLASSES_EOFBEPOS_16, f) == CLASSES_EOFBEPOS_16;
 	}
 
-	return n;
+	fclose(f);
+	return r;
 }
-*/
+
+static bool
+read_symc_trans_file()
+{
+	init_env();
+
+	Trans t;
+	bool r = true;
+	FILE *f;
+	char fname[strlen(tabledir)+100];
+
+	strcpy(fname, tabledir);
+	strcat(fname, "/symc_trans");
+
+	if ((f = fopen(fname, "rb")) == NULL)
+		return false;
+
+	for (t = 0; t < NTRANS; t++) {
+		r = r && fread(trans_eofbepos[t], sizeof(int),
+		    POW2TO11*BINOM12ON4, f) == POW2TO11*BINOM12ON4;
+		r = r && fread(trans_epud[t], sizeof(int),
+		    FACTORIAL8, f) == FACTORIAL8;
+		r = r && fread(trans_cpud_separate[t], sizeof(int),
+		    BINOM8ON4, f) == BINOM8ON4;
+	}
+
+	fclose(f);
+	return r;
+}
 
 static bool
 write_symdata_file(SymData *sd)
@@ -468,11 +512,75 @@ write_symdata_file(SymData *sd)
 	return r;
 }
 
+static bool
+write_symc_moves_file()
+{
+	init_env();
+
+	Move m;
+	bool r = true;
+	FILE *f;
+	char fname[strlen(tabledir)+100];
+
+	strcpy(fname, tabledir);
+	strcat(fname, "/symc_moves");
+
+	if ((f = fopen(fname, "wb")) == NULL)
+		return false;
+
+	for (m = 0; m < NMOVES; m++) {
+		r = r && fwrite(move_cp_16[m], sizeof(uint64_t),
+		    CLASSES_CP_16, f) == CLASSES_CP_16;
+		r = r && fwrite(move_eofbepos_16[m], sizeof(uint64_t),
+		    CLASSES_EOFBEPOS_16, f) == CLASSES_EOFBEPOS_16;
+
+		r = r && fwrite(ttrep_move_cp_16[m], sizeof(Trans),
+		    CLASSES_CP_16, f) == CLASSES_CP_16;
+		r = r && fwrite(ttrep_move_eofbepos_16[m], sizeof(Trans),
+		    CLASSES_EOFBEPOS_16, f) == CLASSES_EOFBEPOS_16;
+	}
+
+	fclose(f);
+	return r;
+}
+
+static bool
+write_symc_trans_file()
+{
+	init_env();
+
+	Trans t;
+	bool r = true;
+	FILE *f;
+	char fname[strlen(tabledir)+100];
+
+	strcpy(fname, tabledir);
+	strcat(fname, "/symc_trans");
+
+	if ((f = fopen(fname, "wb")) == NULL)
+		return false;
+
+	for (t = 0; t < NTRANS; t++) {
+		r = r && fwrite(trans_eofbepos[t], sizeof(int),
+		    POW2TO11*BINOM12ON4, f) == POW2TO11*BINOM12ON4;
+		r = r && fwrite(trans_epud[t], sizeof(int),
+		    FACTORIAL8, f) == FACTORIAL8;
+		r = r && fwrite(trans_cpud_separate[t], sizeof(int),
+		    BINOM8ON4, f) == BINOM8ON4;
+	}
+
+	fclose(f);
+	return r;
+}
+
 static void
 init_symc_moves()
 {
 	uint64_t i, ii, coo;
 	Move j;
+
+	if (read_symc_moves_file())
+		return;
 
 	for (i = 0; i < CLASSES_CP_16; i++) {
 		ii = sd_cp_16.unsym[i];
@@ -492,6 +600,9 @@ init_symc_moves()
 			    sd_eofbepos_16.transtorep[coo];
 		}
 	}
+
+	if (!write_symc_moves_file())
+		fprintf(stderr, "Error writing SymMoves file\n");
 }
 
 void
@@ -504,6 +615,9 @@ init_symc_trans()
 	Cube c;
 	CubeArray *arr, *aux;
 	Trans t;
+
+	if (read_symc_trans_file())
+		return;
 
 	for (i = 0; i < POW2TO11*BINOM12ON4; i++) {
 		for (j = 0; j < 16; j++) {
@@ -543,6 +657,9 @@ init_symc_trans()
 			    cpud_separate_ind[cp_ttable[t][cp]];
 		}
 	}
+
+	if (!write_symc_trans_file())
+		fprintf(stderr, "Error writing SymTrans file\n");
 }
 
 void

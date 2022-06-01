@@ -143,7 +143,6 @@ main(int argc, char *argv[])
 	char *closing_cmd[1] = { "freemem" };
 
 	init_env();
-	/*print_ptable(&pd_nxopt31_HTM);*/
 
 	if (!checkfiles()) {
 		fprintf(stderr,
