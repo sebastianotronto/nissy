@@ -148,9 +148,7 @@ main(int argc, char *argv[])
 		fprintf(stderr,
 			"--- Warning ---\n"
 			"Some pruning tables are missing or unreadable\n"
-			"You can generate them with `nissy gen -t 4'\n"
-			"Here `4' is the number of threads. Use more if your "
-			"CPU has them, or expect it to take a while.\n"
+			"You can generate them with `nissy gen'.\n"
 			"---------------\n\n"
 		);
 	}

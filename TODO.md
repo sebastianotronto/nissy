@@ -4,14 +4,9 @@ This is a list of things that I would like to add or change at some point.
 It's more of a personal reminder than anything else.
 
 ## Version 2.0.2
-* General idea: only improvement on generating pruning tables, no new
-  commands or anything else
-### Tables management
-* Check files in tables directory, add command to remove old / extraneous files
-* Add checksum to check that tables are generated / downloaded correctly
-### Documentation
-* Write an examples.md file
-* More screenshots!
+### Changelog
+* Only improved table generation speed, but this required huge changes in
+  coordinates.c and symcoord.c (+ some minor changes in other parts).
 
 ## For version 2.1
 ### Coordinates
@@ -43,6 +38,12 @@ It's more of a personal reminder than anything else.
 ### Loading at startup vs dynamically
 * Consider moving more things to the initial loading phase (i.e. remove
   many of the "initialized" parts)
+### Documentation
+* Write an examples.md file
+* More screenshots!
+### Tables management
+* Check files in tables directory, add command to remove old / extraneous files
+* Add checksum to check that tables are generated / downloaded correctly
 
 ## Commands
 
