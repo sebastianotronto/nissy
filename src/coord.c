@@ -435,7 +435,7 @@ move_htrfin(Move m, uint64_t ind)
 	a = move_cornershtrfin(m, ind / (24*24*24));
 	bm = eposm_mtable[m][ind%24] % 24;
 	bs = eposs_mtable[m][(ind/24)%24] % 24;
-	be = epose_mtable[m][ind/(24*24)] % 24;
+	be = epose_mtable[m][(ind/(24*24))%24] % 24;
 	b = (be * 24 + bs) * 24 + bm;
 
 	return a * (24*24*24) + b;
@@ -563,7 +563,7 @@ init_cornershtrfin()
 				continue;
 			for (m = U; m < NMOVES; m++) {
 				if (moveset_htr.allowed(m)) {
-					c = apply_move(m, (Cube){.cp = j}).cp;
+					c = cp_mtable[m][j];
 					if (cornershtrfin_ind[c] == -1) {
 						cornershtrfin_ind[c] = n;
 						cornershtrfin_ant[n] = c;
