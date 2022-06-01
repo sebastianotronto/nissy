@@ -319,7 +319,7 @@ gen_parse_args(int c, char **v)
 	int val;
 	CommandArgs *a = new_args();
 
-	a->opts->nthreads = 1;
+	a->opts->nthreads = 64;
 	a->success  = false;
 
 	if (c == 0) {
