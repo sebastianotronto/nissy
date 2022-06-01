@@ -86,18 +86,6 @@ vs composed) is work in progress.
 
 The two paragraphs below are not true anymore since version 2.1 (June 2022).
 
-~~~There is one caveat: each coordinates also needs an inverse function that takes a~~~
-~~~coordinate value and returns a cube which has that coordinate. This is in general~~~
-~~~more complicated, but luckily the cube does not need to be fully built or consistent.~~~
-~~~This inverse-coordinate is used only in one specific step when generating symmetry~~~
-~~~data, and I don't know if it is possible to avoid it (maybe it is). It is also used~~~
-~~~when building pruning tables, but in that case it is avoidable.~~~
-
-~~~Note: this part is different from what Cube Explorer does. Overall I think it is~~~
-~~~conceptually easier, although in practice it was still hard to implement.~~~
-~~~If anything it is more generalizable and one can use it to build any coordinate~~~
-~~~they might like.~~~
-
 ### Solving
 
 Solving is implemented as a generic function that takes both a step and
