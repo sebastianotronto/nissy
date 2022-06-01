@@ -363,8 +363,8 @@ move_cphtr(Move m, uint64_t ind)
 	if (!initialized) {
 		for (ui = 0; ui < BINOM8ON4*6; ui++)
 			for (j = U; j < NMOVES; j++)
-				aux[j][ui] = index_cphtr(
-				    cp_mtable[j][cphtr_right_rep[ui]]);
+				aux[j][ui] = cphtr_right_cosets[
+				    cp_mtable[j][cphtr_right_rep[ui]]];
 
 		initialized = true;
 	}
@@ -432,7 +432,7 @@ move_htrfin(Move m, uint64_t ind)
 {
 	uint64_t a, b, bm, bs, be;
 
-	a = move_cornershtrfin(m, ind % (24*24*24));
+	a = move_cornershtrfin(m, ind / (24*24*24));
 	bm = eposm_mtable[m][ind%24] % 24;
 	bs = eposs_mtable[m][(ind/24)%24] % 24;
 	be = epose_mtable[m][ind/(24*24)] % 24;
