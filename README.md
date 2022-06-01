@@ -11,8 +11,8 @@ Nissy can also solve many different substeps of Thistlethwaite's algorithm
 (DR/HTR), and can use NISS (Normal-Inverse Scramble Switch).
 It can be useful to analyze your DR solves (and more, once I implement more features).
 
-You get Nissy from [nissy.tronto.net](https://nissy.tronto.net). The download
-links and installation instructions can be found on the
+You can get Nissy from [nissy.tronto.net](https://nissy.tronto.net).
+The download links and installation instructions can be found on the
 [download page](https://nissy.tronto.net/download).
 
 ## Structure of the code
@@ -78,17 +78,25 @@ When a value of `v=1,2,3` is read it is simply returned as `v+b`, while if
 `0` is a successive lookup to a fallback table is performed. The base value `b`
 is picked to maximize the sum frequency of the values `1,2,3`.
 
-There is one caveat: each coordinates also needs an inverse function that takes a
-coordinate value and returns a cube which has that coordinate. This is in general
-more complicated, but luckily the cube does not need to be fully built or consistent.
-This inverse-coordinate is used only in one specific step when generating symmetry
-data, and I don't know if it is possible to avoid it (maybe it is). It is also used
-when building pruning tables, but in that case it is avoidable.
+In order to generate the pruning tables, it is necessary to be able to move
+a transform a coordinate; it is possible to do so without passing through a
+complete cube representations, in a way similar to what Cube Explorer does.
+More documentation on this and on the different types of coordinates (base
+vs composed) is work in progress.
 
-Note: this part is different from what Cube Explorer does. Overall I think it is
-conceptually easier, although in practice it was still hard to implement.
-If anything it is more generalizable and one can use it to build any coordinate
-they might like.
+The two paragraphs below are not true anymore since version 2.1 (June 2022).
+
+~~~There is one caveat: each coordinates also needs an inverse function that takes a~~~
+~~~coordinate value and returns a cube which has that coordinate. This is in general~~~
+~~~more complicated, but luckily the cube does not need to be fully built or consistent.~~~
+~~~This inverse-coordinate is used only in one specific step when generating symmetry~~~
+~~~data, and I don't know if it is possible to avoid it (maybe it is). It is also used~~~
+~~~when building pruning tables, but in that case it is avoidable.~~~
+
+~~~Note: this part is different from what Cube Explorer does. Overall I think it is~~~
+~~~conceptually easier, although in practice it was still hard to implement.~~~
+~~~If anything it is more generalizable and one can use it to build any coordinate~~~
+~~~they might like.~~~
 
 ### Solving
 
