@@ -172,6 +172,7 @@ coordinate
 	CoordMover                move;
 	CoordTransformer          transform;
 	SymData *                 sd;
+	TransFinder               tfind; /* TODO: should be easy to remove */
 };
 
 struct

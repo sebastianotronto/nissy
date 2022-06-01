@@ -16,6 +16,11 @@ static uint64_t    move_drud_sym16(Move m, uint64_t ind);
 static uint64_t    move_drudfin_noE_sym16(Move m, uint64_t ind);
 static uint64_t    move_nxopt31(Move m, uint64_t ind);
 
+static int         tfind_from_mask(uint64_t mask, Trans *ret);
+static int         tfind_drud_sym16(uint64_t ind, Trans *ret);
+static int         tfind_drudfin_noE_sym16(uint64_t ind, Trans *ret);
+static int         tfind_nxopt31(uint64_t ind, Trans *ret);
+
 static uint64_t    transform_cp(Trans t, uint64_t ind);
 static uint64_t    transform_eofbepos(Trans t, uint64_t ind);
 static uint64_t    transform_drud_sym16(Trans t, uint64_t ind);
@@ -98,7 +103,7 @@ coord_drud_sym16 = {
 	.move      = move_drud_sym16,
 	.max       = POW3TO7 * CLASSES_EOFBEPOS_16,
 	.transform = transform_drud_sym16,
-	.sd        = &sd_cp_16,
+	.tfind     = tfind_drud_sym16,
 };
 
 Coordinate
@@ -107,7 +112,7 @@ coord_drudfin_noE_sym16 = {
 	.move      = move_drudfin_noE_sym16,
 	.max       = FACTORIAL8 * CLASSES_CP_16,
 	.transform = transform_drudfin_noE_sym16,
-	.sd        = &sd_eofbepos_16,
+	.tfind     = tfind_drudfin_noE_sym16,
 };
 
 Coordinate
@@ -116,7 +121,7 @@ coord_nxopt31 = {
 	.move      = move_nxopt31,
 	.max       = POW3TO7 * BINOM8ON4 * CLASSES_EOFBEPOS_16,
 	.transform = transform_nxopt31,
-	.sd        = &sd_eofbepos_16,
+	.tfind     = tfind_nxopt31,
 };
 
 /* Functions *****************************************************************/
@@ -146,6 +151,7 @@ index_drudfin_noE_sym16(Cube cube)
 	t = sd_cp_16.transtorep[coord_cp.index(cube)];
 	c = apply_trans(t, cube);
 
+	/* TODO: add transform to coord_epud to make this faster */
 	return index_cp_sym16(c) * FACTORIAL8 + coord_epud.index(c);
 }
 
@@ -258,7 +264,7 @@ transform_drudfin_noE_sym16(Trans t, uint64_t ind)
 {
 	uint64_t cp, epud;
 
-	cp = ind / FACTORIAL8; /* Assume trans fixes eofbepos */
+	cp = ind / FACTORIAL8; /* Assume trans fixes cp */
 	epud = trans_epud[t][ind % FACTORIAL8];
 
 	return cp * FACTORIAL8 + epud;
@@ -279,74 +285,42 @@ transform_nxopt31(Trans t, uint64_t ind)
 	return (eofbepos * POW3TO7 + coud) * BINOM8ON4 + cpsep;
 }
 
-/*
 static int
-transfinder_drud_sym16(uint64_t ind, Trans *ret)
+tfind_from_mask(uint64_t mask, Trans *ret)
 {
-	uint64_t i, trueind;
-	int j;
-	static bool initialized = false;
-	static int naux[CLASSES_EOFBEPOS_16];
-	static Trans retaux[CLASSES_EOFBEPOS_16][NTRANS];
+	Trans t;
+	int i = 0;
 
-	if (!initialized) {
-		for (i = 0; i < CLASSES_EOFBEPOS_16; i++)
-			naux[i] = selfsims(&sd_eofbepos_16, i, retaux[i]);
+	for (t = uf; t < NTRANS; t++)
+		if (((uint64_t)1 << t) & mask)
+			ret[i++] = t;
 
-		initialized = true;
-	}
-
-	trueind = ind/POW3TO7;
-	for (j = 0; j < naux[trueind]; j++)
-		ret[j] = retaux[trueind][j];
-	return naux[trueind];
+	return i;
 }
 
 static int
-transfinder_drudfin_noE_sym16(uint64_t ind, Trans *ret)
+tfind_drud_sym16(uint64_t ind, Trans *ret)
 {
-	uint64_t i, trueind;
-	int j;
-	static bool initialized = false;
-	static int naux[CLASSES_CP_16];
-	static Trans retaux[CLASSES_CP_16][NTRANS];
+	uint64_t mask = sd_eofbepos_16.selfsim[ind / POW3TO7];
 
-	if (!initialized) {
-		for (i = 0; i < CLASSES_CP_16; i++)
-			naux[i] = selfsims(&sd_cp_16, i, retaux[i]);
-
-		initialized = true;
-	}
-
-	trueind = ind/FACTORIAL8;
-	for (j = 0; j < naux[trueind]; j++)
-		ret[j] = retaux[trueind][j];
-	return naux[trueind];
+	return tfind_from_mask(mask, ret);
 }
 
 static int
-transfinder_nxopt31(uint64_t ind, Trans *ret)
+tfind_drudfin_noE_sym16(uint64_t ind, Trans *ret)
 {
-	uint64_t i, trueind;
-	int j;
-	static bool initialized = false;
-	static int naux[CLASSES_EOFBEPOS_16];
-	static Trans retaux[CLASSES_EOFBEPOS_16][NTRANS];
+	uint64_t mask = sd_cp_16.selfsim[ind / FACTORIAL8];
 
-	if (!initialized) {
-		for (i = 0; i < CLASSES_EOFBEPOS_16; i++)
-			naux[i] = selfsims(&sd_eofbepos_16, i, retaux[i]);
-
-		initialized = true;
-	}
-
-	trueind = ind/(BINOM8ON4*POW3TO7);
-	for (j = 0; j < naux[trueind]; j++)
-		ret[j] = retaux[trueind][j];
-	return naux[trueind];
+	return tfind_from_mask(mask, ret);
 }
 
-*/
+static int
+tfind_nxopt31(uint64_t ind, Trans *ret)
+{
+	uint64_t mask = sd_eofbepos_16.selfsim[ind / (POW3TO7 * BINOM8ON4)];
+
+	return tfind_from_mask(mask, ret);
+}
 
 /* Other functions ***********************************************************/
 
@@ -390,17 +364,17 @@ gensym(SymData *sd)
 	for (i = 0; i < sd->coord->max; i++) {
 		if (sd->class[i] == sd->coord->max + 1) {
 			sd->unsym[nreps] = i;
-			sd->selfsim[nreps] = 0;
+			sd->transtorep[i] = uf;
+			sd->selfsim[nreps] = (uint64_t)0;
 			for (j = 0; j < sd->ntrans; j++) {
 				t = sd->trans[j];
 				in = sd->transform(t, i);
 				sd->class[in] = nreps;
-				if (in == i) {
-					sd->selfsim[nreps] |= (1 << t);
-					sd->transtorep[in] = uf;
-				} else {
+				if (in == i)
+					sd->selfsim[nreps] |=
+					    ((uint64_t)1 << t);
+				else
 					sd->transtorep[in] = inverse_trans(t);
-				}
 			}
 			nreps++;
 		}
@@ -497,24 +471,25 @@ write_symdata_file(SymData *sd)
 static void
 init_symc_moves()
 {
-	uint64_t i, ii;
+	uint64_t i, ii, coo;
 	Move j;
 
 	for (i = 0; i < CLASSES_CP_16; i++) {
 		ii = sd_cp_16.unsym[i];
 		for (j = 0; j < NMOVES; j++) {
-			move_cp_16[j][i] = sd_cp_16.coord->move(j, ii);
-			ttrep_move_cp_16[j][i] = sd_cp_16.transtorep[ii];
+			coo = sd_cp_16.coord->move(j, ii);
+			move_cp_16[j][i] = sd_cp_16.class[coo];
+			ttrep_move_cp_16[j][i] = sd_cp_16.transtorep[coo];
 		}
 	}
 
 	for (i = 0; i < CLASSES_EOFBEPOS_16; i++) {
 		ii = sd_eofbepos_16.unsym[i];
 		for (j = 0; j < NMOVES; j++) {
-			move_eofbepos_16[j][i] =
-			    sd_eofbepos_16.coord->move(j, ii);
+			coo = sd_eofbepos_16.coord->move(j, ii);
+			move_eofbepos_16[j][i] = sd_eofbepos_16.class[coo];
 			ttrep_move_eofbepos_16[j][i] =
-			    sd_eofbepos_16.transtorep[ii];
+			    sd_eofbepos_16.transtorep[coo];
 		}
 	}
 }
@@ -535,15 +510,14 @@ init_symc_trans()
 			t = trans_group_udfix[j];
 
 			arr = new_cubearray((Cube){0}, pf_edges);
-			int_to_sum_zero_array(i/BINOM12ON4, 2, 12, arr->eofb);
-			epos_to_compatible_ep((i%BINOM12ON4)*24, arr->ep, epe);
+			int_to_sum_zero_array(i % POW2TO11, 2, 12, arr->eofb);
+			epos_to_compatible_ep((i / POW2TO11)*24, arr->ep, epe);
 			fix_eorleoud(arr);
 			c = arrays_to_cube(arr, pf_edges);
 			free_cubearray(arr, pf_edges);
 
 			c = apply_trans(t, c);
-			trans_eofbepos[t][i] =
-			    c.eofb * BINOM12ON4 + (c.epose / 24);
+			trans_eofbepos[t][i] = (c.epose/24)*POW2TO11 + c.eofb;
 		}
 	}
 
@@ -565,7 +539,7 @@ init_symc_trans()
 		cp = cpud_separate_ant[i];
 		for (j = 0; j < 16; j++) {
 			t = trans_group_udfix[j];
-			trans_cpud_separate[j][i] =
+			trans_cpud_separate[t][i] =
 			    cpud_separate_ind[cp_ttable[t][cp]];
 		}
 	}

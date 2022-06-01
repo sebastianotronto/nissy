@@ -280,7 +280,7 @@ move_eofbepos(Move m, uint64_t ind)
 	a = epose_mtable[m][(ind / POW2TO11)*24];
 	b = eofb_mtable[m][ind % POW2TO11];
 
-	return a/24 + b;
+	return (a/24) * POW2TO11 + b;
 }
 
 static uint64_t

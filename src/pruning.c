@@ -258,22 +258,20 @@ genptable_compress(PruneData *pd)
 static void
 genptable_fixnasty(PruneData *pd, int d)
 {
-	uint64_t i, ii, mask;
-	Trans t;
+	uint64_t i, ii;
+	int j, n;
+	Trans t, aux[NTRANS];
 
-	if (pd->coord->sd == NULL)
+	if (pd->coord->tfind == NULL)
 		return;
 
 	for (i = 0; i < pd->coord->max; i++) {
 		if (ptableval_index(pd, i) == d) {
-			mask = pd->coord->sd->selfsim[i];
-			if (mask == (1 << uf))
+			if ((n = pd->coord->tfind(i, aux)) == 1)
 				continue;
 
-			for (t = 0; t < NTRANS; t++) {
-				if (!((1 << t) & mask))
-					continue;
-
+			for (j = 0; j < n; j++) {
+				t = aux[j];
 				ii = pd->coord->transform(t, i);
 				if (ptableval_index(pd, ii) > d) {
 					ptable_update_index(pd, ii, d);

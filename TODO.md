@@ -5,6 +5,7 @@ It's more of a personal reminder than anything else.
 
 ## For version 2.1
 ### Moving coordinates
+* memorize some tables from symcoord in files
 * general cleanup
 ### Changes to Step and Solve
 * add a list of "helper" coordinates to every step
