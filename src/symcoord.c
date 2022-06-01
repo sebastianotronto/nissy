@@ -226,8 +226,8 @@ move_nxopt31(Move m, uint64_t ind)
 	coud = (ind / BINOM8ON4) % POW3TO7;
 	cpsep = ind % BINOM8ON4;
 
-	eofbepos = move_eofbepos_16[m][eofbepos];
 	ttr = ttrep_move_eofbepos_16[m][eofbepos];
+	eofbepos = move_eofbepos_16[m][eofbepos];
 	coud = coud_mtable[m][coud];
 	coud = co_ttable[ttr][coud]; /* Source is always coud */
 	cpsep = coord_cpud_separate.move(m, cpsep);
