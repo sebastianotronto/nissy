@@ -6,9 +6,10 @@
 static int         findchunk(PruneData *pd, int nchunks, uint64_t i);
 static void        genptable_bfs(PruneData *pd, int d, int nt, int nc);
 static void        genptable_compress(PruneData *pd);
-static void        genptable_fixnasty(PruneData *pd, int d);
+static void        genptable_fixnasty(PruneData *pd, int d, int nthreads);
 static void        genptable_setbase(PruneData *pd);
 static void *      instance_bfs(void *arg);
+static void *      instance_fixnasty(void *arg);
 static void        ptable_update(PruneData *pd, Cube cube, int m);
 static void        ptable_update_index(PruneData *pd, uint64_t ind, int m);
 static int         ptableval_index(PruneData *pd, uint64_t ind);
@@ -171,7 +172,7 @@ genptable(PruneData *pd, int nthreads)
 	ptable_update(pd, (Cube){0}, 0);
 	pd->n = 1;
 	oldn = 0;
-	genptable_fixnasty(pd, 0);
+	genptable_fixnasty(pd, 0, nthreads);
 	fprintf(stderr, "Depth %d done, generated %"
 		PRIu64 "\t(%" PRIu64 "/%" PRIu64 ")\n",
 		0, pd->n - oldn, pd->n, pd->coord->max);
@@ -179,7 +180,7 @@ genptable(PruneData *pd, int nthreads)
 	pd->count[0] = pd->n;
 	for (d = 0; d < 15 && pd->n < pd->coord->max; d++) {
 		genptable_bfs(pd, d, nthreads, nchunks);
-		genptable_fixnasty(pd, d+1);
+		genptable_fixnasty(pd, d+1, nthreads);
 		fprintf(stderr, "Depth %d done, generated %"
 			PRIu64 "\t(%" PRIu64 "/%" PRIu64 ")\n",
 			d+1, pd->n - oldn, pd->n, pd->coord->max);
@@ -256,30 +257,31 @@ genptable_compress(PruneData *pd)
 }
 
 static void
-genptable_fixnasty(PruneData *pd, int d)
+genptable_fixnasty(PruneData *pd, int d, int nthreads)
 {
-	uint64_t i, ii;
-	int j, n;
-	Trans t, aux[NTRANS];
+	int i;
+	pthread_t t[nthreads];
+	ThreadDataGenpt td[nthreads];
+	pthread_mutex_t *upmtx;
 
 	if (pd->coord->tfind == NULL)
 		return;
 
-	for (i = 0; i < pd->coord->max; i++) {
-		if (ptableval_index(pd, i) == d) {
-			if ((n = pd->coord->tfind(i, aux)) == 1)
-				continue;
-
-			for (j = 0; j < n; j++) {
-				t = aux[j];
-				ii = pd->coord->transform(t, i);
-				if (ptableval_index(pd, ii) > d) {
-					ptable_update_index(pd, ii, d);
-					pd->n++;
-				}
-			}
-		}
+	upmtx = malloc(sizeof(pthread_mutex_t));
+	pthread_mutex_init(upmtx, NULL);
+	for (i = 0; i < nthreads; i++) {
+		td[i].thid     = i;
+		td[i].nthreads = nthreads;
+		td[i].pd       = pd;
+		td[i].d        = d;
+		td[i].upmutex  = upmtx;
+		pthread_create(&t[i], NULL, instance_fixnasty, &td[i]);
 	}
+
+	for (i = 0; i < nthreads; i++)
+		pthread_join(t[i], NULL);
+
+	free(upmtx);
 }
 
 static void
@@ -335,6 +337,51 @@ instance_bfs(void *arg)
 			}
 		}
 	}
+
+	pthread_mutex_lock(td->upmutex);
+	td->pd->n += updated;
+	pthread_mutex_unlock(td->upmutex);
+
+	return NULL;
+}
+
+static void *
+instance_fixnasty(void *arg)
+{
+	ThreadDataGenpt *td;
+	uint64_t i, ii, nb, blocksize, rmin, rmax, updated;
+	int j, n;
+	Trans t, aux[NTRANS];
+
+	td = (ThreadDataGenpt *)arg;
+	nb = td->pd->coord->max / td->pd->coord->base->max;
+	blocksize = (uint64_t)((nb / td->nthreads) * td->pd->coord->base->max);
+	rmin = ((uint64_t)td->thid) * blocksize;
+	rmax = td->thid == td->nthreads - 1 ?
+	       td->pd->coord->max :
+	       ((uint64_t)td->thid + 1) * blocksize;
+
+	updated = 0;
+	for (i = rmin; i < rmax; i++) {
+		if (ptableval_index(td->pd, i) == td->d) {
+			if ((n = td->pd->coord->tfind(i, aux)) == 1)
+				continue;
+
+			for (j = 0; j < n; j++) {
+				if ((t = aux[j]) == uf)
+					continue;
+				ii = td->pd->coord->transform(t, i);
+				if (ii < rmin || ii >= rmax)
+					fprintf(stderr,
+					    "Error: transformed out of bound!\n");
+				if (ptableval_index(td->pd, ii) > td->d) {
+					ptable_update_index(td->pd, ii, td->d);
+					updated++;
+				}
+			}
+		}
+	}
+
 	pthread_mutex_lock(td->upmutex);
 	td->pd->n += updated;
 	pthread_mutex_unlock(td->upmutex);

@@ -106,6 +106,7 @@ coord_drud_sym16 = {
 	.index     = index_drud_sym16,
 	.move      = move_drud_sym16,
 	.max       = POW3TO7 * CLASSES_EOFBEPOS_16,
+	.base      = &coord_eofbepos_sym16,
 	.transform = transform_drud_sym16,
 	.tfind     = tfind_drud_sym16,
 };
@@ -115,6 +116,7 @@ coord_drudfin_noE_sym16 = {
 	.index     = index_drudfin_noE_sym16,
 	.move      = move_drudfin_noE_sym16,
 	.max       = FACTORIAL8 * CLASSES_CP_16,
+	.base      = &coord_cp_sym16,
 	.transform = transform_drudfin_noE_sym16,
 	.tfind     = tfind_drudfin_noE_sym16,
 };
@@ -124,6 +126,7 @@ coord_nxopt31 = {
 	.index     = index_nxopt31,
 	.move      = move_nxopt31,
 	.max       = POW3TO7 * BINOM8ON4 * CLASSES_EOFBEPOS_16,
+	.base      = &coord_eofbepos_sym16,
 	.transform = transform_nxopt31,
 	.tfind     = tfind_nxopt31,
 };

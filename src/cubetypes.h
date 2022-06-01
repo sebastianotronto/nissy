@@ -173,6 +173,7 @@ coordinate
 	CoordTransformer          transform;
 	SymData *                 sd;
 	TransFinder               tfind; /* TODO: should be easy to remove */
+	Coordinate *              base; /* TODO: part of refactor */
 };
 
 struct
