@@ -81,10 +81,10 @@ is picked to maximize the sum frequency of the values `1,2,3`.
 In order to generate the pruning tables, it is necessary to be able to move
 a transform a coordinate; it is possible to do so without passing through a
 complete cube representations, in a way similar to what Cube Explorer does.
+This used to be different before version 2.1 (June 2022).
+
 More documentation on this and on the different types of coordinates (base
 vs composed) is work in progress.
-
-The two paragraphs below are not true anymore since version 2.1 (June 2022).
 
 ### Solving
 
