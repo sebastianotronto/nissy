@@ -364,7 +364,7 @@ move_cphtr(Move m, uint64_t ind)
 		for (ui = 0; ui < BINOM8ON4*6; ui++)
 			for (j = U; j < NMOVES; j++)
 				aux[j][ui] =
-				    cp_mtable[j][cphtr_right_rep[ind]];
+				    cp_mtable[j][cphtr_right_rep[ui]];
 
 		initialized = true;
 	}
@@ -411,7 +411,7 @@ move_drud_eofb(Move m, uint64_t ind)
 	uint64_t a, b;
 
 	a = coud_mtable[m][ind % POW3TO7];
-	b = epose_mtable[m][ind / POW3TO7];
+	b = epose_mtable[m][(ind / POW3TO7) * 24] / 24;
 
 	return a + b * POW3TO7;
 }
