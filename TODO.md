@@ -3,30 +3,17 @@
 This is a list of things that I would like to add or change at some point.
 It's more of a personal reminder than anything else.
 
-## For version 2.1
-### Moving coordinates
-* general cleanup
-### Changes to Step and Solve
-* add a list of "helper" coordinates to every step
-* Probably nicer: instead of passing a cube pass a structure "cube description"
-  which can contain coordinates and one or more cubes.
-  This can also be used to avoid using index_epud too much in drfin
-  (it is slow because it goes through cubearray).
-* add a step->move(Cube) function, which may apply moves to the cube or just to
-  the coordinates
-* optimal solver: move the coordinates for the 3 orientations, but also the
-  cube so we can check the inverse
+## Version 2.0.2
+* General idea: only improvement on generating pruning tables, no new
+  commands or anything else
 ### Tables management
 * Check files in tables directory, add command to remove old / extraneous files
 * Add checksum to check that tables are generated / downloaded correctly
 ### Documentation
-* Fix README.md with new coordinate system
 * Write an examples.md file
 * More screenshots!
-### More
-* Anything quick and easy from the sections below
 
-## Refactor
+## For version 2.1
 ### Coordinates
 * Text (README.md) description of coordinate system with 3 (or 4) types of
   coordinates: basic (+ fundamental), sym, composite (consisting of at most
@@ -40,10 +27,22 @@ It's more of a personal reminder than anything else.
 * For each coordinate, manually disallow "bad" moves, or just ignore the error
   (probably better to check: low performance cost, detect problems that I might
   be overlooking)
+### Changes to Step and Solve
+* Revolutionize: do everything based on coordinates, replace Cube with
+  CubeArray (or just 4 values, so consistency check is super easy);
+  remove tables for fast inverse.
+* No need for most of step data: just solve a list of coordinates
+  (+ associated pruning tables)
+* For steps that accept multiple solved states (e.g. drany):
+  just find a way to "merge" multiple steps as alternatives; or
+  offer multiple lists of coordinates as alternatives
+* De Bondt's trick: list of 3 coords (as indexes in coord array of the step)
+  that if evaluated to the same pruning value allow for de bondt's trick.
+* NISS: compute inverse based on current use moves just before switching,
+  using CubeArray; it is not too slow.
 ### Loading at startup vs dynamically
 * Consider moving more things to the initial loading phase (i.e. remove
   many of the "initialized" parts)
-
 
 ## Commands
 

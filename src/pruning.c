@@ -355,7 +355,7 @@ instance_fixnasty(void *arg)
 
 	td = (ThreadDataGenpt *)arg;
 	nb = td->pd->coord->max / td->pd->coord->base->max;
-	blocksize = (uint64_t)((nb / td->nthreads) * td->pd->coord->base->max);
+	blocksize = (td->pd->coord->base->max / td->nthreads) * nb;
 	rmin = ((uint64_t)td->thid) * blocksize;
 	rmax = td->thid == td->nthreads - 1 ?
 	       td->pd->coord->max :
@@ -373,7 +373,8 @@ instance_fixnasty(void *arg)
 				ii = td->pd->coord->transform(t, i);
 				if (ii < rmin || ii >= rmax)
 					fprintf(stderr,
-					    "Error: transformed out of bound!\n");
+					    "Error: transformed out of bound! "
+					    "%lu %lu %lu\n", ii, rmin, rmax);
 				if (ptableval_index(td->pd, ii) > td->d) {
 					ptable_update_index(td->pd, ii, td->d);
 					updated++;
