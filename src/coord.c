@@ -363,8 +363,8 @@ move_cphtr(Move m, uint64_t ind)
 	if (!initialized) {
 		for (ui = 0; ui < BINOM8ON4*6; ui++)
 			for (j = U; j < NMOVES; j++)
-				aux[j][ui] =
-				    cp_mtable[j][cphtr_right_rep[ui]];
+				aux[j][ui] = index_cphtr(
+				    cp_mtable[j][cphtr_right_rep[ui]]);
 
 		initialized = true;
 	}
