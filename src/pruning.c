@@ -371,10 +371,6 @@ instance_fixnasty(void *arg)
 				if ((t = aux[j]) == uf)
 					continue;
 				ii = td->pd->coord->transform(t, i);
-				if (ii < rmin || ii >= rmax)
-					fprintf(stderr,
-					    "Error: transformed out of bound! "
-					    "%lu %lu %lu\n", ii, rmin, rmax);
 				if (ptableval_index(td->pd, ii) > td->d) {
 					ptable_update_index(td->pd, ii, td->d);
 					updated++;

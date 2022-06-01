@@ -4,6 +4,8 @@ This is a list of things that I would like to add or change at some point.
 It's more of a personal reminder than anything else.
 
 ## Version 2.0.2
+### Website
+* now gen takes 40 minutes
 ### Changelog
 * Only improved table generation speed, but this required huge changes in
   coordinates.c and symcoord.c (+ some minor changes in other parts).
@@ -44,6 +46,7 @@ It's more of a personal reminder than anything else.
 ### Tables management
 * Check files in tables directory, add command to remove old / extraneous files
 * Add checksum to check that tables are generated / downloaded correctly
+* Edit download page update instructions to tell what to do when changing tables
 
 ## Commands
 

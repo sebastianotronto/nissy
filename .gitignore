@@ -1,1 +1,4 @@
 nissy
+nissy-*
+doc/*.html
+doc/*.pdf

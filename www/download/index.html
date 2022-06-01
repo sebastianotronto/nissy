@@ -34,8 +34,8 @@
 </tr>
 <tr>
 	<td><strong>Latest version</strong></td>
-	<td><a href="/nissy-2.0.1.tar.gz">nissy-2.0.1.tar.gz (63Kb)</a></td>
-	<td><a href="/nissy-2.0.1.exe">nissy-2.0.1.exe (770Kb)</a></td>
+	<td><a href="/nissy-2.0.2.tar.gz">nissy-2.0.2.tar.gz (67Kb)</a></td>
+	<td><a href="/nissy-2.0.2.exe">nissy-2.0.2.exe (780Kb)</a></td>
 </tr>
 </table>
 
@@ -63,12 +63,15 @@ the git repository.
 <h3>System requirements</h3>
 
 <p>
-A full installation of nissy requires about 3Gb of space,
+A full installation of nissy requires about 3.1Gb of space,
 of which 2.3Gb are occupied by the huge pruning table for fast optimal solving,
 and running it requires the same amount of RAM.
 One can choose to never use this function and not to install the relative
 pruning table. There is an alternative (slower)
 optimal solving function that uses about 500Mb of RAM.
+
+When generating the pruning tables automatically (see the section Tables below),
+at least 5.3Gb or RAM are required.
 </p>
 
 <h3>Windows</h3>
@@ -103,55 +106,35 @@ Then follow the instructions below to install the pruning tables.
 
 <h3>Tables</h3>
 
-<table class="dltable">
-<tr>
-	<td></td> <td><strong>Zip file</strong></td>
-</tr>
-<tr>
-	<td><strong>Tables</strong></td>
-	<td><a href="/nissy-tables-2.0.zip">nissy-tables.2.0.zip (1.6Gb)</a></td>
-</tr>
-</table>
 <p>
-<strong>Note:</strong> the version 2.0 at the end of the file name is
-only indicative. Later versions will use the same tables, unless
-otherwise specified.
+Once you have installed nissy, run
+</p>
+
+<pre><code>nissy gen</code></pre>
+
+<p>
+to generate all the tables that Nissy will ever need.
+Running this command requires around 5.3Gb of RAM, and it can take some time
+(about 40 minutes on my fairly old but decent laptop, with 8 CPU threads).
 </p>
 
 <p>
-Nissy needs certain large tables to work. These tables are by default
-generated the first time they are needed (e.g the first time you ask to solve a
-certain step) and then saved to a file. Whenever these tables are needed again,
-nissy simply loads the corresponding file from the hard disk.
+Some unnecessary technical detail: by default this command is going to use
+at most 64 threads. If you want you can choose to use more threads (if your CPU
+is very powerful) or fewer threads (if you for example want to run this command
+in the background while you do other stuff) with the <code>-t</code> option, for
+example <code>nissy gen -t 1</code>.
 </p>
 
 <p>
-The very large table for optimal solving can take some time to generate
-(about 1.5 hours on my fairly old but decent laptop, using 8 CPU threads).
-In order to generate it you need at least 5Gb of RAM.
-All other tables are much faster.
-</p>
-
-<p>
-You can ask nissy to generate all the tables it will ever need with the gen
-command. It is recommended to use more than one thread, if your CPU has them.
-For example, you can run:
-</p>
-
-<pre><code>nissy gen -t 8</code></pre>
-
-<p>
-to generate all tables using 8 threads. You can change 8 to any number
-your CPU supports, up to 64.
-</p>
-
-<p>
-Alternatively, you can simply download all the tables and copy them into the
-correct folder (see manual page, <code>ENVIRONMENT</code> section). On UNIX
-operating systems this folder is either <code>.nissy/tables</code> in the
-user's home directory or <code>$XDG_DATA_HOME/nissy/tables</code> if the
-XDG variable is configured. On Windows it is the same directory as the
-<code>nissy.exe</code> executable file.
+Alternatively, you can
+<a href="/nissy-tables-2.0.2.zip">download all the tables (1.7Gb)</a> and
+copy them into the correct folder (see manual page, <code>ENVIRONMENT</code>
+section). On UNIX operating systems this folder is either
+<code>.nissy/tables</code> in the user's home directory or
+<code>$XDG_DATA_HOME/nissy/tables</code> if the XDG variable is configured.
+On Windows it is the same directory as the <code>nissy.exe</code> executable
+file.
 </p>
 
 <h2 id="Upgrade">Upgrading</h2>
@@ -169,7 +152,8 @@ a new folder and run <code>make</code> and <code>make install</code> again.
 </li>
 </ul>
 <p>
-In all cases the table files do not need to be upgraded.
+Between each version new table files might have been added, or old ones
+may be not used anymore. Nissy will deal with this automatically.
 </p>
 
 <h2>Version history</h2>
@@ -181,6 +165,11 @@ In all cases the table files do not need to be upgraded.
 	<td><strong>Version</strong></td>
 	<td><strong>Date</strong></td>
 	<td><strong>Comment</strong></td>
+</tr>
+<tr>
+	<td><a href="/nissy-2.0.2.tar.gz">2.0.2</a></td>
+	<td>2022-06-01</td>
+	<td>Improved table generation speed</td>
 </tr>
 <tr>
 	<td><a href="/nissy-2.0.1.tar.gz">2.0.1</a></td>
