@@ -611,7 +611,7 @@ help_exec(CommandArgs *args)
 		       " system (such as Linux or MacOS) or in pdf and html"
 		       " format in the docs folder.\n"
 		       "Nissy is available for free at "
-		       "https://github.com/sebastianotronto/nissy\n"
+		       "https://nissy.tronto.net\n"
 		      );
 	} else {
 		printf("Command %s: %s\nusage: %s\n", args->command->name,
