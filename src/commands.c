@@ -545,8 +545,9 @@ steps_exec(CommandArgs *args)
 {
 	int i;
 
-	for (i = 0; steps[i] != NULL; i++)
+	for (i = 0; steps[i] != NULL; i++) {
 		printf("%-15s %s\n", steps[i]->shortname, steps[i]->name);
+    }
 }
 
 static void

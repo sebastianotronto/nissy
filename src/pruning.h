@@ -6,6 +6,7 @@
 extern PruneData        pd_eofb_HTM;
 extern PruneData        pd_coud_HTM;
 extern PruneData        pd_corners_HTM;
+extern PruneData        pd_corners_drud;
 extern PruneData        pd_cornershtr_HTM;
 extern PruneData        pd_drud_sym16_HTM;
 extern PruneData        pd_drud_eofb;

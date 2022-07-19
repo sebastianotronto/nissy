@@ -45,6 +45,13 @@ pd_corners_HTM = {
 };
 
 PruneData
+pd_corners_drud = {
+	.filename = "pt_corners_drud",
+	.coord    = &coord_corners,
+	.moveset  = &moveset_drud,
+};
+
+PruneData
 pd_drud_sym16_HTM = {
 	.filename = "pt_drud_sym16_HTM",
 	.coord    = &coord_drud_sym16,
@@ -446,10 +453,10 @@ ptableval_index(PruneData *pd, uint64_t ind)
 	entry_group_t m;
 
 	if (!pd->generated) {
-		fprintf(stderr, "Warning: request pruning table value"
-			" for uninitialized table %s.\n It's fine, but it"
-			" should not happen. Please report bug.\n",
-			pd->filename);
+//		fprintf(stderr, "Warning: request pruning table value"
+//			" for uninitialized table %s.\n It's fine, but it"
+//			" should not happen. Please report bug.\n",
+//			pd->filename);
 		genptable(pd, 1); /* TODO: set default or remove this case */
 	}
 

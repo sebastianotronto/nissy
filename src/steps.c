@@ -447,6 +447,24 @@ corners_HTM = {
 };
 
 Step
+corners_DRUD = {
+	.shortname = "corners-drud",
+	.name      = "Solve corners (DR U/D moveset)",
+
+	.final     = true,
+	.is_done   = check_corners_HTM,
+	.estimate  = estimate_corners_HTM,
+	.ready     = NULL,
+	.is_valid  = always_valid,
+	.moveset   = &moveset_drud,
+
+	.pre_trans = uf,
+
+	.tables    = {&pd_corners_drud},
+	.ntables   = 1,
+};
+
+Step
 corners_URF = {
 	.shortname = "corners-URF",
 	.name      = "Solve corners (URF moveset)",
@@ -962,6 +980,7 @@ Step *steps[] = {
 	&cornershtr_URF,
 	&corners_HTM,
 	&corners_URF,
+	&corners_DRUD,
 
 	NULL
 };

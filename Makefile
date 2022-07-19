@@ -27,7 +27,7 @@ debug:
 
 clean:
 	rm -rf nissy nissy*.exe nissy*.tar.gz
-	rm doc/nissy.html doc/nissy.pdf
+#	rm doc/nissy.html doc/nissy.pdf
 
 dist: clean nissy.exe
 	mkdir -p nissy-${VERSION}
