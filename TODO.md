@@ -3,50 +3,48 @@
 This is a list of things that I would like to add or change at some point.
 It's more of a personal reminder than anything else.
 
-## Version 2.0.2
-### Website
-* now gen takes 40 minutes
-### Changelog
-* Only improved table generation speed, but this required huge changes in
-  coordinates.c and symcoord.c (+ some minor changes in other parts).
-
 ## For version 2.1
-### Coordinates
-* Text (README.md) description of coordinate system with 3 (or 4) types of
-  coordinates: basic (+ fundamental), sym, composite (consisting of at most
-  one sym + one or more basic)
-* Use this to restructure the coordinate part; maybe fundamental coordinates
-  do not need to exist???
-* Add also "transform" for every coordinate. For example, for EO and similar
-  only allow transformations that fix the EO axis.
-* Also: "basic" symcoord do not allow trans, composite coordinates assume
-  the transformation fixes the basic sumcoord
-* For each coordinate, manually disallow "bad" moves, or just ignore the error
-  (probably better to check: low performance cost, detect problems that I might
-  be overlooking)
+### Slow: it is slower than the old nissy 2.0.2 :(
+* nxopt's trick (switching to reduce branching) actually saves about 50%!
+* Another factor is estimating *while* moving (i.e. do not move all
+  coordinates if the first one already gives a high value!)
+* simplify solve, remove everything that is used only by optimal solvers
+* Good compromise: each stepalt offers one of two alternatives: either solve
+  by simply using pruning tables and moving coordinates, or using a custom
+  estimator and moving a cube (or fast_cube) and computing coordinates
+  in the estimator
+* is there really no way to use inverse branching trick with current system?
+* new file optimal.c with the old solve logic; try first with the simple
+  cube implementation and the new indexers, if it is still slow change
+  to fast_cube (intermediate nissy v2.0.2 implementation)
 ### Changes to Step and Solve
-* Revolutionize: do everything based on coordinates, replace Cube with
-  CubeArray (or just 4 values, so consistency check is super easy);
-  remove tables for fast inverse.
-* No need for most of step data: just solve a list of coordinates
-  (+ associated pruning tables)
-* For steps that accept multiple solved states (e.g. drany):
-  just find a way to "merge" multiple steps as alternatives; or
-  offer multiple lists of coordinates as alternatives
-* De Bondt's trick: list of 3 coords (as indexes in coord array of the step)
-  that if evaluated to the same pruning value allow for de bondt's trick.
-* NISS: compute inverse based on current use moves just before switching,
-  using CubeArray; it is not too slow.
-### Loading at startup vs dynamically
-* Consider moving more things to the initial loading phase (i.e. remove
-  many of the "initialized" parts)
+* remove cube from dfsarg? (i still need to save the scramble somewhere,
+  but I really only use it in dfs_niss)
+* coord.c: all old coordinates (WIP...)
+* steps.c: checkers (use coordinates), all stepalt and steps (WIP...)
+* commands gen and freemem
+* commands.c: twophase, ...?
+* Coordinate should have a moveset field? No, at worst there are some garbage 
+  values in mtable, but no risk for errors
+### Rotate, not transform, before solving
+* solve should re-orient first if needed and not just give up if centers are off
 ### Documentation
+* Document how coordinates and pruning tables work now
 * Write an examples.md file
 * More screenshots!
 ### Tables management
-* Check files in tables directory, add command to remove old / extraneous files
+* Check files in tables directory automatically remove old / extraneous files
 * Add checksum to check that tables are generated / downloaded correctly
-* Edit download page update instructions to tell what to do when changing tables
+### Conditional compiling
+* Option to avoid large tables at compile time
+* option to avoid multithreading (write a simpler solve for t=1, and also
+  check if found enough solutions before checking pruning values)
+### Technical
+* generic option parser
+* testing? Maybe just hardcode some examples generated with old nissy
+### Commands
+* Easy: add option -I (inverse) and -L (linear, like inverse + normal)
+  to do only linear NISS
 
 ## Commands
 
@@ -62,16 +60,21 @@ including e.g. solutions that were not shown because -c)
 * 5-side solve (for robots)
 * Block-building steps (cross, roux blocks, ...)
 * Other common steps (LSE, ...)
+* Larger table for drudfin (include epe)? About 1Gb uncompressed,
+  500Mb compressed (fallback to noE), 250 compressed + parity trick
+  (is it doable?)
 
 ### Improvements to currently implemented commands
-* solve should re-orient first if needed and not just give up if centers are off
+* solve multidfs: do multithread by step, not by alternative (this way
+  if there are multiple alternatives it can make use of more threads)
 * solve should try up to a small bound without loading the large pruning table
+  (maybe this is not necessary if loading the table is fast enough)
 * silent batch mode without >>>
 
 ### New features
+* EO analysis (and also DR and HTR analysis): group similar EOs together
+  and such (suggested by Jay)
 * configurability: add an `alias` command, run config file at startup
-* configure max ram to be used (via config file and/or command line option)
-* transform alg, rufify etc...
 * command notation to list available moves
 * make multi-step solve much more general and create command
 * input directly cube status instead of moves
@@ -105,7 +108,35 @@ including e.g. solutions that were not shown because -c)
 
 ### Cleanup
 * sort again functions alphabetically in their files
+* change some function and variable names to make everything consistent
 * more stuff to load at start (or when suitable command is called) rather
   than when called directly, to avoid nasty problems with threading
 * parse command args: one function per arg type, then each command has
   a list of options that it accepts (as a string)
+
+### Style
+* do not declare all variables at the beginning of a function
+* remove var names from prototypes
+* various stuff from style(9)
+
+### Random
+Collect random info like this somewhere:
+
+Table pt_nxopt31_HTM
+Base value: 9
+0               1
+1               6
+2              29
+3             164
+4            1433
+5           16772
+6          205033
+7         2513871
+8        30329976
+9       342440769
+10     2815191126
+11     6147967200
+12      524918774
+13           3546
+14              0
+15              0

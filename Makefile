@@ -1,6 +1,6 @@
 # See LICENSE file for copyright and license details.
 
-VERSION = 2.0.2
+VERSION = post-2.0.2
 
 PREFIX = /usr/local
 MANPREFIX = ${PREFIX}/share/man
@@ -26,8 +26,7 @@ debug:
 	${CC} ${DBGFLAGS} -o nissy src/*.c
 
 clean:
-	rm -rf nissy nissy*.exe nissy*.tar.gz
-	rm doc/nissy.html doc/nissy.pdf
+	rm -rf nissy nissy*.exe nissy*.tar.gz doc/nissy.html doc/nissy.pdf
 
 dist: clean nissy.exe
 	mkdir -p nissy-${VERSION}

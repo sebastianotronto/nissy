@@ -8,12 +8,13 @@
 #include "cubetypes.h"
 #include "utils.h"
 
-extern Moveset          moveset_HTM;
-extern Moveset          moveset_URF;
-extern Moveset          moveset_eofb;
-extern Moveset          moveset_drud;
-extern Moveset          moveset_htr;
-
+bool        allowed_all(Move m);
+bool        allowed_HTM(Move m);
+bool        allowed_URF(Move m);
+bool        allowed_eofb(Move m);
+bool        allowed_drud(Move m);
+bool        allowed_htr(Move m);
+bool        allowed_next_all(Move l2, Move l1, Move m);
 void        append_alg(AlgList *l, Alg *alg);
 void        append_move(Alg *alg, Move m, bool inverse);
 Move        base_move(Move m);
@@ -34,10 +35,71 @@ Alg *       on_inverse(Alg *alg);
 void        print_alg(Alg *alg, bool l);
 void        print_alglist(AlgList *al, bool l);
 void        swapmove(Move *m1, Move *m2);
+char *      trans_string(Trans t); /* Here because similar to move_string, move? */
 Alg *       unniss(Alg *alg);
 
 void        init_moveset(Moveset *ms);
-void        init_all_movesets();
+
+/* Movesets ******************************************************************/
+
+#ifndef ALG_C
+
+extern Moveset moveset_HTM;
+extern Moveset moveset_URF;
+extern Moveset moveset_eofb;
+extern Moveset moveset_drud;
+extern Moveset moveset_htr;
+
+extern Moveset * all_ms[];
+
+#else
+
+Moveset
+moveset_HTM = {
+	.name         = "HTM",
+	.allowed      = allowed_HTM,
+	.allowed_next = allowed_next_all,
+};
+
+Moveset
+moveset_URF = {
+	.name         = "URF",
+	.allowed      = allowed_URF,
+	.allowed_next = allowed_next_all,
+};
+
+Moveset
+moveset_eofb = {
+	.name         = "eofb",
+	.allowed      = allowed_eofb,
+	.allowed_next = allowed_next_all,
+};
+
+Moveset
+moveset_drud = {
+	.name         = "drud",
+	.allowed      = allowed_drud,
+	.allowed_next = allowed_next_all,
+};
+
+Moveset
+moveset_htr = {
+	.name         = "htr",
+	.allowed      = allowed_htr,
+	.allowed_next = allowed_next_all,
+};
+
+Moveset *
+all_ms[] = {
+	&moveset_HTM,
+	&moveset_URF,
+	&moveset_eofb,
+	&moveset_drud,
+	&moveset_htr,
+	NULL
+};
+
+#endif
 
 #endif
 

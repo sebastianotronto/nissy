@@ -8,8 +8,8 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
-extern char *tabledir;
-
 void init_env();
+
+extern char *tabledir;
 
 #endif

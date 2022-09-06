@@ -1,68 +1,18 @@
+#define ALG_C
+
 #include "alg.h"
 
-/* Local functions ***********************************************************/
-
-static bool        allowed_HTM(Move m);
-static bool        allowed_URF(Move m);
-static bool        allowed_eofb(Move m);
-static bool        allowed_drud(Move m);
-static bool        allowed_htr(Move m);
-static bool        allowed_next_HTM(Move l2, Move l1, Move m);
 static int         axis(Move m);
-
 static void        free_alglistnode(AlgListNode *aln);
 static void        realloc_alg(Alg *alg, int n);
 
-/* Movesets ******************************************************************/
-
-Moveset
-moveset_HTM = {
-	.allowed      = allowed_HTM,
-	.allowed_next = allowed_next_HTM,
-};
-
-Moveset
-moveset_URF = {
-	.allowed      = allowed_URF,
-	.allowed_next = allowed_next_HTM,
-};
-
-Moveset
-moveset_eofb = {
-	.allowed      = allowed_eofb,
-	.allowed_next = allowed_next_HTM,
-};
-
-Moveset
-moveset_drud = {
-	.allowed      = allowed_drud,
-	.allowed_next = allowed_next_HTM,
-};
-
-Moveset
-moveset_htr = {
-	.allowed      = allowed_htr,
-	.allowed_next = allowed_next_HTM,
-};
-
-static int nmoveset = 5;
-static Moveset * all_ms[] = {
-	&moveset_HTM,
-	&moveset_URF,
-	&moveset_eofb,
-	&moveset_drud,
-	&moveset_htr,
-};
-
-/* Functions *****************************************************************/
-
-static bool
+bool
 allowed_HTM(Move m)
 {
 	return m >= U && m <= B3;
 }
 
-static bool
+bool
 allowed_URF(Move m)
 {
 	Move b = base_move(m);
@@ -70,7 +20,7 @@ allowed_URF(Move m)
 	return b == U || b == R || b == F;
 }
 
-static bool
+bool
 allowed_eofb(Move m)
 {
 	Move b = base_move(m);
@@ -79,7 +29,7 @@ allowed_eofb(Move m)
 	       ((b == F || b == B) && m == b+1);
 }
 
-static bool
+bool
 allowed_drud(Move m)
 {
 	Move b = base_move(m);
@@ -88,7 +38,7 @@ allowed_drud(Move m)
 	       ((b == R || b == L || b == F || b == B) && m == b + 1);
 }
 
-static bool
+bool
 allowed_htr(Move m)
 {
 	Move b = base_move(m);
@@ -96,8 +46,8 @@ allowed_htr(Move m)
 	return moveset_HTM.allowed(m) && m == b + 1;
 }
 
-static bool
-allowed_next_HTM(Move l2, Move l1, Move m)
+bool
+allowed_next_all(Move l2, Move l1, Move m)
 {
 	bool p, q;
 
@@ -469,6 +419,34 @@ swapmove(Move *m1, Move *m2)
 	*m2 = aux;
 }
 
+char *
+trans_string(Trans t)
+{
+	static char trans_string_aux[NTRANS][20] = {
+		[uf]  = "uf",  [ur]  = "ur", [ub] = "ub", [ul] = "ul",
+		[df]  = "df",  [dr]  = "dr", [db] = "db", [dl] = "dl",
+		[rf]  = "rf",  [rd]  = "rd", [rb] = "rb", [ru] = "ru",
+		[lf]  = "lf",  [ld]  = "ld", [lb] = "lb", [lu] = "lu",
+		[fu]  = "fu",  [fr]  = "fr", [fd] = "fd", [fl] = "fl",
+		[bu]  = "bu",  [br]  = "br", [bd] = "bd", [bl] = "bl",
+
+		[uf_mirror] = "uf*", [ur_mirror] = "ur*",
+		[ub_mirror] = "ub*", [ul_mirror] = "ul*",
+		[df_mirror] = "df*", [dr_mirror] = "dr*",
+		[db_mirror] = "db*", [dl_mirror] = "dl*",
+		[rf_mirror] = "rf*", [rd_mirror] = "rd*",
+		[rb_mirror] = "rb*", [ru_mirror] = "ru*",
+		[lf_mirror] = "lf*", [ld_mirror] = "ld*",
+		[lb_mirror] = "lb*", [lu_mirror] = "lu*",
+		[fu_mirror] = "fu*", [fr_mirror] = "fr*",
+		[fd_mirror] = "fd*", [fl_mirror] = "fl*",
+		[bu_mirror] = "bu*", [br_mirror] = "br*",
+		[bd_mirror] = "bd*", [bl_mirror] = "bl*",
+	};
+
+	return trans_string_aux[t];
+}
+
 Alg *
 unniss(Alg *alg)
 {
@@ -512,13 +490,4 @@ init_moveset(Moveset *ms)
 			}
 		}
 	}
-}
-
-void
-init_all_movesets()
-{
-	int i;
-
-	for (i = 0; i < nmoveset; i++)
-		init_moveset(all_ms[i]);
 }

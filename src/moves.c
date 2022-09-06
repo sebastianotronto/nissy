@@ -1,79 +1,18 @@
+#define MOVES_C
+
 #include "moves.h"
 
 /* Local functions ***********************************************************/
 
-static Cube        apply_move_cubearray(Move m, Cube cube, PieceFilter f);
 static void        cleanup_aux(Alg *alg, Alg *ret, bool inv);
-static bool        read_mtables_file();
-static bool        write_mtables_file();
 
 /* Tables and other data *****************************************************/
 
-/* Every move is translated to a an <U, x, y> alg before filling the
-   transition tables, see init_moves() */
+/* Moves are represented as cubes and applied using compose(). Every move is *
+ * translated to a an <U, x, y> alg before filling the transition tables.    *
+ * See init_moves().                                                         */
 
-static int edge_cycle[NMOVES][12] =
-{
-	[U] = { UR, UF, UL, UB, DF, DL, DB, DR, FR, FL, BL, BR },
-	[x] = { DF, FL, UF, FR, DB, BL, UB, BR, DR, DL, UL, UR },
-	[y] = { UR, UF, UL, UB, DR, DF, DL, DB, BR, FR, FL, BL }
-};
-
-static int corner_cycle[NMOVES][8] =
-{
-	[U] = { UBR, UFR, UFL, UBL, DFR, DFL, DBL, DBR },
-	[x] = { DFR, DFL, UFL, UFR, DBR, DBL, UBL, UBR },
-	[y] = { UBR, UFR, UFL, UBL, DBR, DFR, DFL, DBL }
-};
-
-static int center_cycle[NMOVES][6] =
-{
-	[x] = { F_center, B_center, R_center, L_center, D_center, U_center },
-	[y] = { U_center, D_center, B_center, F_center, R_center, L_center }
-};
-
-static int eofb_flipped[NMOVES][12] = {
-	[x] = { [UF] = 1, [UB] = 1, [DF] = 1, [DB] = 1 },
-	[y] = { [FR] = 1, [FL] = 1, [BL] = 1, [BR] = 1 }
-};
-
-static int eorl_flipped[NMOVES][12] = {
-	[x] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-	[y] = { [FR] = 1, [FL] = 1, [BL] = 1, [BR] = 1 }
-};
-
-static int eoud_flipped[NMOVES][12] = {
-	[U] = { [UF] = 1, [UL] = 1, [UB] = 1, [UR] = 1 },
-	[x] = { [UF] = 1, [UB] = 1, [DF] = 1, [DB] = 1 },
-	[y] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1  }
-};
-
-static int coud_flipped[NMOVES][8] = {
-	[x] = {
-		[UFR] = 2, [UBR] = 1, [UFL] = 1, [UBL] = 2,
-		[DBR] = 2, [DFR] = 1, [DBL] = 1, [DFL] = 2
-	}
-};
-
-static int corl_flipped[NMOVES][8] = {
-	[U] = { [UFR] = 1, [UBR] = 2, [UBL] = 1, [UFL] = 2 },
-	[y] = {
-		[UFR] = 1, [UBR] = 2, [UBL] = 1, [UFL] = 2,
-		[DFR] = 2, [DBR] = 1, [DBL] = 2, [DFL] = 1
-	}
-};
-
-static int cofb_flipped[NMOVES][8] = {
-	[U] = { [UFR] = 2, [UBR] = 1, [UBL] = 2, [UFL] = 1 },
-	[x] = {
-		[UFR] = 1, [UBR] = 2, [UBL] = 1, [UFL] = 2,
-		[DFR] = 2, [DBR] = 1, [DBL] = 2, [DFL] = 1
-	},
-	[y] = {
-		[UFR] = 2, [UBR] = 1, [UBL] = 2, [UFL] = 1,
-		[DFR] = 1, [DBR] = 2, [DBL] = 1, [DFL] = 2
-	}
-};
+static Cube move_array[NMOVES];
 
 static char equiv_alg_string[100][NMOVES] = {
 	[NULLMOVE] = "",
@@ -137,89 +76,34 @@ static char equiv_alg_string[100][NMOVES] = {
 	[z3]  = "  y    x    yyy  "
 };
 
-/* Transition tables, to be loaded up at the beginning */
-int              epose_mtable[NMOVES][FACTORIAL12/FACTORIAL8];
-int              eposs_mtable[NMOVES][FACTORIAL12/FACTORIAL8];
-int              eposm_mtable[NMOVES][FACTORIAL12/FACTORIAL8];
-int              eofb_mtable[NMOVES][POW2TO11];
-int              eorl_mtable[NMOVES][POW2TO11];
-int              eoud_mtable[NMOVES][POW2TO11];
-int              cp_mtable[NMOVES][FACTORIAL8];
-int              coud_mtable[NMOVES][POW3TO7];
-int              cofb_mtable[NMOVES][POW3TO7];
-int              corl_mtable[NMOVES][POW3TO7];
-int              cpos_mtable[NMOVES][FACTORIAL6];
-
-
-/* Local functions implementation ********************************************/
-
-static Cube
-apply_move_cubearray(Move m, Cube cube, PieceFilter f)
-{
-	/*init_moves();*/
-
-	CubeArray m_arr = {
-		edge_cycle[m],
-		eofb_flipped[m],
-		eorl_flipped[m],
-		eoud_flipped[m],
-		corner_cycle[m],
-		coud_flipped[m],
-		corl_flipped[m],
-		cofb_flipped[m],
-		center_cycle[m]
-	};
-
-	return move_via_arrays(&m_arr, cube, f);
-}
 
 /* Public functions **********************************************************/
 
-Cube
-apply_alg_generic(Alg *alg, Cube c, PieceFilter f, bool a)
+void
+apply_alg(Alg *alg, Cube *cube)
 {
-	Cube ret = {0};
+	Cube aux;
 	int i;
+
+	copy_cube(cube, &aux);
+	make_solved(cube);
 
 	for (i = 0; i < alg->len; i++)
 		if (alg->inv[i])
-			ret = a ? apply_move(alg->move[i], ret) :
-			          apply_move_cubearray(alg->move[i], ret, f);
+			apply_move(alg->move[i], cube);
 
-	ret = compose_filtered(c, inverse_cube(ret), f);
+	invert_cube(cube);
+	compose(&aux, cube);
 
 	for (i = 0; i < alg->len; i++)
 		if (!alg->inv[i])
-			ret = a ? apply_move(alg->move[i], ret) :
-			          apply_move_cubearray(alg->move[i], ret, f);
-
-	return ret;
+			apply_move(alg->move[i], cube);
 }
 
-Cube
-apply_alg(Alg *alg, Cube cube)
+void
+apply_move(Move m, Cube *cube)
 {
-	return apply_alg_generic(alg, cube, pf_all, true);
-}
-
-Cube
-apply_move(Move m, Cube cube)
-{
-	/*init_moves();*/
-
-	return (Cube) {
-		.epose = epose_mtable[m][cube.epose],
-		.eposs = eposs_mtable[m][cube.eposs],
-		.eposm = eposm_mtable[m][cube.eposm],
-		.eofb  = eofb_mtable[m][cube.eofb],
-		.eorl  = eorl_mtable[m][cube.eorl],
-		.eoud  = eoud_mtable[m][cube.eoud],
-		.coud  = coud_mtable[m][cube.coud],
-		.cofb  = cofb_mtable[m][cube.cofb],
-		.corl  = corl_mtable[m][cube.corl],
-		.cp    = cp_mtable[m][cube.cp],
-		.cpos  = cpos_mtable[m][cube.cpos]
-	};
+	compose(&move_array[m], cube);
 }
 
 Alg *
@@ -279,31 +163,27 @@ cleanup_aux(Alg *alg, Alg *ret, bool inv)
 {
 	int i, j;
 	Cube c, d;
-	Move m, mm;
+	Move m;
 	Alg *equiv_alg;
 	
-	c = (Cube){0};
+	make_solved(&c);
 	for (i = 0; i < alg->len; i++) {
 		if (alg->inv[i] != inv)
 			continue;
 
 		equiv_alg = new_alg(equiv_alg_string[alg->move[i]]);
 
-		for (j = 0; j < equiv_alg->len; j++) {
-			m = equiv_alg->move[j];
-			if (m == U) {
-				mm = 3*what_center_at(c, U_center) + 1;
-				append_move(ret, mm, inv);
-			} else {
-				c = apply_move(m, c);
-			}
-		}
+		for (j = 0; j < equiv_alg->len; j++)
+			if (equiv_alg->move[j] == U)
+				append_move(ret, 3 * c.xp[U_center] + 1, inv);
+			else
+				apply_move(equiv_alg->move[j], &c);
 
 		free_alg(equiv_alg);
 	}
 
 	m = NULLMOVE;
-	switch (what_center_at(c, F_center)) {
+	switch (c.xp[F_center]) {
 	case U_center:
 		m = x3;
 		break;
@@ -317,7 +197,7 @@ cleanup_aux(Alg *alg, Alg *ret, bool inv)
 		m = y3;
 		break;
 	case B_center:
-		if (what_center_at(c, U_center) == U_center)
+		if (c.xp[U_center] == U_center)
 			m = y2;
 		else
 			m = x2;
@@ -325,118 +205,22 @@ cleanup_aux(Alg *alg, Alg *ret, bool inv)
 	default:
 		break;
 	}
-	d = apply_move(m, (Cube){0});
+
+	make_solved(&d);
+	apply_move(m, &d);
 	if (m != NULLMOVE)
 		append_move(ret, m, inv);
 
 	m = NULLMOVE;
-	if (what_center_at(c, U_center) == what_center_at(d, D_center)) {
+	if (c.xp[U_center] == d.xp[D_center]) {
 		m = z2;
-	} else if (what_center_at(c, U_center) == what_center_at(d, R_center)) {
+	} else if (c.xp[U_center] == d.xp[R_center]) {
 		m = z3;
-	} else if (what_center_at(c, U_center) == what_center_at(d, L_center)) {
+	} else if (c.xp[U_center] == d.xp[L_center]) {
 		m = z;
 	}
 	if (m != NULLMOVE)
 		append_move(ret, m, inv);
-}
-
-static bool
-read_mtables_file()
-{
-	init_env();
-
-	FILE *f;
-	char fname[strlen(tabledir)+20];
-	int m, b = sizeof(int);
-	bool r = true;
-
-	/* Table sizes, used for reading and writing files */
-	uint64_t me[11] = {
-		[0]  = FACTORIAL12/FACTORIAL8,
-		[1]  = FACTORIAL12/FACTORIAL8,
-		[2]  = FACTORIAL12/FACTORIAL8,
-		[3]  = POW2TO11,
-		[4]  = POW2TO11,
-		[5]  = POW2TO11,
-		[6]  = FACTORIAL8,
-		[7]  = POW3TO7,
-		[8]  = POW3TO7,
-		[9]  = POW3TO7,
-		[10] = FACTORIAL6
-	};
-
-	strcpy(fname, tabledir);
-	strcat(fname, "/mtables");
-
-	if ((f = fopen(fname, "rb")) == NULL)
-		return false;
-
-	for (m = 0; m < NMOVES; m++) {
-		r = r && fread(epose_mtable[m], b, me[0],  f) == me[0];
-		r = r && fread(eposs_mtable[m], b, me[1],  f) == me[1];
-		r = r && fread(eposm_mtable[m], b, me[2],  f) == me[2];
-		r = r && fread(eofb_mtable[m],  b, me[3],  f) == me[3];
-		r = r && fread(eorl_mtable[m],  b, me[4],  f) == me[4];
-		r = r && fread(eoud_mtable[m],  b, me[5],  f) == me[5];
-		r = r && fread(cp_mtable[m],    b, me[6],  f) == me[6];
-		r = r && fread(coud_mtable[m],  b, me[7],  f) == me[7];
-		r = r && fread(corl_mtable[m],  b, me[8],  f) == me[8];
-		r = r && fread(cofb_mtable[m],  b, me[9],  f) == me[9];
-		r = r && fread(cpos_mtable[m],  b, me[10], f) == me[10];
-	}
-
-	fclose(f);
-	return r;
-}
-
-static bool
-write_mtables_file()
-{
-	init_env();
-
-	FILE *f;
-	char fname[strlen(tabledir)+20];
-	int m, b = sizeof(int);
-	bool r = true;
-
-	/* Table sizes, used for reading and writing files */
-	uint64_t me[11] = {
-		[0]  = FACTORIAL12/FACTORIAL8,
-		[1]  = FACTORIAL12/FACTORIAL8,
-		[2]  = FACTORIAL12/FACTORIAL8,
-		[3]  = POW2TO11,
-		[4]  = POW2TO11,
-		[5]  = POW2TO11,
-		[6]  = FACTORIAL8,
-		[7]  = POW3TO7,
-		[8]  = POW3TO7,
-		[9]  = POW3TO7,
-		[10] = FACTORIAL6
-	};
-
-	strcpy(fname, tabledir);
-	strcat(fname, "/mtables");
-
-	if ((f = fopen(fname, "wb")) == NULL)
-		return false;
-
-	for (m = 0; m < NMOVES; m++) {
-		r = r && fwrite(epose_mtable[m], b, me[0],  f) == me[0];
-		r = r && fwrite(eposs_mtable[m], b, me[1],  f) == me[1];
-		r = r && fwrite(eposm_mtable[m], b, me[2],  f) == me[2];
-		r = r && fwrite(eofb_mtable[m],  b, me[3],  f) == me[3];
-		r = r && fwrite(eorl_mtable[m],  b, me[4],  f) == me[4];
-		r = r && fwrite(eoud_mtable[m],  b, me[5],  f) == me[5];
-		r = r && fwrite(cp_mtable[m],    b, me[6],  f) == me[6];
-		r = r && fwrite(coud_mtable[m],  b, me[7],  f) == me[7];
-		r = r && fwrite(corl_mtable[m],  b, me[8],  f) == me[8];
-		r = r && fwrite(cofb_mtable[m],  b, me[9],  f) == me[9];
-		r = r && fwrite(cpos_mtable[m],  b, me[10], f) == me[10];
-	}
-
-	fclose(f);
-	return r;
 }
 
 void
@@ -446,101 +230,54 @@ init_moves() {
 		return;
 	initialized = true;
 
-	Cube c;
-	CubeArray arrs;
-	int i;
-	unsigned int ui;
 	Move m;
 	Alg *equiv_alg[NMOVES];
 
-	init_cube();
+	static const Cube mcu = {
+		.ep = { UR, UF, UL, UB, DF, DL, DB, DR, FR, FL, BL, BR },
+		.cp = { UBR, UFR, UFL, UBL, DFR, DFL, DBL, DBR },
+	};
+	static const Cube mcx = {
+		.ep = { DF, FL, UF, FR, DB, BL, UB, BR, DR, DL, UL, UR },
+		.eo = { [UF] = 1, [UB] = 1, [DF] = 1, [DB] = 1 },
+		.cp = { DFR, DFL, UFL, UFR, DBR, DBL, UBL, UBR },
+		.co = { [UFR] = 2, [UBR] = 1, [UFL] = 1, [UBL] = 2,
+			[DBR] = 2, [DFR] = 1, [DBL] = 1, [DFL] = 2 },
+		.xp = { F_center, B_center, R_center,
+		        L_center, D_center, U_center },
+	};
+	static const Cube mcy = {
+		.ep = { UR, UF, UL, UB, DR, DF, DL, DB, BR, FR, FL, BL },
+		.eo = { [FR] = 1, [FL] = 1, [BL] = 1, [BR] = 1 },
+		.cp = { UBR, UFR, UFL, UBL, DBR, DFR, DFL, DBL },
+		.xp = { U_center, D_center, B_center,
+		        F_center, R_center, L_center },
+	};
 
-	for (i = 0; i < NMOVES; i++)
-		equiv_alg[i] = new_alg(equiv_alg_string[i]);
+	move_array[U] = mcu;
+	move_array[x] = mcx;
+	move_array[y] = mcy;
 
-	/* Generate all move cycles and flips; I do this regardless */
-	for (i = 0; i < NMOVES; i++) {
-		if (i == U || i == x || i == y)
-			continue;
+	for (m = 0; m < NMOVES; m++)
+		equiv_alg[m] = new_alg(equiv_alg_string[m]);
 
-		c = apply_alg_generic(equiv_alg[i], (Cube){0}, pf_all, false);
-
-		arrs = (CubeArray) {
-			edge_cycle[i],
-			eofb_flipped[i],
-			eorl_flipped[i],
-			eoud_flipped[i],
-			corner_cycle[i],
-			coud_flipped[i],
-			corl_flipped[i],
-			cofb_flipped[i],
-			center_cycle[i]
-		};
-		cube_to_arrays(c, &arrs, pf_all);
-	}
-
-	if (read_mtables_file())
-		return;
-
-	fprintf(stderr, "Cannot load %s, generating it\n", "mtables"); 
-
-	/* Initialize transition tables */
 	for (m = 0; m < NMOVES; m++) {
-		for (ui = 0; ui < FACTORIAL12/FACTORIAL8; ui++) {
-			c = (Cube){ .epose = ui };
-			c = apply_move_cubearray(m, c, pf_e);
-			epose_mtable[m][ui] = c.epose;
-
-			c = (Cube){ .eposs = ui };
-			c = apply_move_cubearray(m, c, pf_s);
-			eposs_mtable[m][ui] = c.eposs;
-
-			c = (Cube){ .eposm = ui };
-			c = apply_move_cubearray(m, c, pf_m);
-			eposm_mtable[m][ui] = c.eposm;
-		}
-		for (ui = 0; ui < POW2TO11; ui++ ) {
-			c = (Cube){ .eofb = ui };
-			c = apply_move_cubearray(m, c, pf_eo);
-			eofb_mtable[m][ui] = c.eofb;
-
-			c = (Cube){ .eorl = ui };
-			c = apply_move_cubearray(m, c, pf_eo);
-			eorl_mtable[m][ui] = c.eorl;
-
-			c = (Cube){ .eoud = ui };
-			c = apply_move_cubearray(m, c, pf_eo);
-			eoud_mtable[m][ui] = c.eoud;
-		}
-		for (ui = 0; ui < POW3TO7; ui++) {
-			c = (Cube){ .coud = ui };
-			c = apply_move_cubearray(m, c, pf_co);
-			coud_mtable[m][ui] = c.coud;
-
-			c = (Cube){ .corl = ui };
-			c = apply_move_cubearray(m, c, pf_co);
-			corl_mtable[m][ui] = c.corl;
-
-			c = (Cube){ .cofb = ui };
-			c = apply_move_cubearray(m, c, pf_co);
-			cofb_mtable[m][ui] = c.cofb;
-		}
-		for (ui = 0; ui < FACTORIAL8; ui++) {
-			c = (Cube){ .cp = ui };
-			c = apply_move_cubearray(m, c, pf_cp);
-			cp_mtable[m][ui] = c.cp;
-		}
-		for (ui = 0; ui < FACTORIAL6; ui++) {
-			c = (Cube){ .cpos = ui };
-			c = apply_move_cubearray(m, c, pf_cpos);
-			cpos_mtable[m][ui] = c.cpos;
+		switch (m) {
+		case NULLMOVE:
+			make_solved(&move_array[m]);
+			break;
+		case U:
+		case x:
+		case y:
+			break;
+		default:
+			make_solved(&move_array[m]);
+			apply_alg(equiv_alg[m], &move_array[m]);
+			break;
 		}
 	}
 
-	if (!write_mtables_file())
-		fprintf(stderr, "Error writing mtables\n");
-
-	for (i = 0; i < NMOVES; i++)
-		free_alg(equiv_alg[i]);
+	for (m = 0; m < NMOVES; m++)
+		free_alg(equiv_alg[m]);
 }
 

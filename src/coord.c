@@ -1,611 +1,683 @@
+#define COORD_C
+
 #include "coord.h"
 
-static uint64_t    index_eofb(Cube cube);
-static uint64_t    index_eofbepos(Cube cube);
-static uint64_t    index_epud(Cube cube);
-static uint64_t    index_coud(Cube cube);
-static uint64_t    index_corners(Cube cube);
-static uint64_t    index_cp(Cube cube);
-static uint64_t    index_cphtr(Cube cube);
-static uint64_t    index_cornershtr(Cube cube);
-static uint64_t    index_cornershtrfin(Cube cube);
-static uint64_t    index_drud(Cube cube);
-static uint64_t    index_drud_eofb(Cube cube);
-static uint64_t    index_htr_drud(Cube cube);
-static uint64_t    index_htrfin(Cube cube);
-static uint64_t    index_cpud_separate(Cube cube);
-
-static uint64_t    move_eofb(Move m, uint64_t ind);
-static uint64_t    move_eofbepos(Move m, uint64_t ind);
-static uint64_t    move_epud(Move m, uint64_t ind);
-static uint64_t    move_coud(Move m, uint64_t ind);
-static uint64_t    move_corners(Move m, uint64_t ind);
-static uint64_t    move_cp(Move m, uint64_t ind);
-static uint64_t    move_cphtr(Move m, uint64_t ind);
-static uint64_t    move_cornershtr(Move m, uint64_t ind);
-static uint64_t    move_cornershtrfin(Move m, uint64_t ind);
-static uint64_t    move_drud(Move m, uint64_t ind);
-static uint64_t    move_drud_eofb(Move m, uint64_t ind);
-static uint64_t    move_htr_drud(Move m, uint64_t ind);
-static uint64_t    move_htrfin(Move m, uint64_t ind);
-static uint64_t    move_cpud_separate(Move m, uint64_t ind);
-
-static void        init_cphtr_cosets();
-static void        init_cphtr_left_cosets_bfs(int i, int c);
-static void        init_cphtr_right_cosets_color(int i, int c);
-static void        init_cpud_separate();
-static void        init_cornershtrfin();
-static void        init_htr_eposs();
-
-
-/* All sorts of useful costants and tables  **********************************/
-
-static int              cphtr_left_cosets[FACTORIAL8];
-static int              cphtr_right_cosets[FACTORIAL8];
-static int              cphtr_right_rep[BINOM8ON4*6];
-int                     cpud_separate_ind[FACTORIAL8];
-int                     cpud_separate_ant[BINOM8ON4];
-static int              cornershtrfin_ind[FACTORIAL8];
-int                     cornershtrfin_ant[24*24/6];
-static int              htr_eposs_ind[BINOM12ON4];
-static int              htr_eposs_ant[BINOM8ON4];
-
-/* Coordinates and their implementation **************************************/
-
-Coordinate
-coord_eofb = {
-	.index  = index_eofb,
-	.max    = POW2TO11,
-	.move   = move_eofb,
-};
-
-Coordinate
-coord_eofbepos = {
-	.index  = index_eofbepos,
-	.max    = POW2TO11 * BINOM12ON4,
-	.move   = move_eofbepos,
-};
-
-Coordinate
-coord_coud = {
-	.index  = index_coud,
-	.max    = POW3TO7,
-	.move   = move_coud,
-};
-
-Coordinate
-coord_corners = {
-	.index  = index_corners,
-	.max    = POW3TO7 * FACTORIAL8,
-	.move   = move_corners,
-};
-
-Coordinate
-coord_cp = {
-	.index  = index_cp,
-	.max    = FACTORIAL8,
-	.move   = move_cp,
-};
-
-Coordinate
-coord_cphtr = {
-	.index  = index_cphtr,
-	.max    = BINOM8ON4 * 6,
-	.move   = move_cphtr,
-};
-
-Coordinate
-coord_cornershtr = {
-	.index  = index_cornershtr,
-	.max    = POW3TO7 * BINOM8ON4 * 6,
-	.move   = move_cornershtr,
-};
-
-Coordinate
-coord_cornershtrfin = {
-	.index  = index_cornershtrfin,
-	.max    = 24*24/6,
-	.move   = move_cornershtrfin,
-};
-
-Coordinate
-coord_epud = {
-	.index  = index_epud,
-	.max    = FACTORIAL8,
-	.move   = move_epud,
-};
-
-Coordinate
-coord_drud = {
-	.index  = index_drud,
-	.max    = POW2TO11 * POW3TO7 * BINOM12ON4,
-	.move   = move_drud,
-};
-
-Coordinate
-coord_htr_drud = {
-	.index  = index_htr_drud,
-	.max    = BINOM8ON4 * 6 * BINOM8ON4,
-	.move   = move_htr_drud,
-};
-
-Coordinate
-coord_htrfin = {
-	.index  = index_htrfin,
-	.max    = 24 * 24 * 24 *24 * 24 / 6, /* should be /12 but it's ok */
-	.move   = move_htrfin,
-};
-
-Coordinate
-coord_drud_eofb = {
-	.index  = index_drud_eofb,
-	.max    = POW3TO7 * BINOM12ON4,
-	.move   = move_drud_eofb,
-};
-
-Coordinate
-coord_cpud_separate = {
-	.index  = index_cpud_separate,
-	.max    = BINOM8ON4,
-	.move   = move_cpud_separate,
-};
+static uint64_t    indexers_getind(Indexer **is, Cube *c);
+static uint64_t    indexers_getmax(Indexer **is);
+static void        indexers_makecube(Indexer **is, uint64_t ind, Cube *c);
+static void        gen_coord_comp(Coordinate *coord);
+static void        gen_coord_sym(Coordinate *coord);
+static bool        read_coord_mtable(Coordinate *coord);
+static bool        read_coord_sd(Coordinate *coord);
+static bool        read_coord_ttable(Coordinate *coord);
+static bool        write_coord_mtable(Coordinate *coord);
+static bool        write_coord_sd(Coordinate *coord);
+static bool        write_coord_ttable(Coordinate *coord);
 
 /* Indexers ******************************************************************/
 
-static uint64_t
-index_eofb(Cube cube)
+uint64_t
+index_eofb(Cube *cube)
 {
-	return cube.eofb;
+	return (uint64_t)digit_array_to_int(cube->eo, 11, 2);
+}
+
+uint64_t
+index_coud(Cube *cube)
+{
+	return (uint64_t)digit_array_to_int(cube->co, 7, 3);
+}
+
+uint64_t
+index_cp(Cube *cube)
+{
+	return (uint64_t)perm_to_index(cube->cp, 8);
+}
+
+uint64_t
+index_cpudsep(Cube *cube)
+{
+	int i, c[8];
+
+	for (i = 0; i < 8; i++)
+		c[i] = cube->cp[i] < 4 ? 0 : 1;
+
+	return (uint64_t)subset_to_index(c, 8, 4);
+}
+
+uint64_t
+index_epe(Cube *cube)
+{
+	int i, e[4];
+
+	for (i = 0; i < 4; i++)
+		e[i] = cube->ep[i+8] - 8;
+
+	return (uint64_t)perm_to_index(e, 4);
+}
+
+uint64_t
+index_epud(Cube *cube)
+{
+	return (uint64_t)perm_to_index(cube->ep, 8);
+}
+
+uint64_t
+index_epos(Cube *cube)
+{
+	int i, a[12];
+
+	for (i = 0; i < 12; i++)
+		a[i] = (cube->ep[i] < 8) ? 0 : 1;
+
+	return (uint64_t)subset_to_index(a, 12, 4);
+}
+
+uint64_t
+index_eposepe(Cube *cube)
+{
+	int i, j, e[4];
+	uint64_t epos, epe;
+
+	epos = (uint64_t)index_epos(cube);
+	for (i = 0, j = 0; i < 12; i++)
+		if (cube->ep[i] >= 8)
+			e[j++] = cube->ep[i] - 8;
+	epe = (uint64_t)perm_to_index(e, 4);
+
+	return epos * FACTORIAL4 + epe;
+}
+
+/* Inverse indexers **********************************************************/
+
+void
+invindex_eofb(uint64_t ind, Cube *cube)
+{
+	int_to_sum_zero_array(ind, 2, 12, cube->eo);
+}
+
+void
+invindex_coud(uint64_t ind, Cube *cube)
+{
+	int_to_sum_zero_array(ind, 3, 8, cube->co);
+}
+
+void
+invindex_cp(uint64_t ind, Cube *cube)
+{
+	index_to_perm(ind, 8, cube->cp);
+}
+
+void
+invindex_cpudsep(uint64_t ind, Cube *cube)
+{
+	int i, j, k, c[8];
+
+	index_to_subset(ind, 8, 4, c);
+	for (i = 0, j = 0, k = 4; i < 8; i++)
+		cube->cp[i] = c[i] == 0 ? j++ : k++;
+}
+
+
+void
+invindex_epe(uint64_t ind, Cube *cube)
+{
+	int i;
+
+	index_to_perm(ind, 4, &cube->ep[8]);
+	for (i = 0; i < 4; i++)
+		cube->ep[i+8] += 8;
+}
+
+void
+invindex_epud(uint64_t ind, Cube *cube)
+{
+	index_to_perm(ind, 8, cube->ep);
+}
+
+void
+invindex_epos(uint64_t ind, Cube *cube)
+{
+	int i, j, k;
+
+	index_to_subset(ind, 12, 4, cube->ep);
+	for (i = 0, j = 0, k = 8; i < 12; i++)
+		if (cube->ep[i] == 0)
+			cube->ep[i] = j++;
+		else
+			cube->ep[i] = k++;
+}
+
+void
+invindex_eposepe(uint64_t ind, Cube *cube)
+{
+	int i, j, k, e[4];
+	uint64_t epos, epe;
+
+	epos = ind / FACTORIAL4;
+	epe = ind % FACTORIAL4;
+
+	index_to_subset(epos, 12, 4, cube->ep);
+	index_to_perm(epe, 4, e);
+
+	for (i = 0, j = 0, k = 0; i < 12; i++)
+		if (cube->ep[i] == 0)
+			cube->ep[i] = j++;
+		else
+			cube->ep[i] = e[k++] + 8;
+}
+
+/* Other local functions *****************************************************/
+
+static uint64_t
+indexers_getmax(Indexer **is)
+{
+	int i;
+	uint64_t max = 1;
+
+	for (i = 0; is[i] != NULL; i++)
+		max *= is[i]->n;
+
+	return max;
 }
 
 static uint64_t
-index_eofbepos(Cube cube)
+indexers_getind(Indexer **is, Cube *c)
 {
-	return (cube.epose / FACTORIAL4) * POW2TO11 + cube.eofb;
+	int i;
+	uint64_t max = 0;
+
+	for (i = 0; is[i] != NULL; i++) {
+		max *= is[i]->n;
+		max += is[i]->index(c);
+	}
+
+	return max;
 }
 
-static uint64_t
-index_epud(Cube cube)
+static void
+indexers_makecube(Indexer **is, uint64_t ind, Cube *c)
 {
-	uint64_t ret;
-	CubeArray *arr = new_cubearray(cube, pf_ep);
+	/* Warning: anti-indexers are applied in the same order as indexers. */
+	/* We assume order does not matter, but it would make more sense to  */
+	/* Apply them in reverse.                                            */
 
-	ret = perm_to_index(arr->ep, 8);
-	free_cubearray(arr, pf_ep);
+	int i;
+	uint64_t m;
 
-	return ret;
+	make_solved(c);
+	m = indexers_getmax(is);
+	for (i = 0; is[i] != NULL; i++) {
+		m /= is[i]->n;
+		is[i]->to_cube(ind / m, c);
+		ind %= m;
+	}
 }
 
-static uint64_t
-index_coud(Cube cube)
+static void
+gen_coord_comp(Coordinate *coord)
 {
-	return cube.coud;
-}
-
-static uint64_t
-index_corners(Cube cube)
-{
-	return cube.coud * FACTORIAL8 + cube.cp;
-}
-
-static uint64_t
-index_cp(Cube cube)
-{
-	return cube.cp;
-}
-
-static uint64_t
-index_cphtr(Cube cube)
-{
-	return cphtr_right_cosets[cube.cp];
-}
-
-static uint64_t
-index_cornershtr(Cube cube)
-{
-	return cube.coud * BINOM8ON4 * 6 + index_cphtr(cube);
-}
-
-static uint64_t
-index_cornershtrfin(Cube cube)
-{
-	return cornershtrfin_ind[cube.cp];
-}
-
-static uint64_t
-index_drud(Cube cube)
-{
-	uint64_t a, b, c;
-
-	a = cube.eofb;
-	b = cube.coud;
-	c = cube.epose / FACTORIAL4;
-
-	b *= POW2TO11;
-	c *= POW2TO11 * POW3TO7;
-
-	return a + b + c;
-}
-
-static uint64_t
-index_drud_eofb(Cube cube)
-{
-	return index_drud(cube) / POW2TO11;
-}
-
-static uint64_t
-index_htr_drud(Cube cube)
-{
-	uint64_t a, b;
-
-	a = index_cphtr(cube);
-	b = htr_eposs_ind[cube.eposs/24];
-
-	return a * BINOM8ON4 + b;
-}
-
-static uint64_t
-index_htrfin(Cube cube)
-{
-	uint64_t epe, eps, epm, cp, ep;
-
-	epe = cube.epose % 24;
-	eps = cube.eposs % 24;
-	epm = cube.eposm % 24;
-	ep = (epe * 24 + eps) *24 + epm;
-	cp = index_cornershtrfin(cube);
-
-	return cp * 24 * 24 * 24 + ep;
-}
-
-static uint64_t
-index_cpud_separate(Cube cube)
-{
-	return cpud_separate_ind[cube.cp];
-}
-
-/* Coordinate movers *********************************************************/
-
-static uint64_t
-move_eofb(Move m, uint64_t ind)
-{
-	return eofb_mtable[m][ind];
-}
-
-static uint64_t
-move_eofbepos(Move m, uint64_t ind)
-{
-	uint64_t a, b;
-
-	a = epose_mtable[m][(ind / POW2TO11)*24];
-	b = eofb_mtable[m][ind % POW2TO11];
-
-	return (a/24) * POW2TO11 + b;
-}
-
-static uint64_t
-move_epud(Move m, uint64_t ind)
-{
-	/* TODO: save to file? */
-	static bool initialized = false;
-	static int a[12] = { [8] = 8, [9] = 9, [10] = 10, [11] = 11 };
-	static int shortlist[NMOVES] = {
-		[U] = 0, [U2] = 1, [U3] = 2, [D] = 3, [D2] = 4, [D3] = 5,
-		[R2] = 6, [L2] = 7, [F2] = 8, [B2] = 9
-	};
-	static uint64_t aux[10][FACTORIAL8];
 	uint64_t ui;
-	int j;
-	Move mj;
-	Cube c;
-	CubeArray *arr, *auxarr;
-
-	if (!moveset_drud.allowed(m)) {
-		fprintf(stderr, "Move not allowed for epud\n"
-		                "This is a bug, please report\n");
-		return coord_epud.max;
-	}
-
-	if (!initialized) {
-		auxarr = malloc(sizeof(CubeArray));
-		auxarr->ep = a;
-		for (ui = 0; ui < coord_epud.max; ui++) {
-			index_to_perm(ui, 8, a);
-			c = arrays_to_cube(auxarr, pf_ep);
-			for (j = 0; moveset_drud.sorted_moves[j] != NULLMOVE;
-			    j++) {
-				mj = moveset_drud.sorted_moves[j];
-				arr = new_cubearray(apply_move(mj, c), pf_ep);
-				aux[shortlist[mj]][ui] =
-				    perm_to_index(arr->ep, 8);
-				free_cubearray(arr, pf_ep);
-			}
-		}
-		free(auxarr);
-
-		initialized = true;
-	}
-
-	return aux[shortlist[m]][ind];
-}
-
-static uint64_t
-move_coud(Move m, uint64_t ind)
-{
-	return coud_mtable[m][ind];
-}
-
-static uint64_t
-move_corners(Move m, uint64_t ind)
-{
-	uint64_t a, b;
-
-	a = coud_mtable[m][ind / FACTORIAL8];
-	b = cp_mtable[m][ind % FACTORIAL8];
-
-	return a * FACTORIAL8 + b;
-}
-
-static uint64_t
-move_cp(Move m, uint64_t ind)
-{
-	return cp_mtable[m][ind];
-}
-
-static uint64_t
-move_cphtr(Move m, uint64_t ind)
-{
-	static bool initialized = false;
-	static uint64_t aux[NMOVES][BINOM8ON4*6];
-	uint64_t ui;
-	Move j;
-
-	if (!initialized) {
-		for (ui = 0; ui < BINOM8ON4*6; ui++)
-			for (j = U; j < NMOVES; j++)
-				aux[j][ui] = cphtr_right_cosets[
-				    cp_mtable[j][cphtr_right_rep[ui]]];
-
-		initialized = true;
-	}
-
-	return aux[m][ind];
-}
-
-static uint64_t
-move_cornershtr(Move m, uint64_t ind)
-{
-	uint64_t a, b;
-
-	a = coud_mtable[m][ind/(BINOM8ON4 * 6)];
-	b = move_cphtr(m, ind % (BINOM8ON4 * 6));
-
-	return a * BINOM8ON4 * 6 + b;
-}
-
-static uint64_t
-move_cornershtrfin(Move m, uint64_t ind)
-{
-	int a;
-
-	a = cp_mtable[m][cornershtrfin_ant[ind]];
-
-	return cornershtrfin_ind[a];
-}
-
-static uint64_t
-move_drud(Move m, uint64_t ind)
-{
-	uint64_t a, b, c;
-
-	a = eofb_mtable[m][ind % POW2TO11];
-	b = coud_mtable[m][(ind / POW2TO11) % POW3TO7];
-	c = epose_mtable[m][ind / (POW2TO11 * POW3TO7)];
-
-	return a + (b + c * POW3TO7) * POW2TO11;
-}
-
-static uint64_t
-move_drud_eofb(Move m, uint64_t ind)
-{
-	uint64_t a, b;
-
-	a = coud_mtable[m][ind % POW3TO7];
-	b = epose_mtable[m][(ind / POW3TO7) * 24] / 24;
-
-	return a + b * POW3TO7;
-}
-
-static uint64_t
-move_htr_drud(Move m, uint64_t ind)
-{
-	uint64_t a, b;
-
-	a = move_cphtr(m, ind/BINOM8ON4);
-	b = eposs_mtable[m][htr_eposs_ant[ind%BINOM8ON4]];
-
-	return a*BINOM8ON4 + htr_eposs_ind[b/24];
-}
-
-static uint64_t
-move_htrfin(Move m, uint64_t ind)
-{
-	uint64_t a, b, bm, bs, be;
-
-	a = move_cornershtrfin(m, ind / (24*24*24));
-	bm = eposm_mtable[m][ind%24] % 24;
-	bs = eposs_mtable[m][(ind/24)%24] % 24;
-	be = epose_mtable[m][(ind/(24*24))%24] % 24;
-	b = (be * 24 + bs) * 24 + bm;
-
-	return a * (24*24*24) + b;
-}
-
-static uint64_t
-move_cpud_separate(Move m, uint64_t ind)
-{
-	return cpud_separate_ind[cp_mtable[m][cpud_separate_ant[ind]]];
-}
-
-/* Init functions implementation *********************************************/
-
-/*
- * There is certainly a better way to do this, but for now I just use
- * a "graph coloring" algorithm to compute the left cosets, and I compose
- * with every possible cp to get the right cosets (it is possible that I am
- * mixing up left and right).
- * 
- * For doing it better "Mathematically", we need 3 things:
- *   - Checking that cp separates the orbits (UFR,UBL,DFL,DBR) and the other
- *     This is easy and it is done in the commented function cphtr_cp().
- *   - Check that there is no ep/cp parity
- *   - Check that we are not in the "3c" case; this is the part I don't
- *     know how to do.
- */
-static void
-init_cphtr_cosets()
-{
-	unsigned int i; 
-	int c = 0, d = 0;
-
-	for (i = 0; i < FACTORIAL8; i++) {
-		cphtr_left_cosets[i]  = -1;
-		cphtr_right_cosets[i] = -1;
-	}
-
-	/* First we compute left cosets with a bfs */
-	for (i = 0; i < FACTORIAL8; i++)
-		if (cphtr_left_cosets[i] == -1)
-			init_cphtr_left_cosets_bfs(i, c++);
-
-	/* Then we compute right cosets using compose() */
-	for (i = 0; i < FACTORIAL8; i++)
-		if (cphtr_right_cosets[i] == -1)
-			init_cphtr_right_cosets_color(i, d++);
-}
-
-static void
-init_cphtr_left_cosets_bfs(int i, int c)
-{
-	int j, jj, next[FACTORIAL8], next2[FACTORIAL8], n, n2;
-
-	Move k;
-
-	n = 1;
-	next[0] = i;
-	cphtr_left_cosets[i] = c;
-
-	while (n != 0) {
-		for (j = 0, n2 = 0; j < n; j++) {
-			for (k = U2; k < B3; k++) {
-				if (!moveset_htr.allowed(k))
-					continue;
-				jj = apply_move(k, (Cube){ .cp = next[j] }).cp;
-
-				if (cphtr_left_cosets[jj] == -1) {
-					cphtr_left_cosets[jj] = c;
-					next2[n2++] = jj;
-				}
-			}
-		}
-
-		for (j = 0; j < n2; j++)
-			next[j] = next2[j];
-		n = n2;
-	}
-}
-
-static void
-init_cphtr_right_cosets_color(int i, int d)
-{
-	int cp;
-	unsigned int j;
-
-	cphtr_right_rep[d] = i;
-	for (j = 0; j < FACTORIAL8; j++) {
-		if (cphtr_left_cosets[j] == 0) {
-			cp = compose((Cube){.cp = i}, (Cube){.cp = j}).cp;
-			cphtr_right_cosets[cp] = d;
-		}
-	}
-}
-
-static void
-init_cpud_separate()
-{
-	unsigned int ui;
-	int i, co[8];
-
-	for (ui = 0; ui < FACTORIAL8; ui++) {
-		for (i = 0; i < 8; i++)
-			co[i] = what_corner_at((Cube){.cp=ui},i)>UBR ?  1 : 0;
-		cpud_separate_ind[ui] = subset_to_index(co, 8, 4);
-		cpud_separate_ant[cpud_separate_ind[ui]] = ui;
-	}
-}
-
-static void
-init_cornershtrfin()
-{
-	unsigned int i, j;
-	int n, c;
+	Cube c, mvd;
 	Move m;
+	Trans t;
 
-	for (i = 0; i < FACTORIAL8; i++)
-		cornershtrfin_ind[i] = -1;
-	cornershtrfin_ind[0] = 0;
+	coord->max = indexers_getmax(coord->i);
 
-	/* 10-pass, I think 5 is enough, but just in case */
-	n = 1;
-	for (i = 0; i < 10; i++) {
-		for (j = 0; j < FACTORIAL8; j++) {
-			if (cornershtrfin_ind[j] == -1)
-				continue;
-			for (m = U; m < NMOVES; m++) {
-				if (moveset_htr.allowed(m)) {
-					c = cp_mtable[m][j];
-					if (cornershtrfin_ind[c] == -1) {
-						cornershtrfin_ind[c] = n;
-						cornershtrfin_ant[n] = c;
-						n++;
-					}
-				}
+	for (m = 0; m < NMOVES; m++)
+		coord->mtable[m] = malloc(coord->max * sizeof(uint64_t));
+
+	for (t = 0; t < NTRANS; t++)
+		coord->ttable[t] = malloc(coord->max * sizeof(uint64_t));
+
+	if (!read_coord_mtable(coord)) {
+		fprintf(stderr, "%s: generating mtable\n", coord->name);
+
+		for (ui = 0; ui < coord->max; ui++) {
+			indexers_makecube(coord->i, ui, &c);
+			for (m = 0; m < NMOVES; m++) {
+				copy_cube(&c, &mvd);
+				apply_move(m, &mvd);
+				coord->mtable[m][ui] =
+				    indexers_getind(coord->i, &mvd);
 			}
 		}
+		if (!write_coord_mtable(coord))
+			fprintf(stderr, "%s: error writing mtable\n",
+			    coord->name);
+		
+		fprintf(stderr, "%s: mtable generated\n", coord->name);
+	}
+
+	if (!read_coord_ttable(coord)) {
+		fprintf(stderr, "%s: generating ttable\n", coord->name);
+
+		for (ui = 0; ui < coord->max; ui++) {
+			indexers_makecube(coord->i, ui, &c);
+			for (t = 0; t < NTRANS; t++) {
+				copy_cube(&c, &mvd);
+				apply_trans(t, &mvd);
+				coord->ttable[t][ui] =
+				    indexers_getind(coord->i, &mvd);
+			}
+		}
+		if (!write_coord_ttable(coord))
+			fprintf(stderr, "%s: error writing ttable\n",
+			    coord->name);
 	}
 }
 
-void
-init_htr_eposs()
+static void
+gen_coord_sym(Coordinate *coord)
 {
-	int ep[12], ep2[12];
-	int eps_solved[4] = {UL, UR, DL, DR};
-	unsigned int i, j;
+	uint64_t i, in, ui, uj, uu, M, nr;
+	int j;
+	Move m;
+	Trans t;
 
-	for (i = 0; i < BINOM12ON4; i++) {
-		for (j = 0; j < 12; j++)
-			ep[j] = ep2[j] = 0;
-		epos_to_partial_ep(i*24, ep, eps_solved);
-		for (j = 0; j < 8; j++)
-			ep2[j/2 + 4*(j%2)] = ep[j] ? 1 : 0;
-		htr_eposs_ind[i] = subset_to_index(ep2, 8, 4);
-		htr_eposs_ant[htr_eposs_ind[i]] = i*24;
+	M = coord->base[0]->max;
+	coord->selfsim    = malloc(M * sizeof(uint64_t));
+	coord->symclass   = malloc(M * sizeof(uint64_t));
+	coord->symrep     = malloc(M * sizeof(uint64_t));
+	coord->transtorep = malloc(M * sizeof(Trans));
+
+	if (!read_coord_sd(coord)) {
+		fprintf(stderr, "%s: generating syms\n", coord->name);
+
+		for (i = 0; i < M; i++)
+			coord->symclass[i] = M+1;
+
+		for (i = 0, nr = 0; i < M; i++) {
+			if (coord->symclass[i] != M+1)
+				continue;
+
+			coord->symrep[nr]    = i;
+			coord->transtorep[i] = uf;
+			coord->selfsim[nr]   = (uint64_t)0;
+			for (j = 0; j < coord->tgrp->n; j++) {
+				t = coord->tgrp->t[j];
+				in = trans_coord(coord->base[0], t, i);
+				coord->symclass[in] = nr;
+				if (in == i)
+					coord->selfsim[nr] |= ((uint64_t)1<<t);
+				else
+					coord->transtorep[in] =
+					    inverse_trans(t);
+			}
+			nr++;
+		}
+
+		coord->max = nr;
+
+		fprintf(stderr, "%s: found %" PRIu64 " classes\n",
+		    coord->name, nr);
+		if (!write_coord_sd(coord))
+			fprintf(stderr, "%s: error writing symdata\n",
+			    coord->name);
+	}
+
+	coord->symrep = realloc(coord->symrep, coord->max*sizeof(uint64_t));
+	coord->selfsim = realloc(coord->selfsim, coord->max*sizeof(uint64_t));
+
+	for (m = 0; m < NMOVES; m++) {
+		coord->mtable[m] = malloc(coord->max*sizeof(uint64_t));
+		coord->ttrep_move[m] = malloc(coord->max*sizeof(Trans));
+	}
+
+	if (!read_coord_mtable(coord)) {
+		for (ui = 0; ui < coord->max; ui++) {
+			uu = coord->symrep[ui];
+			for (m = 0; m < NMOVES; m++) {
+				uj = move_coord(coord->base[0], m, uu, NULL);
+				coord->mtable[m][ui] = coord->symclass[uj];
+				coord->ttrep_move[m][ui] =
+				    coord->transtorep[uj];
+			}
+		}
+		if (!write_coord_mtable(coord))
+			fprintf(stderr, "%s: error writing mtable\n",
+			    coord->name);
 	}
 }
 
-void
-init_coord()
+static bool
+read_coord_mtable(Coordinate *coord)
 {
-	static bool initialized = false;
-	if (initialized)
+	FILE *f;
+	char fname[strlen(tabledir)+256];
+	Move m;
+	uint64_t M;
+	bool r;
+
+	strcpy(fname, tabledir);
+	strcat(fname, "/mt_");
+	strcat(fname, coord->name);
+
+	if ((f = fopen(fname, "rb")) == NULL)
+		return false;
+
+	M = coord->max;
+	r = true;
+	for (m = 0; m < NMOVES; m++)
+		r = r && fread(coord->mtable[m], sizeof(uint64_t), M, f) == M;
+
+	if (coord->type == SYM_COORD)
+		for (m = 0; m < NMOVES; m++)
+			r = r && fread(coord->ttrep_move[m],
+			    sizeof(Trans), M, f) == M;
+
+	fclose(f);
+	return r;
+}
+
+static bool
+read_coord_sd(Coordinate *coord)
+{
+	FILE *f;
+	char fname[strlen(tabledir)+256];
+	uint64_t M, N;
+	bool r;
+
+	strcpy(fname, tabledir);
+	strcat(fname, "/sd_");
+	strcat(fname, coord->name);
+
+	if ((f = fopen(fname, "rb")) == NULL)
+		return false;
+
+	r = true;
+	r = r && fread(&coord->max,       sizeof(uint64_t), 1, f) == 1;
+	M = coord->max;
+	N = coord->base[0]->max;
+	r = r && fread(coord->symrep,     sizeof(uint64_t), M, f) == M;
+	r = r && fread(coord->selfsim,    sizeof(uint64_t), M, f) == M;
+	r = r && fread(coord->symclass,   sizeof(uint64_t), N, f) == N;
+	r = r && fread(coord->transtorep, sizeof(Trans),    N, f) == N;
+
+	fclose(f);
+	return r;
+}
+
+static bool
+read_coord_ttable(Coordinate *coord)
+{
+	FILE *f;
+	char fname[strlen(tabledir)+256];
+	Trans t;
+	uint64_t M;
+	bool r;
+
+	strcpy(fname, tabledir);
+	strcat(fname, "/tt_");
+	strcat(fname, coord->name);
+
+	if ((f = fopen(fname, "rb")) == NULL)
+		return false;
+
+	M = coord->max;
+	r = true;
+	for (t = 0; t < NTRANS; t++)
+		r = r && fread(coord->ttable[t], sizeof(uint64_t), M, f) == M;
+
+	fclose(f);
+	return r;
+}
+
+static bool
+write_coord_mtable(Coordinate *coord)
+{
+	FILE *f;
+	char fname[strlen(tabledir)+256];
+	Move m;
+	uint64_t M;
+	bool r;
+
+	strcpy(fname, tabledir);
+	strcat(fname, "/mt_");
+	strcat(fname, coord->name);
+
+	if ((f = fopen(fname, "wb")) == NULL)
+		return false;
+
+	M = coord->max;
+	r = true;
+	for (m = 0; m < NMOVES; m++)
+		r = r && fwrite(coord->mtable[m], sizeof(uint64_t), M, f) == M;
+
+	if (coord->type == SYM_COORD)
+		for (m = 0; m < NMOVES; m++)
+			r = r && fwrite(coord->ttrep_move[m],
+			    sizeof(Trans), M, f) == M;
+
+	fclose(f);
+	return r;
+}
+
+static bool
+write_coord_sd(Coordinate *coord)
+{
+	FILE *f;
+	char fname[strlen(tabledir)+256];
+	uint64_t M, N;
+	bool r;
+
+	strcpy(fname, tabledir);
+	strcat(fname, "/sd_");
+	strcat(fname, coord->name);
+
+	if ((f = fopen(fname, "wb")) == NULL)
+		return false;
+
+	r = true;
+	M = coord->max;
+	N = coord->base[0]->max;
+	r = r && fwrite(&coord->max,       sizeof(uint64_t), 1, f) == 1;
+	r = r && fwrite(coord->symrep,     sizeof(uint64_t), M, f) == M;
+	r = r && fwrite(coord->selfsim,    sizeof(uint64_t), M, f) == M;
+	r = r && fwrite(coord->symclass,   sizeof(uint64_t), N, f) == N;
+	r = r && fwrite(coord->transtorep, sizeof(Trans),    N, f) == N;
+
+	fclose(f);
+	return r;
+}
+
+static bool
+write_coord_ttable(Coordinate *coord)
+{
+	FILE *f;
+	char fname[strlen(tabledir)+256];
+	Trans t;
+	uint64_t M;
+	bool r;
+
+	strcpy(fname, tabledir);
+	strcat(fname, "/tt_");
+	strcat(fname, coord->name);
+
+	if ((f = fopen(fname, "wb")) == NULL)
+		return false;
+
+	M = coord->max;
+	r = true;
+	for (t = 0; t < NTRANS; t++)
+		r = r && fwrite(coord->ttable[t], sizeof(uint64_t), M, f) == M;
+
+	fclose(f);
+	return r;
+}
+
+/* Public functions **********************************************************/
+
+void
+gen_coord(Coordinate *coord)
+{
+	int i;
+
+	if (coord == NULL || coord->generated)
 		return;
-	initialized = true;
 
-	init_trans();
+	for (i = 0; i < 2; i++)
+		gen_coord(coord->base[i]);
 
-	init_cphtr_cosets();
-	init_cornershtrfin();
-	init_htr_eposs();
-	init_cpud_separate();
+	switch (coord->type) {
+	case COMP_COORD:
+		if (coord->i[0] == NULL)
+			goto error_gc;
+		gen_coord_comp(coord);
+		break;
+	case SYM_COORD:
+		if (coord->base[0] == NULL || coord->tgrp == NULL)
+			goto error_gc;
+		gen_coord_sym(coord);
+		break;
+	case SYMCOMP_COORD:
+		if (coord->base[0] == NULL || coord->base[1] == NULL)
+			goto error_gc;
+		coord->max = coord->base[0]->max * coord->base[1]->max;
+		break;
+	default:
+		break;
+	}
+
+	coord->generated = true;
+	return;
+
+error_gc:
+	fprintf(stderr, "Error generating coordinates.\n"
+			"This is a bug, pleae report.\n");
+	exit(1);
 }
 
+uint64_t
+index_coord(Coordinate *coord, Cube *cube, Trans *offtrans)
+{
+	uint64_t c[2], cnosym;
+	Trans ttr;
+
+	switch (coord->type) {
+	case COMP_COORD:
+		if (offtrans != NULL)
+			*offtrans = uf;
+
+		return indexers_getind(coord->i, cube);
+	case SYM_COORD:
+		cnosym = index_coord(coord->base[0], cube, NULL);
+		ttr = coord->transtorep[cnosym];
+
+		if (offtrans != NULL)
+			*offtrans = ttr;
+
+		return coord->symclass[cnosym];
+	case SYMCOMP_COORD:
+		c[0] = index_coord(coord->base[0], cube, NULL);
+		cnosym = index_coord(coord->base[0]->base[0], cube, NULL);
+		ttr = coord->base[0]->transtorep[cnosym];
+		c[1] = index_coord(coord->base[1], cube, NULL);
+		c[1] = trans_coord(coord->base[1], ttr, c[1]);
+
+		if (offtrans != NULL)
+			*offtrans = ttr;
+
+		return c[0] * coord->base[1]->max + c[1];
+	default:
+		break;
+	}
+
+	return coord->max; /* Only reached in case of error */
+}
+
+uint64_t
+move_coord(Coordinate *coord, Move m, uint64_t ind, Trans *offtrans)
+{
+	uint64_t i[2], M;
+	Trans ttr;
+
+	/* Some safety checks should be done here, but for performance   *
+	 * reasons we'd rather do them before calling this function.     *
+	 * We should check if coord is generated.                        */
+
+	switch (coord->type) {
+	case COMP_COORD:
+		if (offtrans != NULL)
+			*offtrans = uf;
+
+		return coord->mtable[m][ind];
+	case SYM_COORD:
+		ttr = coord->ttrep_move[m][ind];
+
+		if (offtrans != NULL)
+			*offtrans = ttr;
+
+		return coord->mtable[m][ind];
+	case SYMCOMP_COORD:
+		M = coord->base[1]->max;
+		i[0] = ind / M;
+		i[1] = ind % M;
+		ttr = coord->base[0]->ttrep_move[m][i[0]];
+		i[0] = coord->base[0]->mtable[m][i[0]];
+		i[1] = coord->base[1]->mtable[m][i[1]];
+		i[1] = coord->base[1]->ttable[ttr][i[1]];
+
+		if (offtrans != NULL)
+			*offtrans = ttr;
+
+		return i[0] * M + i[1];
+	default:
+		break;
+	}
+
+	return coord->max; /* Only reached in case of error */
+}
+
+bool
+test_coord(Coordinate *coord)
+{
+	uint64_t ui, uj;
+	Cube c;
+
+	if (coord->type != COMP_COORD) {
+		fprintf(stderr, "Can only test COMP_COORD\n");
+		return false;
+	}
+
+	gen_coord(coord);
+	for (ui = 0; ui < coord->max; ui++) {
+		indexers_makecube(coord->i, ui, &c);
+		uj = indexers_getind(coord->i, &c);
+		if (ui != uj) {
+			fprintf(stderr, "%s: error: %" PRIu64 " different"
+			    " from %" PRIu64 "\n", coord->name, uj, ui);
+			return false;
+		}
+	}
+
+	fprintf(stderr, "%s: test passed\n", coord->name);
+	return true;
+}
+
+uint64_t
+trans_coord(Coordinate *coord, Trans t, uint64_t ind)
+{
+	uint64_t i[2], M;
+
+	/* Some safety checks should be done here, but for performance   *
+	 * reasons we'd rather do them before calling this function.     *
+	 * We should check if coord is generated.                        */
+
+	switch (coord->type) {
+	case COMP_COORD:
+		return coord->ttable[t][ind];
+	case SYM_COORD:
+		return ind;
+	case SYMCOMP_COORD:
+		M = coord->base[1]->max;
+		i[0] = ind / M; /* Always fixed */
+		i[1] = ind % M;
+		i[1] = coord->base[1]->ttable[t][i[1]];
+		return i[0] * M + i[1];
+	default:
+		break;
+	}
+
+	return coord->max; /* Only reached in case of error */
+}

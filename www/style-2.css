@@ -32,11 +32,17 @@ img {
 	max-width:		100%;
 }
 
-pre, code {
+code {
 	background-color:	#eeeeee;
+	padding:		2px;
+}
+
+pre code {
+	padding:                0px;
 }
 
 pre {
+	background-color:	#eeeeee;
 	border:			2px solid;
 	padding:		6px;
 }

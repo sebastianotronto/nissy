@@ -1,3 +1,5 @@
+#define ENV_C
+
 #include "env.h"
 
 bool initialized_env = false;
