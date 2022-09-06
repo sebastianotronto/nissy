@@ -132,90 +132,40 @@ validate_singlecw_ending(Alg *alg)
 /* Public functions **********************************************************/
 
 void
-compute_ind(StepAlt *a, Cube *cube, Movable *ind)
+compute_ind(Step *s, Cube *cube, Movable *ind)
 {
 	int i;
 	Cube mvd;
 	Trans t, tt;
 
-	for (i = 0; i < a->n_coord; i++) {
-		t = a->coord_trans[i];
+	for (i = 0; i < s->n_coord; i++) {
+		t = s->coord_trans[i];
 		copy_cube(cube, &mvd);
 		apply_trans(t, &mvd);
 
-		ind[i].val = index_coord(a->coord[i], &mvd, &tt);
+		ind[i].val = index_coord(s->coord[i], &mvd, &tt);
 		ind[i].t = transform_trans(tt, t);
 	}
 }
 
-int
-estimate_stepalt(StepAlt *a, Movable *ind, int goal)
-{
-	int i, ret, est[a->n_coord];
-
-	for (i = 0; i < a->n_coord; i++) {
-		est[i] = ptableval(a->pd[i], ind[i].val);
-		if (est[i] == a->pd[i]->base && a->compact_pd[i])
-			est[i] = ptableval(a->fallback_pd[i],
-			    ind[i].val/a->fbmod[i]);
-		if (ind[i].val != 0 && est[i] == 0) /* est == 0 iff solved */
-			est[i] = 1;
-/*
-TODO: remove this debug code
-printf("%d: est=%d | ", i, est[i]);
-*/
-
-		if (est[i] > goal)
-			return est[i];
-	}
-
-	for (i = 0; i < a->n_dbtrick; i++)
-		if (est[a->dbtrick[i][0]] > 0 &&
-		    est[a->dbtrick[i][0]] == est[a->dbtrick[i][1]] &&
-		    est[a->dbtrick[i][0]] == est[a->dbtrick[i][2]])
-			est[a->dbtrick[i][0]] += 1;
-
-	for (i = 0, ret = -1; i < a->n_coord; i++)
-		ret = MAX(ret, est[i]);
-
-/*
-TODO: remove this debug code
-printf("Final estimate: %d\n", ret);
-*/
-
-	return ret;
-}
-
 void
-prepare_step(Step *step, SolveOptions *opts)
+prepare_cs(ChoiceStep *cs, SolveOptions *opts)
 {
 	int i, j;
 	PDGenData pdg;
-	StepAlt *a;
+	Step *s;
 
-	for (i = 0; step->alt[i] != NULL; i++) {
-		a = step->alt[i];
-		init_moveset(a->moveset);
-		pdg.moveset = a->moveset;
-		for (j = 0; j < a->n_coord; j++) {
-			gen_coord(a->coord[j]);
+	for (i = 0; cs->step[i] != NULL; i++) {
+		s = cs->step[i];
+		init_moveset(s->moveset);
+		pdg.moveset = s->moveset;
+		for (j = 0; j < s->n_coord; j++) {
+			gen_coord(s->coord[j]);
 
-			pdg.coord   = a->coord[j];
-			pdg.compact = a->compact_pd[j];
+			pdg.coord   = s->coord[j];
 			pdg.pd      = NULL;
 
-			a->pd[j] = genptable(&pdg, opts->nthreads);
-
-			if (a->compact_pd[j]) {
-				gen_coord(a->fallback_coord[j]);
-
-				pdg.coord   = a->fallback_coord[j];
-				pdg.compact = false;
-				pdg.pd      = NULL;
-
-				a->fallback_pd[j] =
-				    genptable(&pdg, opts->nthreads);
-			}
+			s->pd[j] = genptable(&pdg, opts->nthreads);
 		}
 	}
 }

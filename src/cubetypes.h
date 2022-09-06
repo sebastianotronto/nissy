@@ -84,7 +84,7 @@ trans
 typedef struct alg                Alg;
 typedef struct alglist            AlgList;
 typedef struct alglistnode        AlgListNode;
-typedef struct block              Block;
+typedef struct choicestep         ChoiceStep;
 typedef struct command            Command;
 typedef struct commandargs        CommandArgs;
 typedef struct coordinate         Coordinate;
@@ -97,13 +97,14 @@ typedef struct pdgendata          PDGenData;
 typedef struct prunedata          PruneData;
 typedef struct solveoptions       SolveOptions;
 typedef struct step               Step;
-typedef struct stepalt            StepAlt;
 typedef struct symdata            SymData;
 typedef struct threaddatasolve    ThreadDataSolve;
 typedef struct threaddatagenpt    ThreadDataGenpt;
 typedef struct transgroup         TransGroup;
 
 typedef bool                 (*Checker)          (Cube *);
+typedef bool                 (*DfsMover)         (DfsArg *);
+typedef void                 (*DfsExtraCopier)   (void *, void *);
 typedef bool                 (*Validator)        (Alg *);
 typedef void                 (*Exec)             (CommandArgs *);
 typedef CommandArgs *        (*ArgParser)        (int, char **);
@@ -137,11 +138,13 @@ alglistnode
 };
 
 struct
-block
+choicestep
 {
-	bool                      edge[12];
-	bool                      corner[8];
-	bool                      center[6];
+	char *                    shortname;
+	char *                    name;
+	Step *                    step[99];
+	Trans                     t[99];
+	char *                    ready_msg;
 };
 
 struct
@@ -160,7 +163,7 @@ commandargs
 	bool                      success;
 	Alg *                     scramble;
 	SolveOptions *            opts;
-	Step *                    step;
+	ChoiceStep *              cs;
 	Command *                 command; /* For help */
 	int                       n;
 	char                      scrtype[20];
@@ -210,7 +213,7 @@ dfsarg
 	Cube *                    cube;
 	Movable                   ind[MAX_N_COORD];
 	Trans                     t;
-	StepAlt *                 sa;
+	Step *                    s;
 	SolveOptions *            opts;
 	int                       d;
 	int                       bound;
@@ -220,6 +223,7 @@ dfsarg
 	AlgList *                 sols;
 	pthread_mutex_t *         sols_mutex;
 	Alg *                     current_alg;
+	void *                    extra;
 };
 
 struct
@@ -245,7 +249,6 @@ pdgendata
 {
 	Coordinate *              coord;
 	Moveset *                 moveset;
-	bool                      compact;
 	PruneData *               pd;
 };
 
@@ -256,10 +259,7 @@ prunedata
 	uint64_t                  n;
 	Coordinate *              coord;
 	Moveset *                 moveset;
-	bool                      compact;
-	int                       base;
 	uint64_t                  count[16];
-	uint64_t                  fbmod;
 };
 
 struct
@@ -280,53 +280,17 @@ solveoptions
 struct
 step
 {
-	char *                    shortname;
-	char *                    name;
-	StepAlt *                 alt[99];
-	Trans                     t[99];
-	char *                    ready_msg;
-};
-
-struct
-stepalt
-{
 	Checker                   ready;
 	bool                      final;
 	Moveset *                 moveset;
-	/* Just a comment, (TODO: remove this): moveset is really a stepalt
-	 * property, because for example we may want to define a "fingertrick
-	 * friendly ZBLL" step, where we allow either <R U D> or <R U F> as
-	 * movesets (or similar) */
 	int                       n_coord;
 	Coordinate *              coord[MAX_N_COORD];
 	Trans                     coord_trans[MAX_N_COORD];
 	PruneData *               pd[MAX_N_COORD];
-	bool                      compact_pd[MAX_N_COORD];
-	Coordinate *              fallback_coord[MAX_N_COORD];
-	PruneData *               fallback_pd[MAX_N_COORD];
-	uint64_t                  fbmod[MAX_N_COORD];
-	int                       n_dbtrick;
-	int                       dbtrick[MAX_N_COORD][3];
 	Validator                 is_valid;
+	DfsMover                  custom_move_checkstop;
+	DfsExtraCopier            copy_extra;
 };
-
-/*
-struct
-symdata
-{
-	char *                    filename;
-	bool                      generated;
-	Coordinate *              coord;
-	Coordinate *              sym_coord;
-	int                       ntrans;
-	Trans *                   trans;
-	uint64_t *                class;
-	uint64_t *                unsym;
-	Trans *                   transtorep;
-	uint64_t *                selfsim;
-};
-*/
-
 
 struct
 threaddatasolve

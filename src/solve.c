@@ -4,7 +4,7 @@
 
 /* Local functions ***********************************************************/
 
-static bool        allowed_next(Move move, StepAlt *sa, Move l0, Move l1);
+static bool        allowed_next(Move move, Step *s, Move l0, Move l1);
 static bool        cancel_niss(DfsArg *arg);
 static void        copy_dfsarg(DfsArg *src, DfsArg *dst);
 static void        dfs(DfsArg *arg);
@@ -19,13 +19,13 @@ static bool        solvestop(int d, int op, SolveOptions *opts, AlgList *sols);
 /* Local functions ***********************************************************/
 
 static bool
-allowed_next(Move m, StepAlt *sa, Move l0, Move l1)
+allowed_next(Move m, Step *s, Move l0, Move l1)
 {
 	bool allowed, order;
 	uint64_t mbit;
 
 	mbit    = ((uint64_t)1) << m;
-	allowed = mbit & sa->moveset->mask[l1][l0];
+	allowed = mbit & s->moveset->mask[l1][l0];
 	order   = !commute(l0, m) || l0 < m;
 
 	return allowed && order;
@@ -41,7 +41,7 @@ cancel_niss(DfsArg *arg)
 	if (arg->lastinv[0] == NULLMOVE)
 		return false;
 
-	ms = arg->sa->moveset;
+	ms = arg->s->moveset;
 	i1 = inverse_move(arg->lastinv[0]);
 	i2 = inverse_move(arg->lastinv[1]);
 
@@ -63,7 +63,7 @@ copy_dfsarg(DfsArg *src, DfsArg *dst)
 
 	dst->cube        = src->cube;
 	dst->t           = src->t;
-	dst->sa          = src->sa;
+	dst->s           = src->s;
 	dst->opts        = src->opts;
 	dst->d           = src->d;
 	dst->bound       = src->bound; /* In theory not needed */
@@ -77,10 +77,14 @@ copy_dfsarg(DfsArg *src, DfsArg *dst)
 		dst->lastinv[i] = src->lastinv[i];
 	}
 
-	for (i = 0; i < src->sa->n_coord; i++) {
+	for (i = 0; i < src->s->n_coord; i++) {
 		dst->ind[i].val = src->ind[i].val;
 		dst->ind[i].t   = src->ind[i].t;
 	}
+
+/*
+	src->s->copy_extra(src, dst);
+*/
 }
 
 static void
@@ -99,9 +103,9 @@ dfs(DfsArg *arg)
 		return;
 	}
 
-	for (i = 0; arg->sa->moveset->sorted_moves[i] != NULLMOVE; i++) {
-		m = arg->sa->moveset->sorted_moves[i];
-		if (allowed_next(m, arg->sa, arg->last[0], arg->last[1])) {
+	for (i = 0; arg->s->moveset->sorted_moves[i] != NULLMOVE; i++) {
+		m = arg->s->moveset->sorted_moves[i];
+		if (allowed_next(m, arg->s, arg->last[0], arg->last[1])) {
 			copy_dfsarg(arg, &newarg);
 			newarg.last[1] = arg->last[0];
 			newarg.last[0] = m;
@@ -120,9 +124,9 @@ dfs_add_sol(DfsArg *arg)
 {
 	bool valid, accepted, nisscanc;
 
-	valid = arg->sa->is_valid==NULL || arg->sa->is_valid(arg->current_alg);
+	valid = arg->s->is_valid==NULL || arg->s->is_valid(arg->current_alg);
 	accepted = valid || arg->opts->all;
-	nisscanc = arg->sa->final && cancel_niss(arg);
+	nisscanc = arg->s->final && cancel_niss(arg);
 
 	if (accepted && !nisscanc) {
 		pthread_mutex_lock(arg->sols_mutex);
@@ -159,7 +163,7 @@ dfs_niss(DfsArg *arg)
 	compose(c, newarg.cube);
 
 	/* New indexes */
-	compute_ind(newarg.sa, newarg.cube, newarg.ind);
+	compute_ind(newarg.s, newarg.cube, newarg.ind);
 
 	swapmove(&(newarg.last[0]), &(newarg.lastinv[0]));
 	swapmove(&(newarg.last[1]), &(newarg.lastinv[1]));
@@ -175,36 +179,35 @@ dfs_niss(DfsArg *arg)
 static bool
 dfs_move_checkstop(DfsArg *arg)
 {
-	bool b;
-	int i, goal;
+	int i, goal, nsols;
 	Move mm;
 	Trans tt = uf; /* Avoid uninitialized warning */
 
-	/* Moving */
-	if (arg->last[0] != NULLMOVE) {
-		for (i = 0; i < arg->sa->n_coord; i++) {
+	/* Moving and computing bound */
+	arg->bound = 0;
+	goal = arg->d - arg->current_alg->len;
+	for (i = 0; i < arg->s->n_coord; i++) {
+		if (arg->last[0] != NULLMOVE) {
 			mm = transform_move(arg->ind[i].t, arg->last[0]);
-			arg->ind[i].val = move_coord(arg->sa->coord[i],
+			arg->ind[i].val = move_coord(arg->s->coord[i],
 			    mm, arg->ind[i].val, &tt);
 			arg->ind[i].t = transform_trans(tt, arg->ind[i].t);
 		}
+
+		arg->bound =
+		    MAX(arg->bound, ptableval(arg->s->pd[i], arg->ind[i].val));
+		if (arg->opts->can_niss && !arg->niss)
+			arg->bound = MIN(1, arg->bound);
+
+		if (arg->bound > goal)
+			return true;
 	}
 
-	/* Computing bound for coordinates */
-	goal  = arg->d - arg->current_alg->len;
-	arg->bound = estimate_stepalt(arg->sa, arg->ind, goal);
-	if (arg->opts->can_niss && !arg->niss)
-		arg->bound = MIN(1, arg->bound);
+	pthread_mutex_lock(arg->sols_mutex);
+	nsols = arg->sols->len;
+	pthread_mutex_unlock(arg->sols_mutex);
 
-	if (arg->bound > goal) {
-		b = true;
-	} else {
-		pthread_mutex_lock(arg->sols_mutex);
-		b = arg->sols->len >= arg->opts->max_solutions;
-		pthread_mutex_unlock(arg->sols_mutex);
-	}
-
-	return b;
+	return nsols >= arg->opts->max_solutions;
 }
 
 static void *
@@ -240,7 +243,7 @@ instance_thread(void *arg)
 			invert_cube(&c);
 
 		copy_dfsarg(&td->arg, &darg);
-		compute_ind(td->arg.sa, &c, darg.ind);
+		compute_ind(td->arg.s, &c, darg.ind);
 		darg.cube            = &c;
 
 		darg.niss            = inv;
@@ -279,11 +282,11 @@ multidfs(DfsArg *arg)
 	pthread_mutex_init(start_mutex, NULL);
 	pthread_mutex_init(sols_mutex,  NULL);
 
-	for (i = 0; arg->sa->moveset->sorted_moves[i] != NULLMOVE; i++) {
+	for (i = 0; arg->s->moveset->sorted_moves[i] != NULLMOVE; i++) {
 		alg = new_alg("");
-		append_move(alg, arg->sa->moveset->sorted_moves[i], false);
+		append_move(alg, arg->s->moveset->sorted_moves[i], false);
 		append_alg(start, alg);
-		if (arg->opts->can_niss && !arg->sa->final) {
+		if (arg->opts->can_niss && !arg->s->final) {
 			alg->inv[0] = true;
 			append_alg(start, alg);
 		}
@@ -318,15 +321,25 @@ multidfs(DfsArg *arg)
 static bool
 niss_makes_sense(DfsArg *arg)
 {
-	Cube testcube;
+	Move m, mm;
+	uint64_t u;
+	int i;
 
-	if (arg->sa->final || arg->niss || !arg->opts->can_niss)
+	if (arg->s->final || arg->niss || !arg->opts->can_niss)
 		return false;
 
-	make_solved(&testcube);
-	apply_move(inverse_move(arg->last[0]), &testcube);
-	return arg->current_alg->len == 0 ||
-	    estimate_stepalt(arg->sa, arg->ind, 0) > 0;
+	if (arg->last[0] == NULLMOVE)
+		return true;
+
+	m = inverse_move(arg->last[0]);
+	for (i = 0; i < arg->s->n_coord; i++) {
+		mm = transform_move(arg->ind[i].t, m);
+		u = move_coord(arg->s->coord[i], mm, 0, NULL);
+		if (ptableval(arg->s->pd[i], u) > 0)
+			return true;
+	}
+	
+	return false;
 }
 
 static bool
@@ -344,38 +357,38 @@ solvestop(int d, int op, SolveOptions *opts, AlgList *sols)
 /* Public functions **********************************************************/
 
 AlgList *
-solve(Cube *cube, Step *step, SolveOptions *opts)
+solve(Cube *cube, ChoiceStep *cs, SolveOptions *opts)
 {
-	int i, d, op;
+	int i, j, d, op, est;
 	bool ready[99], one_ready, zerosol;
 	Movable ind[99][10];
 	AlgList *s;
 	Cube *c[99];
 	DfsArg arg[99];
 
-	prepare_step(step, opts);
+	prepare_cs(cs, opts);
 	s = new_alglist();
 
-	for (i = 0, one_ready = false; step->alt[i] != NULL; i++) {
+	for (i = 0, one_ready = false; cs->step[i] != NULL; i++) {
 		c[i] = malloc(sizeof(Cube));
 		copy_cube(cube, c[i]);
-		apply_trans(step->t[i], c[i]);
+		apply_trans(cs->t[i], c[i]);
 
 		arg[i].cube = c[i];
-		arg[i].t    = step->t[i];
-		arg[i].sa   = step->alt[i];
+		arg[i].t    = cs->t[i];
+		arg[i].s    = cs->step[i];
 		arg[i].opts = opts;
 		arg[i].sols = s;
 
-		if ((ready[i] = step->alt[i]->ready(c[i]))) {
+		if ((ready[i] = cs->step[i]->ready(c[i]))) {
 			one_ready = true;
 			/* Only for local use for 0 moves solutions */
-			compute_ind(step->alt[i], c[i], ind[i]);
+			compute_ind(cs->step[i], c[i], ind[i]);
 		}
 	}
 	if (!one_ready) {
 		fprintf(stderr, "Cube not ready for solving step: ");
-		fprintf(stderr, "%s\n", step->ready_msg);
+		fprintf(stderr, "%s\n", cs->ready_msg);
 		return s;
 	}
 
@@ -383,10 +396,16 @@ solve(Cube *cube, Step *step, SolveOptions *opts)
 	 * alternatives, all longer solutions will be discarded, so we may
 	 * just set its ready[] value to false. If the solution is accepted
 	 * we append it and start searching from d = 1. */
-	for (i = 0, zerosol = false; step->alt[i] != NULL; i++) {
-		if (ready[i] && estimate_stepalt(step->alt[i],ind[i],0) == 0) {
-			ready[i] = false;
-			zerosol = true;
+	for (i = 0, zerosol = false; cs->step[i] != NULL; i++) {
+		if (ready[i]) {
+			est = 0;
+			for (j = 0; j < cs->step[i]->n_coord; j++)
+				est = MAX(est, ptableval(cs->step[i]->pd[j],
+				    ind[i][j].val));
+			if (est == 0) {
+				ready[i] = false;
+				zerosol = true;
+			}
 		}
 	}
 	if (zerosol && opts->min_moves == 0) {
@@ -401,7 +420,7 @@ solve(Cube *cube, Step *step, SolveOptions *opts)
 		if (opts->verbose)
 			fprintf(stderr, "Searching depth %d\n", d);
 
-		for (i=0; step->alt[i]!=NULL && !solvestop(d,op,opts,s); i++) {
+		for (i=0; cs->step[i]!=NULL && !solvestop(d,op,opts,s); i++) {
 			if (!ready[i])
 				continue;
 
@@ -413,7 +432,7 @@ solve(Cube *cube, Step *step, SolveOptions *opts)
 		}
 	}
 
-	for (i = 0; step->alt[i] != NULL; i++)
+	for (i = 0; cs->step[i] != NULL; i++)
 		free(c[i]);
 
 	return s;

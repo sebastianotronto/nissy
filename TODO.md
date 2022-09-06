@@ -3,20 +3,28 @@
 This is a list of things that I would like to add or change at some point.
 It's more of a personal reminder than anything else.
 
+## After symcoord
+### Solving standard coordinates
+* add Void * extradata to DfsArg and a custom move function
+* add optional custom pre-process for generating special table (nx)
+* copy_dfsdata should copy extra too!
+* Pruning: remove base value?
+### nx.c
+* implement nxopt with all tables and all tricks
+  (maybe compile time variable for maximum memory to use?)
+* custom pruning table, copy some code from pruning.h
+* generate compressed: hard-code the base value, doable!
+* special type of pruning table with fallback and whatnot
+* is_valid should also unniss / cleanup the alg
+### fst_cube
+* slightly different from cube in v2.0.2: each "side" coordinate
+  is a transformation of the other, not an eorl or similar (changes
+  the permutation!)
+* add fst_index for some coordinates?
+* inverse: for edges, just generate ep[12] and convert back
+* corners: big table (150Mb if 16bit integers are used)
+
 ## For version 2.1
-### Slow: it is slower than the old nissy 2.0.2 :(
-* nxopt's trick (switching to reduce branching) actually saves about 50%!
-* Another factor is estimating *while* moving (i.e. do not move all
-  coordinates if the first one already gives a high value!)
-* simplify solve, remove everything that is used only by optimal solvers
-* Good compromise: each stepalt offers one of two alternatives: either solve
-  by simply using pruning tables and moving coordinates, or using a custom
-  estimator and moving a cube (or fast_cube) and computing coordinates
-  in the estimator
-* is there really no way to use inverse branching trick with current system?
-* new file optimal.c with the old solve logic; try first with the simple
-  cube implementation and the new indexers, if it is still slow change
-  to fast_cube (intermediate nissy v2.0.2 implementation)
 ### Changes to Step and Solve
 * remove cube from dfsarg? (i still need to save the scramble somewhere,
   but I really only use it in dfs_niss)
@@ -24,8 +32,6 @@ It's more of a personal reminder than anything else.
 * steps.c: checkers (use coordinates), all stepalt and steps (WIP...)
 * commands gen and freemem
 * commands.c: twophase, ...?
-* Coordinate should have a moveset field? No, at worst there are some garbage 
-  values in mtable, but no risk for errors
 ### Rotate, not transform, before solving
 * solve should re-orient first if needed and not just give up if centers are off
 ### Documentation

@@ -2,7 +2,7 @@
 
 #include "commands.h"
 
-static bool             read_step(CommandArgs *args, char *str);
+static bool             read_cs(CommandArgs *args, char *str);
 static bool             read_scrtype(CommandArgs *args, char *str);
 static bool             read_scramble(int c, char **v, CommandArgs *args);
 
@@ -95,7 +95,7 @@ solve_parse_args(int c, char **v)
 			a->opts->print_number = false;
 		} else if (!strcmp(v[i], "-c")) {
 			a->opts->count_only = true;
-		} else if (!read_step(a, v[i])) {
+		} else if (!read_cs(a, v[i])) {
 			break;
 		}
 	}
@@ -218,7 +218,7 @@ solve_exec(CommandArgs *args)
 
 	make_solved(&c);
 	apply_alg(args->scramble, &c);
-	sols = solve(&c, args->step, args->opts);
+	sols = solve(&c, args->cs, args->opts);
 
 	if (args->opts->count_only)
 		printf("%d\n", sols->len);
@@ -345,8 +345,8 @@ steps_exec(CommandArgs *args)
 {
 	int i;
 
-	for (i = 0; steps[i] != NULL; i++)
-		printf("%-15s %s\n", steps[i]->shortname, steps[i]->name);
+	for (i = 0; csteps[i] != NULL; i++)
+		printf("%-15s %s\n", csteps[i]->shortname, csteps[i]->name);
 }
 
 void
@@ -503,13 +503,13 @@ read_scrtype(CommandArgs *args, char *str)
 }
 
 static bool
-read_step(CommandArgs *args, char *str)
+read_cs(CommandArgs *args, char *str)
 {
 	int i;
 
-	for (i = 0; steps[i] != NULL; i++) {
-		if (!strcmp(steps[i]->shortname, str)) {
-			args->step = steps[i];
+	for (i = 0; csteps[i] != NULL; i++) {
+		if (!strcmp(csteps[i]->shortname, str)) {
+			args->cs = csteps[i];
 			return true;
 		}
 	}
@@ -546,7 +546,7 @@ new_args()
 	args->opts = malloc(sizeof(SolveOptions));
 
 	/* step and command are static */
-	args->step = steps[0]; /* default: first step in list */
+	args->cs = csteps[0]; /* default: first step in list */
 	args->command = NULL;
 
 	return args;
