@@ -4,6 +4,12 @@ This is a list of things that I would like to add or change at some point.
 It's more of a personal reminder than anything else.
 
 ## After symcoord
+### fst_cube
+* slightly different from cube in v2.0.2: each "side" coordinate
+  is a transformation of the other, not an eorl or similar (changes
+  the permutation!)
+* inverse: for edges, just generate ep[12] and convert back
+* corners: big table (150Mb if 16bit integers are used)
 ### Solving standard coordinates
 * add Void * extradata to DfsArg and a custom move function
 * add optional custom pre-process for generating special table (nx)
@@ -12,13 +18,6 @@ It's more of a personal reminder than anything else.
 * implement nxopt with all tables and all tricks
   (maybe compile time variable for maximum memory to use?)
 * is_valid should also unniss / cleanup the alg
-### fst_cube
-* slightly different from cube in v2.0.2: each "side" coordinate
-  is a transformation of the other, not an eorl or similar (changes
-  the permutation!)
-* add fst_index for some coordinates?
-* inverse: for edges, just generate ep[12] and convert back
-* corners: big table (150Mb if 16bit integers are used)
 
 ## For version 2.1
 ### Changes to Step and Solve

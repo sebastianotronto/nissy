@@ -90,6 +90,7 @@ typedef struct commandargs        CommandArgs;
 typedef struct coordinate         Coordinate;
 typedef struct cube               Cube;
 typedef struct dfsarg             DfsArg;
+typedef struct fstcube            FstCube;
 typedef struct indexer            Indexer;
 typedef struct movable            Movable;
 typedef struct moveset            Moveset;
@@ -224,6 +225,21 @@ dfsarg
 	Alg *                     current_alg;
 	void *                    extra;
 };
+
+struct
+fstcube
+{
+	uint16_t                  uf_eofb;
+	uint16_t                  uf_eposepe;
+	uint16_t                  uf_coud;
+	uint16_t                  uf_cp;
+	uint16_t                  fr_eofb;
+	uint16_t                  fr_eposepe;
+	uint16_t                  fr_coud;
+	uint16_t                  rd_eofb;
+	uint16_t                  rd_eposepe;
+	uint16_t                  rd_coud;
+}
 
 struct
 indexer
