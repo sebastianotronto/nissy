@@ -152,20 +152,16 @@ void
 prepare_cs(ChoiceStep *cs, SolveOptions *opts)
 {
 	int i, j;
-	PDGenData pdg;
 	Step *s;
 
 	for (i = 0; cs->step[i] != NULL; i++) {
 		s = cs->step[i];
-		init_moveset(s->moveset);
-		pdg.moveset = s->moveset;
 		for (j = 0; j < s->n_coord; j++) {
-			gen_coord(s->coord[j]);
-
-			pdg.coord   = s->coord[j];
-			pdg.pd      = NULL;
-
-			s->pd[j] = genptable(&pdg, opts->nthreads);
+			s->pd[j] = malloc(sizeof(PruneData));
+			s->pd[j]->moveset = s->moveset;
+			s->pd[j]->coord   = s->coord[j];
+			s->pd[j]->compact = s->pd_compact[j];
+			s->pd[j] = genptable(s->pd[j], opts->nthreads);
 		}
 	}
 }

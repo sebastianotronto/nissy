@@ -3,6 +3,7 @@
 #include "pruning.h"
 
 #define ENTRIES_PER_GROUP              (2*sizeof(entry_group_t))
+#define ENTRIES_PER_GROUP_COMPACT      (4*sizeof(entry_group_t))
 
 static int         findchunk(PruneData *pd, int nchunks, uint64_t i);
 static void        genptable_bfs(PruneData *pd, int d, int nt, int nc);
@@ -13,7 +14,7 @@ static void        ptable_update(PruneData *pd, uint64_t ind, int m);
 static bool        read_ptable_file(PruneData *pd);
 static bool        write_ptable_file(PruneData *pd);
 
-PDGenData *active_pdg[256];
+PruneData *active_pd[256];
 
 int
 findchunk(PruneData *pd, int nchunks, uint64_t i)
@@ -27,25 +28,22 @@ findchunk(PruneData *pd, int nchunks, uint64_t i)
 }
 
 PruneData *
-genptable(PDGenData *pdg, int nthreads)
+genptable(PruneData *pd, int nthreads)
 {
-	int d, nchunks, i;
+	int d, nchunks, i, maxv;
 	uint64_t oldn;
-	PruneData *pd;
 
-	for (i = 0; active_pdg[i] != NULL; i++) {
-		pd = active_pdg[i]->pd;
-		if (pd->coord == pdg->coord && pd->moveset == pdg->moveset)
-			return pd;
+	for (i = 0; active_pd[i] != NULL; i++) {
+		if (active_pd[i]->coord == pd->coord &&
+		    active_pd[i]->moveset == pd->moveset &&
+		    active_pd[i]->compact == pd->compact)
+			return active_pd[i];
 	}
 
-	pd = malloc(sizeof(PruneData));
-	pdg->pd = pd;
-	pd->coord   = pdg->coord;
-	pd->moveset = pdg->moveset;
-	pd->ptable = malloc(ptablesize(pd) * sizeof(entry_group_t));
-
+	init_moveset(pd->moveset);
 	gen_coord(pd->coord);
+
+	pd->ptable = malloc(ptablesize(pd) * sizeof(entry_group_t));
 
 	if (read_ptable_file(pd))
 		goto genptable_done;
@@ -78,7 +76,9 @@ genptable(PDGenData *pdg, int nthreads)
 		0, pd->n - oldn, pd->n, pd->coord->max);
 	oldn = pd->n;
 	pd->count[0] = pd->n;
-	for (d = 0; d < 15 && pd->n < pd->coord->max; d++) {
+
+	maxv = pd->compact ? MIN(15, pd->base + 4) : 15;
+	for (d = 0; d < maxv && pd->n < pd->coord->max; d++) {
 		genptable_bfs(pd, d, nthreads, nchunks);
 		genptable_fixnasty(pd, d+1, nthreads);
 		fprintf(stderr, "Depth %d done, generated %"
@@ -87,19 +87,17 @@ genptable(PDGenData *pdg, int nthreads)
 		pd->count[d+1] = pd->n - oldn;
 		oldn = pd->n;
 	}
+	if (pd->compact)
+		fprintf(stderr, "Compact table, values above "
+				"%d are inaccurate.\n", maxv-1);
 	fprintf(stderr, "Pruning table generated!\n");
 
 	if (!write_ptable_file(pd))
 		fprintf(stderr, "Error writing ptable file\n");
 
 genptable_done:
-	for (i = 0; active_pdg[i] != NULL; i++);
-	active_pdg[i] = malloc(sizeof(PDGenData));
-	active_pdg[i]->coord   = pdg->coord;
-	active_pdg[i]->moveset = pdg->moveset;
-	active_pdg[i]->pd      = pd;
-
-	return pd;
+	for (i = 0; active_pd[i] != NULL; i++);
+	return active_pd[i] = pd;
 }
 
 static void
@@ -169,7 +167,7 @@ instance_bfs(void *arg)
 {
 	ThreadDataGenpt *td;
 	uint64_t i, ii, blocksize, rmin, rmax, updated;
-	int j, pval, ichunk;
+	int j, pval, ichunk, oldc, newc;
 	Move *ms;
 
 	td = (ThreadDataGenpt *)arg;
@@ -180,23 +178,41 @@ instance_bfs(void *arg)
 	       td->pd->coord->max :
 	       ((uint64_t)td->thid + 1) * blocksize;
 
+	if (td->pd->compact) {
+		if (td->d <= td->pd->base) {
+			oldc = 1;
+			newc = 1;
+		} else {
+			oldc = td->d - td->pd->base;
+			newc = td->d - td->pd->base;
+		}
+	} else {
+		oldc = td->d;
+		newc = td->d + 1;
+	}
+
 	updated = 0;
 	for (i = rmin; i < rmax; i++) {
 		ichunk = findchunk(td->pd, td->nchunks, i);
 		pthread_mutex_lock(td->mutex[ichunk]);
 		pval = ptableval(td->pd, i);
 		pthread_mutex_unlock(td->mutex[ichunk]);
-		if (pval == td->d) {
+		if (pval == oldc) {
 			for (j = 0; ms[j] != NULLMOVE; j++) {
-				/* ii = td->pd->coord->move(ms[j], i); */
 				ii = move_coord(td->pd->coord, ms[j], i, NULL);
 				ichunk = findchunk(td->pd, td->nchunks, ii);
 				pthread_mutex_lock(td->mutex[ichunk]);
 				pval = ptableval(td->pd, ii);
-				if (pval > td->d+1) {
-					ptable_update(td->pd, ii, td->d+1);
+				if (pval > newc) {
+					ptable_update(td->pd, ii, newc);
 					updated++;
 				}
+				pthread_mutex_unlock(td->mutex[ichunk]);
+			}
+			if (td->pd->compact && td->d <= td->pd->base) {
+				ichunk = findchunk(td->pd, td->nchunks, i);
+				pthread_mutex_lock(td->mutex[ichunk]);
+				ptable_update(td->pd, i, 0);
 				pthread_mutex_unlock(td->mutex[ichunk]);
 			}
 		}
@@ -214,7 +230,7 @@ instance_fixnasty(void *arg)
 {
 	ThreadDataGenpt *td;
 	uint64_t i, ii, blocksize, rmin, rmax, updated, ss, M;
-	int j;
+	int j, oldc;
 	Trans t;
 
 	td = (ThreadDataGenpt *)arg;
@@ -227,17 +243,26 @@ instance_fixnasty(void *arg)
 	       td->pd->coord->max :
 	       ((uint64_t)td->thid + 1) * blocksize;
 
+	if (td->pd->compact) {
+		if (td->d <= td->pd->base)
+			oldc = 1;
+		else
+			oldc = td->d - td->pd->base;
+	} else {
+		oldc = td->d;
+	}
+
 	updated = 0;
 	for (i = rmin; i < rmax; i++) {
-		if (ptableval(td->pd, i) == td->d) {
+		if (ptableval(td->pd, i) == oldc) {
 			ss = td->pd->coord->base[0]->selfsim[i/M];
 			for (j = 0; j < td->pd->coord->base[0]->tgrp->n; j++) {
 				t = td->pd->coord->base[0]->tgrp->t[j];
 				if (t == uf || !(ss & ((uint64_t)1<<t)))
 					continue;
 				ii = trans_coord(td->pd->coord, t, i);
-				if (ptableval(td->pd, ii) > td->d) {
-					ptable_update(td->pd, ii, td->d);
+				if (ptableval(td->pd, ii) > oldc) {
+					ptable_update(td->pd, ii, oldc);
 					updated++;
 				}
 			}
@@ -257,6 +282,12 @@ print_ptable(PruneData *pd)
 	uint64_t i;
 
 	printf("Table %s_%s\n", pd->coord->name, pd->moveset->name);
+
+	if (pd->compact) {
+		printf("Compract table with base value: %d\n", pd->base);
+		printf("Values above %d are inaccurate.\n", pd->base + 3);
+	}
+
 	for (i = 0; i < 16; i++)
 		printf("%2" PRIu64 "\t%10" PRIu64 "\n", i, pd->count[i]);
 }
@@ -264,32 +295,50 @@ print_ptable(PruneData *pd)
 uint64_t
 ptablesize(PruneData *pd)
 {
-	return (pd->coord->max + ENTRIES_PER_GROUP - 1) / ENTRIES_PER_GROUP;
+	uint64_t e;
+
+	e = pd->compact ? ENTRIES_PER_GROUP_COMPACT : ENTRIES_PER_GROUP;
+
+	return (pd->coord->max + e - 1) / e;
 }
 
 static void
 ptable_update(PruneData *pd, uint64_t ind, int n)
 {
 	int sh;
-	entry_group_t mask;
-	uint64_t i;
+	entry_group_t f, mask;
+	uint64_t i, e, b;
 
-	sh = 4 * (ind % ENTRIES_PER_GROUP);
-	mask = ((entry_group_t)15) << sh;
-	i = ind/ENTRIES_PER_GROUP;
+	e = pd->compact ? ENTRIES_PER_GROUP_COMPACT : ENTRIES_PER_GROUP;
+	b = pd->compact ? 2 : 4;
+	f = pd->compact ? 3 : 15;
+
+	sh = b * (ind % e);
+	mask = f << sh;
+	i = ind / e;
 
 	pd->ptable[i] &= ~mask;
-	pd->ptable[i] |= (((entry_group_t)n)&15) << sh;
+	pd->ptable[i] |= (((entry_group_t)n) & f) << sh;
 }
 
 int
 ptableval(PruneData *pd, uint64_t ind)
 {
 	int sh;
+	uint64_t e;
+	entry_group_t m;
 
-	sh = (ind % ENTRIES_PER_GROUP) * 4;
+	if (pd->compact) {
+		e  = ENTRIES_PER_GROUP_COMPACT;
+		m  = 3;
+		sh = (ind % e) * 2;
+	} else {
+		e  = ENTRIES_PER_GROUP;
+		m  = 15;
+		sh = (ind % e) * 4;
+	}
 
-	return (pd->ptable[ind/ENTRIES_PER_GROUP] & (15 << sh)) >> sh;
+	return (pd->ptable[ind/e] & (m << sh)) >> sh;
 }
 
 static bool
@@ -299,7 +348,7 @@ read_ptable_file(PruneData *pd)
 
 	FILE *f;
 	char fname[strlen(tabledir)+256];
-	int i, phony;
+	int i;
 	uint64_t r;
 
 	strcpy(fname, tabledir);
@@ -311,7 +360,7 @@ read_ptable_file(PruneData *pd)
 	if ((f = fopen(fname, "rb")) == NULL)
 		return false;
 
-	r = fread(&phony, sizeof(int), 1, f);
+	r = fread(&(pd->base), sizeof(int), 1, f);
 	for (i = 0; i < 16; i++)
 		r += fread(&(pd->count[i]), sizeof(uint64_t), 1, f);
 	r += fread(pd->ptable, sizeof(entry_group_t), ptablesize(pd), f);
@@ -328,7 +377,7 @@ write_ptable_file(PruneData *pd)
 
 	FILE *f;
 	char fname[strlen(tabledir)+256];
-	int i, phony = 0;
+	int i;
 	uint64_t w;
 
 	strcpy(fname, tabledir);
@@ -340,7 +389,7 @@ write_ptable_file(PruneData *pd)
 	if ((f = fopen(fname, "wb")) == NULL)
 		return false;
 
-	w = fwrite(&phony, sizeof(int), 1, f); /* phony replace base */
+	w = fwrite(&(pd->base), sizeof(int), 1, f);
 	for (i = 0; i < 16; i++)
 		w += fwrite(&(pd->count[i]), sizeof(uint64_t), 1, f);
 	w += fwrite(pd->ptable, sizeof(entry_group_t), ptablesize(pd), f);

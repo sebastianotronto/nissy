@@ -4,12 +4,12 @@
 #include "coord.h"
 
 void        free_pd(PruneData *pd);
-PruneData * genptable(PDGenData *data, int nthreads);
+PruneData * genptable(PruneData *data, int nthreads);
 void        print_ptable(PruneData *pd);
 uint64_t    ptablesize(PruneData *pd);
 int         ptableval(PruneData *pd, uint64_t ind);
 
-extern PDGenData *active_pdg[256];
+extern PruneData *active_pd[256];
 
 #endif
 

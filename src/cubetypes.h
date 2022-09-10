@@ -93,7 +93,6 @@ typedef struct dfsarg             DfsArg;
 typedef struct indexer            Indexer;
 typedef struct movable            Movable;
 typedef struct moveset            Moveset;
-typedef struct pdgendata          PDGenData;
 typedef struct prunedata          PruneData;
 typedef struct solveoptions       SolveOptions;
 typedef struct step               Step;
@@ -245,14 +244,6 @@ moveset
 };
 
 struct
-pdgendata
-{
-	Coordinate *              coord;
-	Moveset *                 moveset;
-	PruneData *               pd;
-};
-
-struct
 prunedata
 {
 	entry_group_t *           ptable;
@@ -260,6 +251,8 @@ prunedata
 	Coordinate *              coord;
 	Moveset *                 moveset;
 	uint64_t                  count[16];
+	bool                      compact;
+	int                       base;
 };
 
 struct
@@ -287,6 +280,7 @@ step
 	Coordinate *              coord[MAX_N_COORD];
 	Trans                     coord_trans[MAX_N_COORD];
 	PruneData *               pd[MAX_N_COORD];
+	bool                      pd_compact[MAX_N_COORD];
 	Validator                 is_valid;
 	DfsMover                  custom_move_checkstop;
 	DfsExtraCopier            copy_extra;

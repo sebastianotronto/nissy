@@ -8,13 +8,9 @@ It's more of a personal reminder than anything else.
 * add Void * extradata to DfsArg and a custom move function
 * add optional custom pre-process for generating special table (nx)
 * copy_dfsdata should copy extra too!
-* Pruning: remove base value?
 ### nx.c
 * implement nxopt with all tables and all tricks
   (maybe compile time variable for maximum memory to use?)
-* custom pruning table, copy some code from pruning.h
-* generate compressed: hard-code the base value, doable!
-* special type of pruning table with fallback and whatnot
 * is_valid should also unniss / cleanup the alg
 ### fst_cube
 * slightly different from cube in v2.0.2: each "side" coordinate
