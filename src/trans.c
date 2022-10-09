@@ -26,7 +26,7 @@ static char rotation_alg_string[100][NROTATIONS] = {
 	[bu] = "x3",   [br] = "x3 y", [bd] = "x3 y2", [bl] = "x3 y3",
 };
 
-static Alg *rotation_alg_arr[NROTATIONS];
+Alg  *rotation_alg_arr[NROTATIONS];
 Move  moves_ttable[NTRANS][NMOVES];
 Trans trans_ttable[NTRANS][NTRANS];
 Trans trans_itable[NTRANS];

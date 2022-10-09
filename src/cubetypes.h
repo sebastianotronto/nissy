@@ -108,6 +108,7 @@ typedef void                 (*DfsExtraCopier)   (void *, void *);
 typedef bool                 (*Validator)        (Alg *);
 typedef void                 (*Exec)             (CommandArgs *);
 typedef CommandArgs *        (*ArgParser)        (int, char **);
+typedef bool                 (*Tester)           (void);
 typedef int                  (*TransFinder)      (uint64_t, Trans *);
 
 
@@ -239,7 +240,7 @@ fstcube
 	uint16_t                  rd_eofb;
 	uint16_t                  rd_eposepe;
 	uint16_t                  rd_coud;
-}
+};
 
 struct
 indexer

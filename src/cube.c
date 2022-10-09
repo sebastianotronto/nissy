@@ -2,6 +2,8 @@
 
 #include "cube.h"
 
+static int where_is_piece(int piece, int *arr, int n);
+
 void
 compose(Cube *c2, Cube *c1)
 {
@@ -153,4 +155,34 @@ print_cube(Cube *cube)
 	for (int i = 0; i < 6; i++)
 		printf("  %s ", center_string[cube->xp[i]]);
 	printf("\n");
+}
+
+int
+where_is_center(Center x, Cube *c)
+{
+	return where_is_piece(x, c->xp, 6);
+}
+
+int
+where_is_corner(Corner k, Cube *c)
+{
+	return where_is_piece(k, c->cp, 8);
+}
+
+int
+where_is_edge(Edge e, Cube *c)
+{
+	return where_is_piece(e, c->ep, 12);
+}
+
+static int
+where_is_piece(int piece, int *arr, int n)
+{
+	int i;
+
+	for (i = 0; i < n; i++)
+		if (arr[i] == piece)
+			return i;
+
+	return -1;
 }

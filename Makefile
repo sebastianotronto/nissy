@@ -5,11 +5,12 @@ VERSION = post-2.0.2
 PREFIX = /usr/local
 MANPREFIX = ${PREFIX}/share/man
 
-CPPFLAGS = -DVERSION=\"${VERSION}\"
-CFLAGS   = -std=c99 -pthread -pedantic -Wall -Wextra \
-	   -Wno-unused-parameter -O3 ${CPPFLAGS}
-DBGFLAGS = -std=c99 -pthread -pedantic -Wall -Wextra \
-           -Wno-unused-parameter -g ${CPPFLAGS}
+CPPFLAGS  = -DVERSION=\"${VERSION}\"
+CFLAGS    = -std=c99 -pthread -pedantic -Wall -Wextra \
+	    -Wno-unused-parameter -O3 ${CPPFLAGS}
+DBGFLAGS  = -std=c99 -pthread -pedantic -Wall -Wextra \
+            -Wno-unused-parameter -g ${CPPFLAGS}
+TESTFLAGS = ${DBGFLAGS} -DTEST
 
 CC = cc
 
@@ -18,6 +19,9 @@ all: nissy
 
 nissy: clean
 	${CC} ${CFLAGS} -o nissy src/*.c
+
+test:
+	${CC} ${TESTFLAGS} -o test src/*.c tests/*.c
 
 nissy.exe:
 	x86_64-w64-mingw32-gcc ${CFLAGS} -static -o nissy.exe src/*.c
@@ -63,5 +67,5 @@ uninstall:
 	rm -rf ${DESTDIR}${PREFIX}/bin/nissy ${DESTDIR}${MANPREFIX}/man1/nissy.1
 	for s in ${SCRIPTS}; do rm -rf ${DESTDIR}${PREFIX}/bin/$$s; done
 
-.PHONY: all debug clean dist install uninstall upload
+.PHONY: all debug clean dist install test uninstall upload
 

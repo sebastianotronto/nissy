@@ -142,6 +142,7 @@ launch(bool batchmode)
 	free(shell_argv);
 }
 
+#ifndef TEST
 int
 main(int argc, char *argv[])
 {
@@ -187,3 +188,4 @@ main(int argc, char *argv[])
 
 	return 0;
 }
+#endif

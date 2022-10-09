@@ -4,12 +4,13 @@ This is a list of things that I would like to add or change at some point.
 It's more of a personal reminder than anything else.
 
 ## After symcoord
-### fst_cube
-* slightly different from cube in v2.0.2: each "side" coordinate
-  is a transformation of the other, not an eorl or similar (changes
-  the permutation!)
-* inverse: for edges, just generate ep[12] and convert back
-* corners: big table (150Mb if 16bit integers are used)
+### generic:
+* all files should have an init function, calling the ones
+  of the files includes + doing more stuff. A static "initiliazed"
+  variable is probably needed too.
+### testing!
+* test fst and other things...
+* move test_coord to the testing folder
 ### Solving standard coordinates
 * add Void * extradata to DfsArg and a custom move function
 * add optional custom pre-process for generating special table (nx)
@@ -42,7 +43,6 @@ It's more of a personal reminder than anything else.
   check if found enough solutions before checking pruning values)
 ### Technical
 * generic option parser
-* testing? Maybe just hardcode some examples generated with old nissy
 ### Commands
 * Easy: add option -I (inverse) and -L (linear, like inverse + normal)
   to do only linear NISS
@@ -85,9 +85,6 @@ including e.g. solutions that were not shown because -c)
 * webapp (cgi)
 
 ## Technical stuff
-
-### Testing
-* write some proper tests, move test_coord to the testing module(s)
 
 ### Memory management
 * free pruning table after solve is done? if I do this I need to deafault to a
