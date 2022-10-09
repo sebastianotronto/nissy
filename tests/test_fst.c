@@ -26,7 +26,17 @@ test_cube_to_fst_to_cube(Cube *c)
 	fst = cube_to_fst(c);
 	fst_to_cube(fst, &d);
 
-	return equal(c, &d);
+	if (!equal(c, &d)) {
+		printf("Cubes are different:\n\n");
+		printf("Cube 1:\n");
+		print_cube(c);
+		printf("\nCube 2:\n");
+		print_cube(&d);
+		printf("\n");
+		return false;
+	}
+
+	return true;
 }
 
 static bool
@@ -64,7 +74,8 @@ test_cube_to_fst_to_cube_unsolved()
 		b = test_cube_to_fst_to_cube(&c);
 		free_alg(a);
 		if (!b) {
-			printf("Failed with alg %s\n", algs[i]);
+			printf("Cube to FST to cube failed with alg %s\n",
+			    algs[i]);
 			return false;
 		}
 	}
@@ -74,7 +85,7 @@ test_cube_to_fst_to_cube_unsolved()
 void test_fst_all() {
 	int i;
 
-	init_fst();
+	init_trans();
 
 	for (i = 0; test[i] != NULL; i++) {
 		printf("Test: %s\n", name[i]);
@@ -82,7 +93,7 @@ void test_fst_all() {
 			printf("Failed!\n");
 			exit(1);
 		}
-		printf("Passed.\n");
+		printf("Passed.\n\n");
 	}
 	printf("All FST tests passed.\n\n");
 }

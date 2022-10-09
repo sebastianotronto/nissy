@@ -149,6 +149,9 @@ fst_to_cube(FstCube fst, Cube *cube)
 	coord_eofb.i[0]->to_cube((uint64_t)fst.uf_eofb, cube);
 	coord_coud.i[0]->to_cube((uint64_t)fst.uf_coud, cube);
 	coord_cp.i[0]->to_cube((uint64_t)fst.uf_cp, cube);
+
+	for (i = 0; i < 6; i++)
+		cube->xp[i] = i;
 }
 
 static int
@@ -178,6 +181,8 @@ transform_ep_only(Trans t, int *ep, Cube *dst)
 void
 init_fst()
 {
+	init_trans();
+
 	init_fst_corner_invtables();
 	init_fst_eo_invtables();
 	init_fst_transalg();
@@ -275,8 +280,6 @@ init_fst_where_is_edge()
 {
 	Cube c, d;
 	uint64_t e;
-
-	init_trans();
 
 	make_solved(&c);
 	for (e = 0; e < BINOM12ON4 * FACTORIAL4; e++) {
