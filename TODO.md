@@ -9,7 +9,11 @@ It's more of a personal reminder than anything else.
   of the files includes + doing more stuff. A static "initiliazed"
   variable is probably needed too.
 ### testing!
-* test fst and other things...
+* test fst: implement fst_consistent
+* test fst: init_fst is necessary before testing move and inverse
+* separate "commands" for testing different parts (e.g. ./test coord)
+* test coordinate (needed anyway to test fst)
+* other tests (start from bottom: utils.c)
 * move test_coord to the testing folder
 ### Solving standard coordinates
 * add Void * extradata to DfsArg and a custom move function

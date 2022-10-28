@@ -103,6 +103,7 @@ typedef struct threaddatagenpt    ThreadDataGenpt;
 typedef struct transgroup         TransGroup;
 
 typedef bool                 (*Checker)          (Cube *);
+typedef bool                 (*CubeTester)       (Cube *, Alg *);
 typedef bool                 (*DfsMover)         (DfsArg *);
 typedef void                 (*DfsExtraCopier)   (void *, void *);
 typedef bool                 (*Validator)        (Alg *);

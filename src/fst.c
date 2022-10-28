@@ -43,6 +43,7 @@ cube_to_fst(Cube *cube)
 	ret.fr_eofb    = coord_eofb.i[0]->index(&c);
 	ret.fr_eposepe = coord_eposepe.i[0]->index(&c);
 	ret.fr_coud    = coord_coud.i[0]->index(&c);
+	copy_cube(cube, &c);
 	apply_trans(rd, &c);
 	ret.rd_eofb    = coord_eofb.i[0]->index(&c);
 	ret.rd_eposepe = coord_eposepe.i[0]->index(&c);

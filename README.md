@@ -1,3 +1,10 @@
+# WARNING
+
+I am currently rewriting some important parts of the code
+and the git version is not working.
+You can download the last stable version from the
+[download page](https://nissy.tronto.net/download).
+
 # Nissy
 
 A Rubik's cube solver and FMC assistant.
