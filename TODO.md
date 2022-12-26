@@ -9,8 +9,8 @@ It's more of a personal reminder than anything else.
   of the files includes + doing more stuff. A static "initiliazed"
   variable is probably needed too.
 ### testing!
-* test fst: implement fst_consistent
-* test fst: init_fst is necessary before testing move and inverse
+* generic test util: function taking an array of tests, an array of testnames
+  (or maybe tests should be their own type?) and running them
 * separate "commands" for testing different parts (e.g. ./test coord)
 * test coordinate (needed anyway to test fst)
 * other tests (start from bottom: utils.c)
@@ -19,10 +19,15 @@ It's more of a personal reminder than anything else.
 * add Void * extradata to DfsArg and a custom move function
 * add optional custom pre-process for generating special table (nx)
 * copy_dfsdata should copy extra too!
+### Solving simplification / refactor
+* Split solve in solve_coord, solve_generic, solve_singlethread...
+* Rework choicesteps: simplify, remove one type of rotation...
 ### nx.c
 * implement nxopt with all tables and all tricks
   (maybe compile time variable for maximum memory to use?)
 * is_valid should also unniss / cleanup the alg
+### Other easy refactor
+* split cubetypes.h into other files
 
 ## For version 2.1
 ### Changes to Step and Solve
@@ -47,9 +52,11 @@ It's more of a personal reminder than anything else.
   check if found enough solutions before checking pruning values)
 ### Technical
 * generic option parser
+* scan system to get best number of threads
 ### Commands
 * Easy: add option -I (inverse) and -L (linear, like inverse + normal)
   to do only linear NISS
+* message for -N ignored say -n (lowercase)
 
 ## Commands
 
@@ -75,6 +82,8 @@ including e.g. solutions that were not shown because -c)
 * solve should try up to a small bound without loading the large pruning table
   (maybe this is not necessary if loading the table is fast enough)
 * silent batch mode without >>>
+* Optimal solver: when asking for only one solution, scan for upper bound in
+  parallel using a two-phase solver.
 
 ### New features
 * EO analysis (and also DR and HTR analysis): group similar EOs together

@@ -3,7 +3,6 @@
 #include "fst.h"
 
 static FstCube          ep_to_fst_epos(int *ep);
-static int              fst_where_is_edge(int e, FstCube fst);
 static void             transform_ep_only(Trans t, int *ep, Cube *dst);
 static void             init_fst_corner_invtables();
 static void             init_fst_eo_invtables();
@@ -55,7 +54,10 @@ cube_to_fst(Cube *cube)
 static FstCube
 ep_to_fst_epos(int *ep)
 {
-	/* TODO: maybe optimize? */
+	/* TODO: maybe optimize */
+
+/* TODO: this version if faster, but broken
+	 probably need to fix transform_ep_only()
 
 	FstCube ret;
 	Cube c;
@@ -68,6 +70,24 @@ ep_to_fst_epos(int *ep)
 
 	transform_ep_only(rd, ep, &c);
 	ret.rd_eposepe = coord_eposepe.i[0]->index(&c);
+*/
+
+	FstCube ret;
+	Cube c, d;
+
+	make_solved(&c);
+	memcpy(c.ep, ep, 12 * sizeof(int));
+
+	copy_cube(&c, &d);
+	ret.uf_eposepe = coord_eposepe.i[0]->index(&d);
+
+	copy_cube(&c, &d);
+	apply_trans(fr, &d);
+	ret.fr_eposepe = coord_eposepe.i[0]->index(&d);
+
+	copy_cube(&c, &d);
+	apply_trans(rd, &d);
+	ret.rd_eposepe = coord_eposepe.i[0]->index(&d);
 
 	return ret;
 }
@@ -155,7 +175,7 @@ fst_to_cube(FstCube fst, Cube *cube)
 		cube->xp[i] = i;
 }
 
-static int
+int
 fst_where_is_edge(int e, FstCube fst)
 {
 	switch (edge_slice[e]) {
@@ -183,6 +203,10 @@ void
 init_fst()
 {
 	init_trans();
+	gen_coord(&coord_eofb);
+	gen_coord(&coord_eposepe);
+	gen_coord(&coord_coud);
+	gen_coord(&coord_cp);
 
 	init_fst_corner_invtables();
 	init_fst_eo_invtables();
@@ -193,32 +217,29 @@ init_fst()
 static void
 init_fst_corner_invtables()
 {
-/* TODO: this can be optimized by transforming and copying only corners */
-/* A factor of about 4 would be saved in the innermost loop */
-
 	Cube c, d;
 	uint64_t cp, coud;
 
 	for (cp = 0; cp < FACTORIAL8; cp++) {
-		make_solved(&c);
+		make_solved_corners(&c);
 		coord_cp.i[0]->to_cube(cp, &c);
 
-		copy_cube(&c, &d);
-		invert_cube(&d);
-		inv_cp[cp] = coord_coud.i[0]->index(&d);
+		copy_cube_corners(&c, &d);
+		invert_cube_corners(&d);
+		inv_cp[cp] = coord_cp.i[0]->index(&d);
 
 		for (coud = 0; coud < POW3TO7; coud++) {
-			copy_cube(&c, &d);
+			copy_cube_corners(&c, &d);
 			coord_coud.i[0]->to_cube(coud, &d);
-			invert_cube(&d);
+			invert_cube_corners(&d);
 			inv_coud[cp][coud] = coord_coud.i[0]->index(&d);
 		}
 
-		copy_cube(&c, &d);
+		copy_cube_corners(&c, &d);
 		apply_trans(fr, &d);
 		uf_cp_to_fr_cp[cp] = coord_cp.i[0]->index(&d);
 
-		copy_cube(&c, &d);
+		copy_cube_corners(&c, &d);
 		apply_trans(rd, &d);
 		uf_cp_to_rd_cp[cp] = coord_cp.i[0]->index(&d);
 	}
@@ -234,13 +255,17 @@ init_fst_eo_invtables()
 		make_solved(&c);
 		coord_eposepe.i[0]->to_cube(ep, &c);
 		for (eo = 0; eo < POW2TO11; eo++) {
-			coord_eofb.i[0]->to_cube(eo, &c);
-			copy_cube(&c, &d);
+			copy_cube_edges(&c, &d);
+			coord_eofb.i[0]->to_cube(eo, &d);
 			init_fst_eo_update(eo, ep, 0, &d);
+
 			apply_trans(inverse_trans(fr), &d);
+			coord_eofb.i[0]->to_cube(eo, &d);
 			init_fst_eo_update(eo, ep, 1, &d);
-			copy_cube(&c, &d);
+
+			copy_cube_edges(&c, &d);
 			apply_trans(inverse_trans(rd), &d);
+			coord_eofb.i[0]->to_cube(eo, &d);
 			init_fst_eo_update(eo, ep, 2, &d);
 		}
 	}
@@ -251,9 +276,11 @@ init_fst_eo_update(uint64_t eo, uint64_t ep, int s, Cube *d)
 {
 	int i;
 
-	for (i = 0; i < 12; i++)
-		if (d->eo[i])
-			eo_invtable[s][eo][ep] |= ((uint16_t)1) << d->ep[i];
+	for (i = 0; i < 12; i++) {
+		if (edge_slice[d->ep[i]] == s && d->eo[i] && d->ep[i] != 11)
+			eo_invtable[s][eo][ep] |=
+			    ((uint16_t)1) << ((uint16_t)d->ep[i]);
+	}
 }
 
 static void
@@ -270,7 +297,7 @@ init_fst_transalg()
 		apply_alg(alg, &c);
 		for (i = 0; i < 12; i++)
 			trans_ep_alg[t][i] = c.ep[i];
-		invert_cube(&c);
+		invert_cube_edges(&c);
 		for (i = 0; i < 12; i++)
 			trans_ep_inv[t][i] = c.ep[i];
 	}
@@ -286,20 +313,20 @@ init_fst_where_is_edge()
 	for (e = 0; e < BINOM12ON4 * FACTORIAL4; e++) {
 		coord_eposepe.i[0]->to_cube(e, &c);
 
-		copy_cube(&c, &d);
+		copy_cube_edges(&c, &d);
 		fst_where_is_edge_arr[0][FR][e] = where_is_edge(FR, &d);
 		fst_where_is_edge_arr[0][FL][e] = where_is_edge(FL, &d);
 		fst_where_is_edge_arr[0][BL][e] = where_is_edge(BL, &d);
 		fst_where_is_edge_arr[0][BR][e] = where_is_edge(BR, &d);
 
-		copy_cube(&c, &d);
+		copy_cube_edges(&c, &d);
 		apply_trans(inverse_trans(fr), &d);
 		fst_where_is_edge_arr[1][UL][e] = where_is_edge(UL, &d);
 		fst_where_is_edge_arr[1][UR][e] = where_is_edge(UR, &d);
 		fst_where_is_edge_arr[1][DL][e] = where_is_edge(DL, &d);
 		fst_where_is_edge_arr[1][DR][e] = where_is_edge(DR, &d);
 
-		copy_cube(&c, &d);
+		copy_cube_edges(&c, &d);
 		apply_trans(inverse_trans(rd), &d);
 		fst_where_is_edge_arr[2][UF][e] = where_is_edge(UF, &d);
 		fst_where_is_edge_arr[2][UB][e] = where_is_edge(UB, &d);

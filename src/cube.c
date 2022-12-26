@@ -5,27 +5,61 @@
 static int where_is_piece(int piece, int *arr, int n);
 
 void
-compose(Cube *c2, Cube *c1)
+compose_centers(Cube *c2, Cube *c1)
+{
+	apply_permutation(c2->xp, c1->xp, 6);
+}
+
+void
+compose_corners(Cube *c2, Cube *c1)
+{
+	apply_permutation(c2->cp, c1->cp, 8);
+	apply_permutation(c2->cp, c1->co, 8);
+	sum_arrays_mod(c2->co, c1->co, 8, 3);
+}
+
+void
+compose_edges(Cube *c2, Cube *c1)
 {
 	apply_permutation(c2->ep, c1->ep, 12);
 	apply_permutation(c2->ep, c1->eo, 12);
 	sum_arrays_mod(c2->eo, c1->eo, 12, 2);
+}
 
-	apply_permutation(c2->cp, c1->cp, 8);
-	apply_permutation(c2->cp, c1->co, 8);
-	sum_arrays_mod(c2->co, c1->co, 8, 3);
+void
+compose(Cube *c2, Cube *c1)
+{
+	compose_centers(c2, c1);
+	compose_corners(c2, c1);
+	compose_edges(c2, c1);
+}
 
-	apply_permutation(c2->xp, c1->xp, 6);
+void
+copy_cube_centers(Cube *src, Cube *dst)
+{
+	memcpy(dst->xp, src->xp,  6 * sizeof(int));
+}
+
+void
+copy_cube_corners(Cube *src, Cube *dst)
+{
+	memcpy(dst->cp, src->cp,  8 * sizeof(int));
+	memcpy(dst->co, src->co,  8 * sizeof(int));
+}
+
+void
+copy_cube_edges(Cube *src, Cube *dst)
+{
+	memcpy(dst->ep, src->ep, 12 * sizeof(int));
+	memcpy(dst->eo, src->eo, 12 * sizeof(int));
 }
 
 void
 copy_cube(Cube *src, Cube *dst)
 {
-	memcpy(dst->ep, src->ep, 12 * sizeof(int));
-	memcpy(dst->eo, src->eo, 12 * sizeof(int));
-	memcpy(dst->cp, src->cp,  8 * sizeof(int));
-	memcpy(dst->co, src->co,  8 * sizeof(int));
-	memcpy(dst->xp, src->xp,  6 * sizeof(int));
+	copy_cube_centers(src, dst);
+	copy_cube_corners(src, dst);
+	copy_cube_edges(src, dst);
 }
 
 bool
@@ -49,25 +83,51 @@ equal(Cube *c1, Cube *c2)
 }
 
 void
-invert_cube(Cube *cube)
+invert_cube_centers(Cube *cube)
 {
-	Cube aux;
 	int i;
+	Cube aux;
 
-	copy_cube(cube, &aux);
+	copy_cube_centers(cube, &aux);
 
-	for (i = 0; i < 12; i++) {
-		cube->ep[aux.ep[i]] = i;
-		cube->eo[aux.ep[i]] = aux.eo[i];
-	}
+	for (i = 0; i < 6; i++)
+		cube->xp[aux.xp[i]] = i;
+}
+
+void
+invert_cube_corners(Cube *cube)
+{
+	int i;
+	Cube aux;
+
+	copy_cube_corners(cube, &aux);
 
 	for (i = 0; i < 8; i++) {
 		cube->cp[aux.cp[i]] = i;
 		cube->co[aux.cp[i]] = (3 - aux.co[i]) % 3;
 	}
+}
 
-	for (i = 0; i < 6; i++)
-		cube->xp[aux.xp[i]] = i;
+void
+invert_cube_edges(Cube *cube)
+{
+	int i;
+	Cube aux;
+
+	copy_cube_edges(cube, &aux);
+
+	for (i = 0; i < 12; i++) {
+		cube->ep[aux.ep[i]] = i;
+		cube->eo[aux.ep[i]] = aux.eo[i];
+	}
+}
+
+void
+invert_cube(Cube *cube)
+{
+	invert_cube_centers(cube);
+	invert_cube_corners(cube);
+	invert_cube_edges(cube);
 }
 
 bool
@@ -105,15 +165,37 @@ is_solved(Cube *cube)
 }
 
 void
-make_solved(Cube *cube)
+make_solved_centers(Cube *cube)
+{
+	static int sorted[6] = {0, 1, 2, 3, 4, 5};
+
+	memcpy(cube->xp, sorted,  6 * sizeof(int));
+}
+
+void
+make_solved_corners(Cube *cube)
+{
+	static int sorted[8] = {0, 1, 2, 3, 4, 5, 6, 7};
+
+	memcpy(cube->cp, sorted,  8 * sizeof(int));
+	memset(cube->co, 0,       8 * sizeof(int));
+}
+
+void
+make_solved_edges(Cube *cube)
 {
 	static int sorted[12] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 
 	memcpy(cube->ep, sorted, 12 * sizeof(int));
 	memset(cube->eo, 0,      12 * sizeof(int));
-	memcpy(cube->cp, sorted,  8 * sizeof(int));
-	memset(cube->co, 0,       8 * sizeof(int));
-	memcpy(cube->xp, sorted,  6 * sizeof(int));
+}
+
+void
+make_solved(Cube *cube)
+{
+	make_solved_centers(cube);
+	make_solved_corners(cube);
+	make_solved_edges(cube);
 }
 
 void

@@ -21,7 +21,9 @@ nissy: clean
 	${CC} ${CFLAGS} -o nissy src/*.c
 
 test:
-	${CC} ${TESTFLAGS} -o test src/*.c tests/*.c
+	${CC} ${TESTFLAGS} -o nissy-test src/*.c tests/*.c
+	./nissy-test
+	rm nissy-test
 
 nissy.exe:
 	x86_64-w64-mingw32-gcc ${CFLAGS} -static -o nissy.exe src/*.c

@@ -106,6 +106,24 @@ apply_move(Move m, Cube *cube)
 	compose(&move_array[m], cube);
 }
 
+void
+apply_move_centers(Move m, Cube *cube)
+{
+	compose_centers(&move_array[m], cube);
+}
+
+void
+apply_move_corners(Move m, Cube *cube)
+{
+	compose_corners(&move_array[m], cube);
+}
+
+void
+apply_move_edges(Move m, Cube *cube)
+{
+	compose_edges(&move_array[m], cube);
+}
+
 Alg *
 cleanup(Alg *alg)
 {
