@@ -3,7 +3,6 @@
 #include "fst.h"
 
 static FstCube          ep_to_fst_epos(int *ep);
-static void             transform_ep_only(Trans t, int *ep, Cube *dst);
 static void             init_fst_corner_invtables();
 static void             init_fst_eo_invtables();
 static void             init_fst_eo_update(uint64_t, uint64_t, int, Cube *);
@@ -54,24 +53,12 @@ cube_to_fst(Cube *cube)
 static FstCube
 ep_to_fst_epos(int *ep)
 {
-	/* TODO: maybe optimize */
 
-/* TODO: this version if faster, but broken
-	 probably need to fix transform_ep_only()
+/* The block of commented code works, but it is slower.
+   The actual code is mysterious, and there is some overlap with coord.c
+   (coord_eposepe.i), and trans.c, butbut it is faster. */
 
-	FstCube ret;
-	Cube c;
-
-	memcpy(c.ep, ep, 12 * sizeof(int));
-	ret.uf_eposepe = coord_eposepe.i[0]->index(&c);
-
-	transform_ep_only(fr, ep, &c);
-	ret.fr_eposepe = coord_eposepe.i[0]->index(&c);
-
-	transform_ep_only(rd, ep, &c);
-	ret.rd_eposepe = coord_eposepe.i[0]->index(&c);
-*/
-
+/*
 	FstCube ret;
 	Cube c, d;
 
@@ -90,16 +77,89 @@ ep_to_fst_epos(int *ep)
 	ret.rd_eposepe = coord_eposepe.i[0]->index(&d);
 
 	return ret;
+*/
+
+	static int eind[12] = {
+		[FR] = 0, [FL] = 1, [BL] = 2, [BR] = 3,
+		[UR] = 0, [DR] = 1, [DL] = 2, [UL] = 3,
+		[DB] = 0, [DF] = 1, [UF] = 2, [UB] = 3
+	};
+	static int eptrans_fr[12] = {
+		[FR] = UF, [DF] = UL, [FL] = UB, [UF] = UR,
+		[BR] = DF, [DB] = DL, [BL] = DB, [UB] = DR,
+		[UR] = FR, [DR] = FL, [DL] = BL, [UL] = BR
+	};
+	static int eptrans_rd[12] = {
+		[DR] = UF, [FR] = UL, [UR] = UB, [BR] = UR,
+		[DL] = DF, [FL] = DL, [UL] = DB, [BL] = DR,
+		[DB] = FR, [DF] = FL, [UF] = BL, [UB] = BR
+	};
+
+	FstCube ret;
+	int i, ce, cs, cm;
+	int epe[4], eps[4], epm[4], epose[12], eposs[12], eposm[12];
+
+	memset(epose, 0, 12*sizeof(int));
+	memset(eposs, 0, 12*sizeof(int));
+	memset(eposm, 0, 12*sizeof(int));
+
+	for (i = 0, ce = 0; i < 12; i++) {
+		switch (edge_slice[ep[i]]) {
+		case 0:
+			epose[i] = 1;
+			epe[ce++] = eind[ep[i]];
+			break;
+		case 1:
+			eposs[eptrans_fr[i]] = eind[ep[i]] + 1;
+			break;
+		default:
+			eposm[eptrans_rd[i]] = eind[ep[i]] + 1;
+			break;
+		}
+	}
+
+	for (i = 0, cs = 0, cm = 0; i < 12; i++) {
+		if (eposs[i]) {
+			eps[cs++] = eposs[i] - 1;
+			eposs[i] = 1;
+		}
+		if (eposm[i]) {
+			epm[cm++] = eposm[i] - 1;
+			eposm[i] = 1;
+		}
+	}
+
+	ret.uf_eposepe = subset_to_index(epose, 12, 4) * FACTORIAL4 +
+	                 perm_to_index(epe, 4);
+	ret.fr_eposepe = subset_to_index(eposs, 12, 4) * FACTORIAL4 +
+	                 perm_to_index(eps, 4);
+	ret.rd_eposepe = subset_to_index(eposm, 12, 4) * FACTORIAL4 +
+	                 perm_to_index(epm, 4);
+
+	return ret;
 }
 
 FstCube
 fst_inverse(FstCube fst)
 {
 	FstCube ret;
-	int i, ep_inv[12];
+	int ep_inv[12];
 
-	for (i = 0; i < 12; i++)
-		ep_inv[i] = fst_where_is_edge(i, fst);
+	ep_inv[FR] = fst_where_is_edge_arr[0][FR][fst.uf_eposepe];
+	ep_inv[FL] = fst_where_is_edge_arr[0][FL][fst.uf_eposepe];
+	ep_inv[BL] = fst_where_is_edge_arr[0][BL][fst.uf_eposepe];
+	ep_inv[BR] = fst_where_is_edge_arr[0][BR][fst.uf_eposepe];
+
+	ep_inv[UR] = fst_where_is_edge_arr[1][UR][fst.fr_eposepe];
+	ep_inv[UL] = fst_where_is_edge_arr[1][UL][fst.fr_eposepe];
+	ep_inv[DR] = fst_where_is_edge_arr[1][DR][fst.fr_eposepe];
+	ep_inv[DL] = fst_where_is_edge_arr[1][DL][fst.fr_eposepe];
+
+	ep_inv[UF] = fst_where_is_edge_arr[2][UF][fst.rd_eposepe];
+	ep_inv[UB] = fst_where_is_edge_arr[2][UB][fst.rd_eposepe];
+	ep_inv[DF] = fst_where_is_edge_arr[2][DF][fst.rd_eposepe];
+	ep_inv[DB] = fst_where_is_edge_arr[2][DB][fst.rd_eposepe];
+
 	ret = ep_to_fst_epos(ep_inv);
 
 	ret.uf_eofb = ((uint16_t)eo_invtable[0][fst.uf_eofb][fst.uf_eposepe]) |
@@ -173,30 +233,6 @@ fst_to_cube(FstCube fst, Cube *cube)
 
 	for (i = 0; i < 6; i++)
 		cube->xp[i] = i;
-}
-
-int
-fst_where_is_edge(int e, FstCube fst)
-{
-	switch (edge_slice[e]) {
-	case 0:
-		return fst_where_is_edge_arr[0][e][fst.uf_eposepe];
-	case 1:
-		return fst_where_is_edge_arr[1][e][fst.fr_eposepe];
-	default:
-		return fst_where_is_edge_arr[2][e][fst.rd_eposepe];
-	}
-
-	return -1;
-}
-
-static void
-transform_ep_only(Trans t, int *ep, Cube *dst)
-{
-	int i;
-
-	for (i = 0; i < 12; i++)
-		dst->ep[i] = trans_ep_alg[t][ep[trans_ep_inv[t][i]]];
 }
 
 void

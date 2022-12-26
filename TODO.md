@@ -4,6 +4,9 @@ This is a list of things that I would like to add or change at some point.
 It's more of a personal reminder than anything else.
 
 ## After symcoord
+### Fixing stuff + completing new optimal solver
+- clean up fst, check if more can be improved
+- fst inverse tables: save to file
 ### generic:
 * all files should have an init function, calling the ones
   of the files includes + doing more stuff. A static "initiliazed"
