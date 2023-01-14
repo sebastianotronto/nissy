@@ -6,8 +6,9 @@ static FstCube          ep_to_fst_epos(int *ep);
 static void             init_fst_corner_invtables();
 static void             init_fst_eo_invtables();
 static void             init_fst_eo_update(uint64_t, uint64_t, int, Cube *);
-static void             init_fst_transalg();
 static void             init_fst_where_is_edge();
+static bool             read_fst_tables_file();
+static bool             write_fst_tables_file();
 
 static int edge_slice[12] = {[FR] = 0, [FL] = 0, [BL] = 0, [BR] = 0,
                              [UL] = 1, [UR] = 1, [DR] = 1, [DL] = 1,
@@ -17,12 +18,7 @@ static uint16_t         inv_coud[FACTORIAL8][POW3TO7];
 static uint16_t         inv_cp[FACTORIAL8];
 static uint16_t         uf_cp_to_fr_cp[FACTORIAL8];
 static uint16_t         uf_cp_to_rd_cp[FACTORIAL8];
-
-static int16_t          eo_invtable[3][POW2TO11][BINOM12ON4*FACTORIAL4];
-
-static int              trans_ep_alg[NROTATIONS][12];
-static int              trans_ep_inv[NROTATIONS][12];
-
+static uint16_t         eo_invtable[3][POW2TO11][BINOM12ON4*FACTORIAL4];
 static uint16_t         fst_where_is_edge_arr[3][12][BINOM12ON4*FACTORIAL4];
 
 FstCube
@@ -53,32 +49,6 @@ cube_to_fst(Cube *cube)
 static FstCube
 ep_to_fst_epos(int *ep)
 {
-
-/* The block of commented code works, but it is slower.
-   The actual code is mysterious, and there is some overlap with coord.c
-   (coord_eposepe.i), and trans.c, butbut it is faster. */
-
-/*
-	FstCube ret;
-	Cube c, d;
-
-	make_solved(&c);
-	memcpy(c.ep, ep, 12 * sizeof(int));
-
-	copy_cube(&c, &d);
-	ret.uf_eposepe = coord_eposepe.i[0]->index(&d);
-
-	copy_cube(&c, &d);
-	apply_trans(fr, &d);
-	ret.fr_eposepe = coord_eposepe.i[0]->index(&d);
-
-	copy_cube(&c, &d);
-	apply_trans(rd, &d);
-	ret.rd_eposepe = coord_eposepe.i[0]->index(&d);
-
-	return ret;
-*/
-
 	static int eind[12] = {
 		[FR] = 0, [FL] = 1, [BL] = 2, [BR] = 3,
 		[UR] = 0, [DR] = 1, [DL] = 2, [UL] = 3,
@@ -244,10 +214,15 @@ init_fst()
 	gen_coord(&coord_coud);
 	gen_coord(&coord_cp);
 
-	init_fst_corner_invtables();
-	init_fst_eo_invtables();
-	init_fst_transalg();
-	init_fst_where_is_edge();
+	if (!read_fst_tables_file()) {
+		fprintf(stderr,
+		    "Could not load fst_tables, generating them\n");
+		init_fst_corner_invtables();
+		init_fst_eo_invtables();
+		init_fst_where_is_edge();
+		if (!write_fst_tables_file())
+			fprintf(stderr, "fst_tables could not be written\b");
+	}
 }
 
 static void
@@ -320,26 +295,6 @@ init_fst_eo_update(uint64_t eo, uint64_t ep, int s, Cube *d)
 }
 
 static void
-init_fst_transalg()
-{
-	Trans t;
-	Alg *alg;
-	Cube c;
-	int i;
-
-	for (t = uf; t < NROTATIONS; t++) {
-		make_solved(&c);
-		alg = rotation_alg(t);
-		apply_alg(alg, &c);
-		for (i = 0; i < 12; i++)
-			trans_ep_alg[t][i] = c.ep[i];
-		invert_cube_edges(&c);
-		for (i = 0; i < 12; i++)
-			trans_ep_inv[t][i] = c.ep[i];
-	}
-}
-
-static void
 init_fst_where_is_edge()
 {
 	Cube c, d;
@@ -369,4 +324,78 @@ init_fst_where_is_edge()
 		fst_where_is_edge_arr[2][DF][e] = where_is_edge(DF, &d);
 		fst_where_is_edge_arr[2][DB][e] = where_is_edge(DB, &d);
 	}
+}
+
+static bool
+read_fst_tables_file()
+{
+	init_env();
+
+	FILE *f;
+	char fname[strlen(tabledir)+256];
+	uint64_t i, j, r, total;
+
+	strcpy(fname, tabledir);
+	strcat(fname, "/fst_tables");
+
+	if ((f = fopen(fname, "rb")) == NULL)
+		return false;
+
+	r = 0;
+	total = FACTORIAL8*(POW3TO7+3) + 3*BINOM12ON4*FACTORIAL4*(12+POW2TO11);
+
+	for (i = 0; i < FACTORIAL8; i++)
+		r += fread(inv_coud[i], sizeof(uint16_t), POW3TO7, f);
+	r += fread(inv_cp, sizeof(uint16_t), FACTORIAL8, f);
+	r += fread(uf_cp_to_fr_cp, sizeof(uint16_t), FACTORIAL8, f);
+	r += fread(uf_cp_to_rd_cp, sizeof(uint16_t), FACTORIAL8, f);
+	for (i = 0; i < 3; i++)
+		for (j = 0; j < POW2TO11; j++)
+			r += fread(eo_invtable[i][j],
+			    sizeof(uint16_t), BINOM12ON4*FACTORIAL4, f);
+	for (i = 0; i < 3; i++)
+		for (j = 0; j < 12; j++)
+			r += fread(fst_where_is_edge_arr[i][j],
+			    sizeof(uint16_t), BINOM12ON4*FACTORIAL4, f);
+
+	fclose(f);
+
+	return r == total;
+}
+
+static bool
+write_fst_tables_file()
+{
+	init_env();
+
+	FILE *f;
+	char fname[strlen(tabledir)+256];
+	uint64_t i, j, w, total;
+
+	strcpy(fname, tabledir);
+	strcat(fname, "/fst_tables");
+
+	if ((f = fopen(fname, "wb")) == NULL)
+		return false;
+
+	w = 0;
+	total = FACTORIAL8*(POW3TO7+3) + 3*BINOM12ON4*FACTORIAL4*(12+POW2TO11);
+
+	for (i = 0; i < FACTORIAL8; i++)
+		w += fwrite(inv_coud[i], sizeof(uint16_t), POW3TO7, f);
+	w += fwrite(inv_cp, sizeof(uint16_t), FACTORIAL8, f);
+	w += fwrite(uf_cp_to_fr_cp, sizeof(uint16_t), FACTORIAL8, f);
+	w += fwrite(uf_cp_to_rd_cp, sizeof(uint16_t), FACTORIAL8, f);
+	for (i = 0; i < 3; i++)
+		for (j = 0; j < POW2TO11; j++)
+			w += fwrite(eo_invtable[i][j],
+			    sizeof(uint16_t), BINOM12ON4*FACTORIAL4, f);
+	for (i = 0; i < 3; i++)
+		for (j = 0; j < 12; j++)
+			w += fwrite(fst_where_is_edge_arr[i][j],
+			    sizeof(uint16_t), BINOM12ON4*FACTORIAL4, f);
+
+	fclose(f);
+
+	return w == total;
 }
