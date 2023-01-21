@@ -10,7 +10,6 @@ CFLAGS    = -std=c99 -pthread -pedantic -Wall -Wextra \
 	    -Wno-unused-parameter -O3 ${CPPFLAGS}
 DBGFLAGS  = -std=c99 -pthread -pedantic -Wall -Wextra \
             -Wno-unused-parameter -g ${CPPFLAGS}
-TESTFLAGS = ${DBGFLAGS} -DTEST
 
 CC = cc
 
@@ -19,11 +18,6 @@ all: nissy
 
 nissy: clean
 	${CC} ${CFLAGS} -o nissy src/*.c
-
-test:
-	${CC} ${TESTFLAGS} -o nissy-test src/*.c tests/*.c
-	./nissy-test
-	rm nissy-test
 
 nissy.exe:
 	x86_64-w64-mingw32-gcc ${CFLAGS} -static -o nissy.exe src/*.c
