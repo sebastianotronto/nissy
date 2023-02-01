@@ -13,7 +13,6 @@ DBGFLAGS  = -std=c99 -pthread -pedantic -Wall -Wextra \
 
 CC = cc
 
-
 all: nissy
 
 nissy: clean
@@ -24,6 +23,9 @@ nissy.exe:
 
 debug:
 	${CC} ${DBGFLAGS} -o nissy src/*.c
+
+test:
+	${CC} ${CFLAGS} -DTEST -o tests/nissy_test src/*.c tests/*.c
 
 clean:
 	rm -rf nissy nissy*.exe nissy*.tar.gz doc/nissy.html doc/nissy.pdf
@@ -63,5 +65,4 @@ uninstall:
 	rm -rf ${DESTDIR}${PREFIX}/bin/nissy ${DESTDIR}${MANPREFIX}/man1/nissy.1
 	for s in ${SCRIPTS}; do rm -rf ${DESTDIR}${PREFIX}/bin/$$s; done
 
-.PHONY: all debug clean dist install test uninstall upload
-
+.PHONY: all debug test clean dist install uninstall upload

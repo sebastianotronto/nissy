@@ -151,20 +151,6 @@ main(int argc, char *argv[])
 	init_env();
 	init_trans();
 
-/*
-	Cube c;
-	make_solved(&c);
-	c.co[0] = 1;
-	c.co[6] = 2;
-	print_cube(&c);
-	apply_trans(uf_mirror, &c);
-	print_cube(&c);
-*/
-
-/*
-	test_coord(&coord_coud_cpudsep);
-*/
-
 	if (!checkfiles()) {
 		fprintf(stderr,
 			"--- Warning ---\n"

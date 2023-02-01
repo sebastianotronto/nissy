@@ -11,6 +11,7 @@ test_module() {
 	done
 }
 
+make test
 if [ -n "$@" ]; then
 	test_module $@
 else

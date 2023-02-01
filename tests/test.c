@@ -1,5 +1,4 @@
-#include <stdio.h>
-#include "fst_tests.h"
+#include "test.h"
 
 static bool run_test(Test *);
 static bool run_suite(TestSuite *);
@@ -38,6 +37,9 @@ run_suite(TestSuite *suite)
 }
 
 int main() {
+	init_env();
+	init_trans();
+
 	if (!run_suite(&fst_pre_init_suite))
 		return 1;
 	if (!run_suite(&fst_post_init_suite))

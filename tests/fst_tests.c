@@ -1,5 +1,10 @@
 #include "fst_tests.h"
 
+static bool testmethod_fst_is_consistent(void *);
+static bool testmethod_cube_to_fst_to_cube(void *);
+static bool testmethod_fst_move(void *);
+static bool testmethod_fst_inverse(void *);
+
 static bool check_equal_and_log(Cube *, Cube *);
 static void void_to_cube(void *, Cube *);
 
@@ -16,6 +21,49 @@ char *algs[] = {
 	"D L2 F2 R2 D R2 U L2 U' B2 D L' F2 U2 B' L D' U' R' B2 F2",
 	"F' L2 F' D' R F2 L U L' D2 R2 F2 D2 R2 B' L2 B2 U2 F D2 B",
 	NULL,
+};
+
+Test test_fst_is_consistent = {
+	.name  = "Consitency of FST (converted from cube)",
+	.t     = testmethod_fst_is_consistent,
+	.cases = (void **)algs,
+};
+Test test_cube_to_fst_to_cube = {
+	.name  = "Cube to FST to cube",
+	.t     = testmethod_cube_to_fst_to_cube,
+	.cases = (void **)algs,
+};
+Test test_fst_move = {
+	.name  = "FST move",
+	.t     = testmethod_fst_move,
+	.cases = (void **)algs,
+};
+Test test_fst_inverse = {
+	.name  = "FST inverse",
+	.t     = testmethod_fst_inverse,
+	.cases = (void **)algs,
+};
+
+Test *pre_init[] = {
+	&test_fst_is_consistent,
+	&test_cube_to_fst_to_cube,
+	NULL
+};
+TestSuite fst_pre_init_suite = {
+	.setup    = NULL,
+	.tests    = pre_init,
+	.teardown = NULL,
+};
+
+Test *post_init[] = {
+	&test_fst_move,
+	&test_fst_inverse,
+	NULL
+};
+TestSuite fst_post_init_suite = {
+	.setup    = init_fst,
+	.tests    = post_init,
+	.teardown = NULL,
 };
 
 static bool
