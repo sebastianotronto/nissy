@@ -25,7 +25,7 @@ debug:
 	${CC} ${DBGFLAGS} -o nissy src/*.c
 
 test:
-	${CC} ${CFLAGS} -DTEST -o tests/nissy_test src/*.c tests/*.c
+	${CC} ${DBGFLAGS} -DTEST -o tests/nissy_test src/*.c tests/*.c
 
 clean:
 	rm -rf nissy nissy*.exe nissy*.tar.gz doc/nissy.html doc/nissy.pdf
