@@ -151,7 +151,7 @@ testmethod_fst_move(void *a)
 	Cube c, d;
 	FstCube fst;
 
-	void_to_cube(a, &d);
+	void_to_cube(a, &c);
 	alg = new_alg((char *)a);
 	make_solved(&d);
 	fst = cube_to_fst(&d);
