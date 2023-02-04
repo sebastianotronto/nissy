@@ -6,9 +6,10 @@
 void                    gen_coord(Coordinate *coord);
 uint64_t                index_coord(Coordinate *coord, Cube *cube,
                             Trans *offtrans);
+uint64_t                indexers_getind(Indexer **is, Cube *c);
+void                    indexers_makecube(Indexer **is, uint64_t ind, Cube *c);
 uint64_t                move_coord(Coordinate *coord, Move m,
                             uint64_t ind, Trans *offtrans);
-bool                    test_coord(Coordinate *coord);
 uint64_t                trans_coord(Coordinate *coord, Trans t, uint64_t ind);
 
 /* Base coordinates and their index functions ********************************/
@@ -31,6 +32,8 @@ extern Coordinate coord_corners_sym16;
 extern Coordinate coord_drud_sym16;
 extern Coordinate coord_drudfin_noE_sym16;
 extern Coordinate coord_nxopt31;
+
+extern Coordinate *all_coordinates[];
 
 #else
 
@@ -226,6 +229,28 @@ coord_nxopt31 = {
 	.name = "nxopt31",
 	.type = SYMCOMP_COORD,
 	.base = {&coord_eofbepos_sym16, &coord_coud_cpudsep},
+};
+
+/* All coordinates ***********************************************************/
+
+Coordinate *all_coordinates[] = {
+	&coord_eofb,
+	&coord_coud,
+	&coord_cp,
+	&coord_cpudsep,
+	&coord_epos,
+	&coord_epe,
+	&coord_eposepe,
+	&coord_epud,
+	&coord_eofbepos,
+	&coord_coud_cpudsep,
+	&coord_eofbepos_sym16,
+	&coord_cp_sym16,
+	&coord_corners_sym16,
+	&coord_drud_sym16,
+	&coord_drudfin_noE_sym16,
+	&coord_nxopt31,
+	NULL
 };
 
 #endif

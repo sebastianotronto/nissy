@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include "coord_tests.h"
 #include "fst_tests.h"
 
 static bool run_test(Test *);
@@ -53,9 +54,11 @@ int main(int argc, char *argv[]) {
 	init_trans();
 	/**************************************/
 
-	TestModule fst = { .name = "fst", .suites = fst_testsuites };
+	TestModule fst   = { .name = "fst",   .suites = fst_suites };
+	TestModule coord = { .name = "coord", .suites = coord_suites };
 	TestModule *modules[999] = {
 		&fst,
+		&coord,
 		NULL
 	};
 

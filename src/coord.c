@@ -2,9 +2,6 @@
 
 #include "coord.h"
 
-static uint64_t    indexers_getind(Indexer **is, Cube *c);
-static uint64_t    indexers_getmax(Indexer **is);
-static void        indexers_makecube(Indexer **is, uint64_t ind, Cube *c);
 static void        gen_coord_comp(Coordinate *coord);
 static void        gen_coord_sym(Coordinate *coord);
 static bool        read_coord_mtable(Coordinate *coord);
@@ -169,7 +166,7 @@ invindex_eposepe(uint64_t ind, Cube *cube)
 
 /* Other local functions *****************************************************/
 
-static uint64_t
+uint64_t
 indexers_getmax(Indexer **is)
 {
 	int i;
@@ -181,7 +178,7 @@ indexers_getmax(Indexer **is)
 	return max;
 }
 
-static uint64_t
+uint64_t
 indexers_getind(Indexer **is, Cube *c)
 {
 	int i;
@@ -195,12 +192,12 @@ indexers_getind(Indexer **is, Cube *c)
 	return max;
 }
 
-static void
+void
 indexers_makecube(Indexer **is, uint64_t ind, Cube *c)
 {
 	/* Warning: anti-indexers are applied in the same order as indexers. */
 	/* We assume order does not matter, but it would make more sense to  */
-	/* Apply them in reverse.                                            */
+	/* apply them in reverse.                                            */
 
 	int i;
 	uint64_t m;
@@ -627,32 +624,6 @@ move_coord(Coordinate *coord, Move m, uint64_t ind, Trans *offtrans)
 	}
 
 	return coord->max; /* Only reached in case of error */
-}
-
-bool
-test_coord(Coordinate *coord)
-{
-	uint64_t ui, uj;
-	Cube c;
-
-	if (coord->type != COMP_COORD) {
-		fprintf(stderr, "Can only test COMP_COORD\n");
-		return false;
-	}
-
-	gen_coord(coord);
-	for (ui = 0; ui < coord->max; ui++) {
-		indexers_makecube(coord->i, ui, &c);
-		uj = indexers_getind(coord->i, &c);
-		if (ui != uj) {
-			fprintf(stderr, "%s: error: %" PRIu64 " different"
-			    " from %" PRIu64 "\n", coord->name, uj, ui);
-			return false;
-		}
-	}
-
-	fprintf(stderr, "%s: test passed\n", coord->name);
-	return true;
 }
 
 uint64_t

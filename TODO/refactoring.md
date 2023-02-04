@@ -25,4 +25,6 @@
 * Sort function implementations alphabetically, ignore static vs non static.
 * Rename functions and variable to have a consistent naming scheme.
 * Functions that copy data: swap src and dest, follow memcpy standard.
+* The way coord uses define guards to organize the .h file is good, apply it
+  to other modules too - including tests.
 * Read style(9) and decide what to implement.
