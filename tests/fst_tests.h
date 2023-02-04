@@ -14,4 +14,6 @@ extern Test test_fst_inverse;
 extern TestSuite fst_pre_init_suite;
 extern TestSuite fst_post_init_suite;
 
+extern TestSuite *fst_testsuites[];
+
 #endif

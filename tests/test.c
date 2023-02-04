@@ -1,4 +1,6 @@
-#include "test.h"
+#include <stdio.h>
+
+#include "fst_tests.h"
 
 static bool run_test(Test *);
 static bool run_suite(TestSuite *);
@@ -36,15 +38,42 @@ run_suite(TestSuite *suite)
 	return true;
 }
 
-int main() {
+static bool
+module_in_args(char *module, int argc, char *argv[])
+{
+	for (int i = 0; i < argc; i++)
+		if (!strcmp(module, argv[i]))
+			return true;
+	return false;
+}
+
+int main(int argc, char *argv[]) {
+	/* TODO: init should be in testsuites */
 	init_env();
 	init_trans();
+	/**************************************/
 
-	if (!run_suite(&fst_pre_init_suite))
-		return 1;
-	if (!run_suite(&fst_post_init_suite))
-		return 1;
+	TestModule fst = { .name = "fst", .suites = fst_testsuites };
+	TestModule *modules[999] = {
+		&fst,
+		NULL
+	};
 
-	printf("All tests passed.\n");
+
+	bool all = argc == 1 || module_in_args("all", argc, argv);
+	int count = 0;
+	for (int i = 0; modules[i] != NULL; i++) {
+		if (all || module_in_args(modules[i]->name, argc, argv)) {
+			for (int j = 0; modules[i]->suites[j] != NULL; j++) {
+				if (!run_suite(modules[i]->suites[j])) {
+					return 1;
+				} else {
+					count++;
+				}
+			}
+		}
+	}
+
+	printf("All tests passed (%d test suites).\n", count);
 	return 0;
 }

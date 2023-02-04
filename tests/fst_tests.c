@@ -3,9 +3,7 @@
 static bool testmethod_fst_is_consistent(void *);
 static bool testmethod_cube_to_fst_to_cube(void *);
 static bool testmethod_fst_move(void *);
-static bool testmethod_fst_inverse(void *);
-
-static bool check_equal_and_log(Cube *, Cube *);
+static bool testmethod_fst_inverse(void *); static bool check_equal_and_log(Cube *, Cube *);
 static void void_to_cube(void *, Cube *);
 
 char *algs[] = {
@@ -64,6 +62,12 @@ TestSuite fst_post_init_suite = {
 	.setup    = init_fst,
 	.tests    = post_init,
 	.teardown = NULL,
+};
+
+TestSuite *fst_testsuites[] = {
+	&fst_pre_init_suite,
+	&fst_post_init_suite,
+	NULL
 };
 
 static bool
