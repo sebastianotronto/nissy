@@ -15,6 +15,11 @@ bool        allowed_eofb(Move m);
 bool        allowed_drud(Move m);
 bool        allowed_htr(Move m);
 bool        allowed_next_all(Move l2, Move l1, Move m);
+
+void        moveset_to_list(Moveset ms, Move *lst);
+void        init_moveset(Moveset *ms);
+bool        possible_next(Move m, Moveset *ms, Move l0, Move l1);
+
 void        append_alg(AlgList *l, Alg *alg);
 void        append_move(Alg *alg, Move m, bool inverse);
 Move        base_move(Move m);
@@ -23,12 +28,9 @@ bool        commute(Move m1, Move m2);
 void        copy_alg(Alg *src, Alg *dst);
 void        free_alg(Alg *alg);
 void        free_alglist(AlgList *l);
-void        inplace(Alg * (*f)(Alg *), Alg *alg);
 Alg *       inverse_alg(Alg *alg);
 Move        inverse_move(Move m);
 char *      move_string(Move m);
-void        movelist_to_position(Move *ml, int *pos);
-void        moveset_to_list(Moveset ms, Move *lst);
 Alg *       new_alg(char *str);
 AlgList *   new_alglist();
 Alg *       on_inverse(Alg *alg);
@@ -37,8 +39,6 @@ void        print_alglist(AlgList *al, bool l);
 void        swapmove(Move *m1, Move *m2);
 char *      trans_string(Trans t); /* Here because similar to move_string, move? */
 Alg *       unniss(Alg *alg);
-
-void        init_moveset(Moveset *ms);
 
 /* Movesets ******************************************************************/
 

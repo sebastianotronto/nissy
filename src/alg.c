@@ -84,30 +84,42 @@ append_move(Alg *alg, Move m, bool inverse)
 	alg->move[alg->len] = m;
 	alg->inv [alg->len] = inverse;
 	alg->len++;
+
+	if (inverse)
+		alg->move_inverse[alg->len_inverse++] = m;
+	else
+		alg->move_normal[alg->len_normal++] = m;
 }
 
 static int
 axis(Move m)
 {
-	if (m == NULLMOVE)
-		return 0;
+	static int aux[] = {
+		[NULLMOVE] = 0,
 
-	if (m >= U && m <= B3)
-		return (m-1)/6 + 1;
-	
-	if (m >= Uw && m <= Bw3)
-		return (m-1)/6 - 2;
+		[U]  = 1, [U2]  = 1, [U3]  = 1,
+		[D]  = 1, [D2]  = 1, [D3]  = 1,
+		[Uw] = 1, [Uw2] = 1, [Uw3] = 1,
+		[Dw] = 1, [Dw2] = 1, [Dw3] = 1,
+		[E]  = 1, [E2]  = 1, [E3]  = 1,
+		[y]  = 1, [y2]  = 1, [y3]  = 1,
 
-	if (base_move(m) == E || base_move(m) == y)
-		return 1;
+		[R]  = 2, [R2]  = 2, [R3]  = 2,
+		[L]  = 2, [L2]  = 2, [L3]  = 2,
+		[Rw] = 2, [Rw2] = 2, [Rw3] = 2,
+		[Lw] = 2, [Lw2] = 2, [Lw3] = 2,
+		[M]  = 2, [M2]  = 2, [M3]  = 2,
+		[x]  = 2, [x2]  = 2, [x3]  = 2,
 
-	if (base_move(m) == M || base_move(m) == x)
-		return 2;
+		[F]  = 3, [F2]  = 3, [F3]  = 3,
+		[B]  = 3, [B2]  = 3, [B3]  = 3,
+		[Fw] = 3, [Fw2] = 3, [Fw3] = 3,
+		[Bw] = 3, [Bw2] = 3, [Bw3] = 3,
+		[S]  = 3, [S2]  = 3, [S3]  = 3,
+		[z]  = 3, [z2]  = 3, [z3]  = 3,
+	};
 
-	if (base_move(m) == S || base_move(m) == z)
-		return 3;
-
-	return -1;
+	return aux[m];
 }
 
 Move
@@ -137,7 +149,7 @@ compose_alg(Alg *alg1, Alg *alg2)
 void
 copy_alg(Alg *src, Alg *dst)
 {
-	dst->len = 0; /* Overwrites */
+	dst->len = dst->len_normal = dst->len_inverse = 0;
 	compose_alg(dst, src);
 }
 
@@ -167,16 +179,6 @@ free_alglistnode(AlgListNode *aln)
 {
 	free_alg(aln->alg);
 	free(aln);
-}
-
-void
-inplace(Alg * (*f)(Alg *), Alg *alg)
-{
-	Alg *aux;
-
-	aux = f(alg);
-	copy_alg(aux, alg);
-	free(aux);
 }
 
 Alg *
@@ -234,10 +236,14 @@ new_alg(char *str)
 	Move j, m;
 
 	alg = malloc(sizeof(Alg));
-	alg->move      = malloc(30 * sizeof(Move));
-	alg->inv       = malloc(30 * sizeof(bool));
-	alg->allocated = 30;
-	alg->len       = 0;
+	alg->allocated    = 30;
+	alg->move         = malloc(alg->allocated * sizeof(Move));
+	alg->inv          = malloc(alg->allocated * sizeof(bool));
+	alg->move_normal  = malloc(alg->allocated * sizeof(Move));
+	alg->move_inverse = malloc(alg->allocated * sizeof(Move));
+	alg->len          = 0;
+	alg->len_normal   = 0;
+	alg->len_inverse  = 0;
 
 	niss = false;
 	for (i = 0; str[i]; i++) {
@@ -246,13 +252,13 @@ new_alg(char *str)
 
 		if (str[i] == '(' && niss) {
 			fprintf(stderr, "Error reading moves: nested ( )\n");
-			alg->len = 0;
+			alg->len = alg->len_normal = alg->len_inverse = 0;
 			return alg;
 		}
 
 		if (str[i] == ')' && !niss) {
 			fprintf(stderr, "Error reading moves: unmatched )\n");
-			alg->len = 0;
+			alg->len = alg->len_normal = alg->len_inverse = 0;
 			return alg;
 		}
 
@@ -319,7 +325,7 @@ new_alg(char *str)
 
 	if (niss) {
 		fprintf(stderr, "Error reading moves: unmatched (\n");
-		alg->len = 0;
+		alg->len = alg->len_normal = alg->len_inverse = 0;
 	}
 
 	return alg;
@@ -347,6 +353,19 @@ on_inverse(Alg *alg)
 		append_move(ret, alg->move[i], !alg->inv[i]);
 
 	return ret;
+}
+
+bool
+possible_next(Move m, Moveset *ms, Move l0, Move l1)
+{
+	bool allowed, order;
+	uint64_t mbit;
+
+	mbit    = ((uint64_t)1) << m;
+	allowed = mbit & ms->mask[l1][l0];
+	order   = !commute(l0, m) || l0 < m;
+
+	return allowed && order;
 }
 
 void
@@ -404,8 +423,10 @@ realloc_alg(Alg *alg, int n)
 		fprintf(stderr, "something might go wrong.\n");
 	}
 
-	alg->move = realloc(alg->move, n * sizeof(int));
-	alg->inv  = realloc(alg->inv,  n * sizeof(int));
+	alg->move         = realloc(alg->move,         n * sizeof(int));
+	alg->inv          = realloc(alg->inv,          n * sizeof(int));
+	alg->move_normal  = realloc(alg->move_normal,  n * sizeof(int));
+	alg->move_inverse = realloc(alg->move_inverse, n * sizeof(int));
 	alg->allocated = n;
 }
 
@@ -455,14 +476,12 @@ unniss(Alg *alg)
 
 	ret = new_alg("");
 
-	for (i = 0; i < alg->len; i++)
-		if (!alg->inv[i])
-			append_move(ret, alg->move[i], false);
-	
-	for (i = alg->len-1; i >= 0; i--)
-		if (alg->inv[i])
-			append_move(ret, inverse_move(alg->move[i]), false);
-	
+	for (i = 0; i < alg->len_normal; i++)
+		append_move(ret, alg->move_normal[i], false);
+
+	for (i = 0; i < alg->len_inverse; i++)
+		append_move(ret, inverse_move(alg->move_inverse[i]), false);
+
 	return ret;
 }
 
@@ -483,7 +502,7 @@ init_moveset(Moveset *ms)
 	for (l1 = 0; l1 < NMOVES; l1++) { 
 		for (l2 = 0; l2 < NMOVES; l2++) { 
 			ms->mask[l2][l1] = 0;
-			for (l=0; ms->sorted_moves[l]!=NULLMOVE; l++) {
+			for (l = 0; ms->sorted_moves[l] != NULLMOVE; l++) {
 				m = ms->sorted_moves[l];
 				if (ms->allowed_next(l2, l1, m))
 					ms->mask[l2][l1] |= (one<<m);

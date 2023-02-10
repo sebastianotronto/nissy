@@ -122,6 +122,10 @@ alg
 	bool *                    inv;
 	int                       len;
 	int                       allocated;
+	Move *                    move_normal;
+	int                       len_normal;
+	Move *                    move_inverse;
+	int                       len_inverse;
 };
 
 struct

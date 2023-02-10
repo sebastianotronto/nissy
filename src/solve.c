@@ -4,7 +4,6 @@
 
 /* Local functions ***********************************************************/
 
-static bool        allowed_next(Move move, Step *s, Move l0, Move l1);
 static bool        cancel_niss(DfsArg *arg);
 static void        copy_dfsarg(DfsArg *src, DfsArg *dst);
 static void        dfs(DfsArg *arg);
@@ -17,19 +16,6 @@ static bool        niss_makes_sense(DfsArg *arg);
 static bool        solvestop(int d, int op, SolveOptions *opts, AlgList *sols);
 
 /* Local functions ***********************************************************/
-
-static bool
-allowed_next(Move m, Step *s, Move l0, Move l1)
-{
-	bool allowed, order;
-	uint64_t mbit;
-
-	mbit    = ((uint64_t)1) << m;
-	allowed = mbit & s->moveset->mask[l1][l0];
-	order   = !commute(l0, m) || l0 < m;
-
-	return allowed && order;
-}
 
 static bool
 cancel_niss(DfsArg *arg)
@@ -82,16 +68,14 @@ copy_dfsarg(DfsArg *src, DfsArg *dst)
 		dst->ind[i].t   = src->ind[i].t;
 	}
 
-/*
 	src->s->copy_extra(src, dst);
-*/
 }
 
 static void
 dfs(DfsArg *arg)
 {
 	int i;
-	Move m;
+	Move m, l0, l1;
 	DfsArg newarg;
 
 	if (dfs_move_checkstop(arg))
@@ -105,9 +89,11 @@ dfs(DfsArg *arg)
 
 	for (i = 0; arg->s->moveset->sorted_moves[i] != NULLMOVE; i++) {
 		m = arg->s->moveset->sorted_moves[i];
-		if (allowed_next(m, arg->s, arg->last[0], arg->last[1])) {
+		l0 = arg->last[0];
+		l1 = arg->last[1];
+		if (possible_next(m, arg->s->moveset, l0, l1)) {
 			copy_dfsarg(arg, &newarg);
-			newarg.last[1] = arg->last[0];
+			newarg.last[1] = l0;
 			newarg.last[0] = m;
 			append_move(arg->current_alg, m, newarg.niss);
 			dfs(&newarg);
