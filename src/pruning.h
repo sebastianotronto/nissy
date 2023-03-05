@@ -2,6 +2,7 @@
 #define PRUNING_H
 
 #include "coord.h"
+#include "movesets.h"
 
 void        free_pd(PruneData *pd);
 PruneData * genptable(PruneData *data, int nthreads);

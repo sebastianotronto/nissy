@@ -89,7 +89,7 @@ typedef struct command            Command;
 typedef struct commandargs        CommandArgs;
 typedef struct coordinate         Coordinate;
 typedef struct cube               Cube;
-typedef struct dfsarg             DfsArg;
+/*typedef struct dfsarg             DfsArg;*/
 typedef struct fstcube            FstCube;
 typedef struct indexer            Indexer;
 typedef struct movable            Movable;
@@ -104,9 +104,9 @@ typedef struct transgroup         TransGroup;
 
 typedef bool                 (*Checker)          (Cube *);
 typedef bool                 (*CubeTester)       (Cube *, Alg *);
-typedef bool                 (*DfsMover)         (DfsArg *);
+/*typedef bool                 (*DfsMover)         (DfsArg *);*/
 typedef void                 (*DfsExtraCopier)   (void *, void *);
-typedef bool                 (*Validator)        (Alg *);
+typedef Alg *                (*Validator)        (Alg *);
 typedef void                 (*Exec)             (CommandArgs *);
 typedef CommandArgs *        (*ArgParser)        (int, char **);
 typedef bool                 (*Tester)           (void);
@@ -206,13 +206,16 @@ cube
 	int                       xp[6];
 };
 
+/*
 struct
 movable
 {
 	uint64_t                  val;
 	Trans                     t;
 };
+*/
 
+/*
 struct
 dfsarg
 {
@@ -224,13 +227,28 @@ dfsarg
 	int                       d;
 	int                       bound;
 	bool                      niss;
-	Move                      last[2];
-	Move                      lastinv[2];
 	AlgList *                 sols;
 	pthread_mutex_t *         sols_mutex;
 	Alg *                     current_alg;
 	void *                    extra;
 };
+*/
+
+/*
+struct
+dfsarg
+{
+	void *                    cube_data;
+	SolveOptions *            opts;
+	int                       d;
+	int                       bound;
+	bool                      niss;
+	AlgList *                 sols;
+	Alg *                     current_alg;
+	Solver *                  solver;
+	Threader *                threader;
+};
+*/
 
 struct
 fstcube
@@ -260,9 +278,9 @@ moveset
 {
 	char *                    name;
 	bool                      (*allowed)(Move);
-	bool                      (*allowed_next)(Move, Move, Move);
+	bool                      (*can_append)(Alg *, Move, bool);
+	bool                      (*cancel_niss)(Alg *);
 	Move                      sorted_moves[NMOVES+1];
-	uint64_t                  mask[NMOVES][NMOVES];
 };
 
 struct
@@ -304,10 +322,11 @@ step
 	PruneData *               pd[MAX_N_COORD];
 	bool                      pd_compact[MAX_N_COORD];
 	Validator                 is_valid;
-	DfsMover                  custom_move_checkstop;
+	/*DfsMover                  custom_move_checkstop;*/
 	DfsExtraCopier            copy_extra;
 };
 
+/*
 struct
 threaddatasolve
 {
@@ -317,6 +336,7 @@ threaddatasolve
 	AlgListNode **            node;
 	pthread_mutex_t *         start_mutex;
 };
+*/
 
 struct
 threaddatagenpt

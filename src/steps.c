@@ -106,11 +106,12 @@ check_htr(Cube *cube)
 	return true;
 }
 
-bool
+Alg *
 validate_singlecw_ending(Alg *alg)
 {
 	int i;
 	bool nor, inv;
+	Alg *ret;
 	Move l2 = NULLMOVE, l1 = NULLMOVE, l2i = NULLMOVE, l1i = NULLMOVE;
 
 	for (i = 0; i < alg->len; i++) {
@@ -126,11 +127,19 @@ validate_singlecw_ending(Alg *alg)
 	nor = l1 ==base_move(l1)  && (!commute(l1, l2) ||l2 ==base_move(l2));
 	inv = l1i==base_move(l1i) && (!commute(l1i,l2i)||l2i==base_move(l2i));
 
-	return nor && inv;
+	if (nor && inv) {
+		ret = new_alg("");
+		copy_alg(alg, ret);
+	} else {
+		ret = NULL;
+	}
+
+	return ret;
 }
 
 /* Public functions **********************************************************/
 
+/*
 void
 compute_ind(Step *s, Cube *cube, Movable *ind)
 {
@@ -147,6 +156,7 @@ compute_ind(Step *s, Cube *cube, Movable *ind)
 		ind[i].t = transform_trans(tt, t);
 	}
 }
+*/
 
 void
 prepare_cs(ChoiceStep *cs, SolveOptions *opts)

@@ -22,9 +22,11 @@ get its own file and more details.
 * Optimal solver: when asking only for one solution, scan for upper bound in
   parallel using a non-optimal (but fast) solver (e.g. twophase).
 * Optimal solver: up to a small bound, try with a small pruning table.
+* Optimal solver: start at different depths in parallel
 * Multi-step solver: make more general
 
 ## New features
 
+* Allow user to specify moveset manually (see issue \#5 on github)
 * EO analysis (and also DR and HTR analysis): group similar EOs (Jay)
 * HTR "maze" analysis?

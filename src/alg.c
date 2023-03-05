@@ -6,57 +6,6 @@ static int         axis(Move m);
 static void        free_alglistnode(AlgListNode *aln);
 static void        realloc_alg(Alg *alg, int n);
 
-bool
-allowed_HTM(Move m)
-{
-	return m >= U && m <= B3;
-}
-
-bool
-allowed_URF(Move m)
-{
-	Move b = base_move(m);
-
-	return b == U || b == R || b == F;
-}
-
-bool
-allowed_eofb(Move m)
-{
-	Move b = base_move(m);
-
-	return b == U || b == D || b == R || b == L ||
-	       ((b == F || b == B) && m == b+1);
-}
-
-bool
-allowed_drud(Move m)
-{
-	Move b = base_move(m);
-
-	return b == U || b == D ||
-	       ((b == R || b == L || b == F || b == B) && m == b + 1);
-}
-
-bool
-allowed_htr(Move m)
-{
-	Move b = base_move(m);
-
-	return moveset_HTM.allowed(m) && m == b + 1;
-}
-
-bool
-allowed_next_all(Move l2, Move l1, Move m)
-{
-	bool p, q;
-
-	p = l1 != NULLMOVE && base_move(l1) == base_move(m);
-	q = l2 != NULLMOVE && base_move(l2) == base_move(m);
-
-	return !(p || (commute(l1, l2) && q));
-}
-
 void
 append_alg(AlgList *l, Alg *alg)
 {
@@ -135,6 +84,32 @@ bool
 commute(Move m1, Move m2)
 {
 	return axis(m1) == axis(m2);
+}
+
+int
+compare(Move m1, Move m2)
+{
+	if (!commute(m1, m2))
+		return 0;
+
+	return m1 < m2 ? 1 : -1;
+}
+
+int
+compare_last(Alg *alg, Move m, bool inverse)
+{
+	Move last;
+	int n;
+
+	if (inverse) {
+		n = alg->len_inverse;
+		last = n > 0 ? alg->move_inverse[n-1] : NULLMOVE;
+	} else {
+		n = alg->len_normal;
+		last = n > 0 ? alg->move_normal[n-1] : NULLMOVE;
+	}
+
+	return compare(last, m);
 }
 
 void
@@ -355,19 +330,6 @@ on_inverse(Alg *alg)
 	return ret;
 }
 
-bool
-possible_next(Move m, Moveset *ms, Move l0, Move l1)
-{
-	bool allowed, order;
-	uint64_t mbit;
-
-	mbit    = ((uint64_t)1) << m;
-	allowed = mbit & ms->mask[l1][l0];
-	order   = !commute(l0, m) || l0 < m;
-
-	return allowed && order;
-}
-
 void
 print_alg(Alg *alg, bool l)
 {
@@ -431,6 +393,17 @@ realloc_alg(Alg *alg, int n)
 }
 
 void
+remove_last_move(Alg *a)
+{
+	a->len--;
+
+	if (a->inv[a->len])
+		a->len_inverse--;
+	else
+		a->len_normal--;
+}
+
+void
 swapmove(Move *m1, Move *m2)
 {
 	Move aux;
@@ -483,30 +456,4 @@ unniss(Alg *alg)
 		append_move(ret, inverse_move(alg->move_inverse[i]), false);
 
 	return ret;
-}
-
-void
-init_moveset(Moveset *ms)
-{
-	int j;
-	uint64_t l, one;
-	Move m, l2, l1;
-
-	one = 1;
-
-	for (j = 0, m = U; m < NMOVES; m++)
-		if (ms->allowed(m))
-			ms->sorted_moves[j++] = m;
-	ms->sorted_moves[j] = NULLMOVE;
-
-	for (l1 = 0; l1 < NMOVES; l1++) { 
-		for (l2 = 0; l2 < NMOVES; l2++) { 
-			ms->mask[l2][l1] = 0;
-			for (l = 0; ms->sorted_moves[l] != NULLMOVE; l++) {
-				m = ms->sorted_moves[l];
-				if (ms->allowed_next(l2, l1, m))
-					ms->mask[l2][l1] |= (one<<m);
-			}
-		}
-	}
 }

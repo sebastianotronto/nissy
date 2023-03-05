@@ -215,10 +215,21 @@ solve_exec(CommandArgs *args)
 {
 	Cube c;
 	AlgList *sols;
+	Solver *solver[99];
+	Threader *threader;
 
 	make_solved(&c);
 	apply_alg(args->scramble, &c);
-	sols = solve(&c, args->cs, args->opts);
+/* TODO: adjust */
+/*	threader = &threader_single;*/
+	threader = &threader_eager;
+
+/* TODO: adjust */
+	int i;
+	for (i = 0; args->cs->step[i] != NULL; i++)
+		solver[i] = new_stepsolver_lazy(args->cs->step[i]);
+	solver[i] = NULL;
+	sols = solve(&c, args->opts, solver, threader);
 
 	if (args->opts->count_only)
 		printf("%d\n", sols->len);
@@ -285,7 +296,10 @@ scramble_exec(CommandArgs *args)
 		}
 
 		/* TODO: can be optimized for htr and dr using htrfin, drfin */
+		/*
+		TODO: solve_2phase was removed
 		scr = solve_2phase(&cube, 1);
+		*/
 
 		if (!strcmp(args->scrtype, "fmc")) {
 			aux = new_alg("");
@@ -383,6 +397,7 @@ print_exec(CommandArgs *args)
 	print_cube(&c);
 }
 
+/*
 void
 twophase_exec(CommandArgs *args)
 {
@@ -396,6 +411,7 @@ twophase_exec(CommandArgs *args)
 	print_alg(sol, false);
 	free_alg(sol);
 }
+*/
 
 void
 help_exec(CommandArgs *args)

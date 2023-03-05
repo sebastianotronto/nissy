@@ -5,6 +5,9 @@
 
 #include "solve.h"
 #include "steps.h"
+#include "solver_step.h"
+#include "threader_single.h"
+#include "threader_eager.h"
 
 void                    free_args(CommandArgs *args);
 CommandArgs *           new_args();
@@ -29,7 +32,7 @@ void                    steps_exec(CommandArgs *args);
 void                    commands_exec(CommandArgs *args);
 void                    freemem_exec(CommandArgs *args);
 void                    print_exec(CommandArgs *args);
-void                    twophase_exec(CommandArgs *args);
+/*void                    twophase_exec(CommandArgs *args);*/
 void                    help_exec(CommandArgs *args);
 void                    quit_exec(CommandArgs *args);
 void                    unniss_exec(CommandArgs *args);
@@ -138,6 +141,7 @@ help_cmd = {
 	.exec        = help_exec,
 };
 
+/*
 Command
 twophase_cmd = {
 	.name        = "twophase",
@@ -146,6 +150,7 @@ twophase_cmd = {
 	.parse_args  = parse_only_scramble,
 	.exec        = twophase_exec,
 };
+*/
 
 Command
 quit_cmd = {
@@ -194,7 +199,7 @@ Command *commands[] = {
 	&solve_cmd,
 	&scramble_cmd,
 	&steps_cmd,
-	&twophase_cmd,
+/*	&twophase_cmd,*/
 	&cleanup_cmd,
 	&unniss_cmd,
 	&version_cmd,

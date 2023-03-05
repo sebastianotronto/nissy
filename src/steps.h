@@ -2,6 +2,7 @@
 #define STEPS_H
 
 #include "pruning.h"
+#include "movesets.h"
 
 bool                    check_centers(Cube *cube);
 bool                    check_coud_HTM(Cube *cube);
@@ -13,10 +14,10 @@ bool                    check_cornershtr(Cube *cube);
 bool                    check_eofb(Cube *cube);
 bool                    check_drud(Cube *cube);
 bool                    check_htr(Cube *cube);
-void                    compute_ind(Step *a, Cube *cube, Movable *ind);
+/*void                    compute_ind(Step *a, Cube *cube, Movable *ind);*/
 void                    prepare_cs(ChoiceStep *cs, SolveOptions *opts);
 bool                    always_valid(Alg *alg);
-bool                    validate_singlecw_ending(Alg *alg);
+Alg *                   validate_singlecw_ending(Alg *alg);
 
 #ifndef STEPS_C
 

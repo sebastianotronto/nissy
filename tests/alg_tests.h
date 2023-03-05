@@ -7,6 +7,7 @@
 extern Test test_append_move;
 extern Test test_new_alg;
 /*
+extern Test remove_last_move;
 extern Test test_compose_alg;
 extern Test test_inverse_alg;
 extern Test test_on_inverse;
