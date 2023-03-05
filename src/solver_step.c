@@ -6,7 +6,7 @@ typedef struct {
 	Trans *         t;
 } CubeData;
 
-static void             apply_alg_cubedata(void *, void *, Alg *);
+static void             apply_move_cubedata(void *, void *, Move);
 static void             init_indexes(Step *, CubeData *);
 static void *           prepare_cube(void *, Cube *);
 static bool             move_check_stop_eager(void *, DfsArg *, Threader *);
@@ -22,13 +22,17 @@ static bool             niss_makes_sense(void *, void *, Alg *);
 static Solver *         new_stepsolver_nocheckstop(Step *step);
 
 static void
-apply_alg_cubedata(void *param, void *cubedata, Alg *alg)
+apply_move_cubedata(void *param, void *cubedata, Move m)
 {
 	Step *s = (Step *)param;
 	CubeData *data = (CubeData *)cubedata;
 
-	apply_alg(alg, data->cube);
-	init_indexes(s, data);
+	Trans tt;
+	for (int i = 0; i < s->n_coord; i++) {
+		Move mm = transform_move(data->t[i], m);
+		data->val[i] = move_coord(s->coord[i], mm, data->val[i], &tt);
+		data->t[i]   = transform_trans(tt, data->t[i]);
+	}
 }
 
 static void
@@ -101,6 +105,8 @@ move_check_stop_lazy(void *param, DfsArg *arg, Threader *threader)
 	return move_check_stop_nonsol(param, arg, threader);
 }
 
+/* TODO: split in 2 (nissable / non-nissable) and only move cube
+	when nissable */
 static bool
 move_check_stop_nonsol(void *param, DfsArg *arg, Threader *threader)
 {
@@ -112,6 +118,7 @@ move_check_stop_nonsol(void *param, DfsArg *arg, Threader *threader)
 
 	s = (Step *)param;
 	data = (CubeData *)arg->cubedata;
+
 
 	bound = 0;
 	goal = arg->d - arg->current_alg->len;
@@ -130,6 +137,8 @@ move_check_stop_nonsol(void *param, DfsArg *arg, Threader *threader)
 			return true;
 		}
 	}
+	if (arg->opts->can_niss && !arg->niss)
+		apply_move(lastmove, data->cube);
 
 	return false;
 }
@@ -184,8 +193,9 @@ copy_cubedata(void *param, void *src, void *dst)
 	olddata = (CubeData *)src;
 	newdata = (CubeData *)dst;
 
-	/* Copy reference: we never move the cube */
-	newdata->cube = olddata->cube;
+/* TODO: do not copy if not nissable */
+	newdata->cube = malloc(sizeof(Cube));
+	copy_cube(olddata->cube, newdata->cube);
 	for (i = 0; i < s->n_coord; i++) {
 		newdata->val[i] = olddata->val[i];
 		newdata->t[i]   = olddata->t[i];
@@ -201,7 +211,7 @@ free_cubedata(void *param, void *cubedata)
 
 	free(data->t);
 	free(data->val);
-	/* We do not free the cube */
+	free(data->cube);
 	free(data);
 }
 
@@ -254,7 +264,7 @@ new_stepsolver_nocheckstop(Step *step)
 	solver->moveset = step->moveset;
 	solver->param   = step;
 
-	solver->apply_alg         = apply_alg_cubedata;
+	solver->apply_move        = apply_move_cubedata;
 	solver->prepare_cube      = prepare_cube;
 	solver->is_solved         = is_solved_step;
 	solver->validate_solution = validate_solution;

@@ -36,12 +36,13 @@ struct solver {
 	void *     param;
 /* TODO: the following should be part of a generic cube description */
 /* TODO: remove alloc? */
+/* TODO: revisit apply_move, maybe apply_alg? or both? */
 	void *     (*alloc_cubedata)(void *);
 	void       (*copy_cubedata)(void *, void *, void *);
 	void       (*free_cubedata)(void *, void *);
 	void       (*invert_cube)(void *, void *);
 	bool       (*is_solved)(void *, void *);
-	void       (*apply_alg)(void *, void *, Alg *);
+	void       (*apply_move)(void *, void *, Move);
 /* TODO: remove dependence on Cube, preparation should be done before */
 	void *     (*prepare_cube)(void *, Cube *);
 };

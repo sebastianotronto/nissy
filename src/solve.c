@@ -115,5 +115,8 @@ solve(Cube *cube, SolveOptions *opts, Solver **solver, Threader *threader)
 		       (opts->optimal != -1 && d >= opts->optimal + optimal);
 	}
 
+/* TODO: some cleanup (free cubedata) */
+/* TODO: actually, preparation should be done somewhere else */
+
 	return sols;
 }

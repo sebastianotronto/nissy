@@ -43,7 +43,7 @@ possible_starts(DfsArg *arg, Solver *solver)
 	AlgList *ret = new_alglist();
 
 	if (solver->is_solved(solver->param, arg->cubedata)) {
-		if (arg->opts->min_moves == 0)
+		if (arg->opts->min_moves == 0 && arg->d == 0)
 			append_sol(new_alg(""), arg->threaddata);
 		return ret;
 	}
@@ -82,15 +82,16 @@ instance_thread(void *arg)
 		*(tid->node) = (*(tid->node))->next;
 		pthread_mutex_unlock(tid->start_mutex);
 
+/* TODO: adjust for longer (arbitrarily long?) starting sequences */
 		void *data = tid->solver->alloc_cubedata(tid->solver->param);
 		tid->solver->copy_cubedata(
 			tid->solver->param, tid->arg->cubedata, data);
-		tid->solver->apply_alg(
-			tid->solver->param, data, node->alg);
 		bool inv = node->alg->inv[node->alg->len-1];
 		if (inv)
 			tid->solver->invert_cube(
 				tid->solver->param, data);
+		tid->solver->apply_move(
+			tid->solver->param, data, node->alg->move[0]);
 
 		DfsArg newarg;
 		newarg.cubedata    = data;
