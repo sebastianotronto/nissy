@@ -24,13 +24,15 @@ on github, links below are to my personal git instance):
   Eventually it will become faster than nissy-classic at optimal
   solving, but without all other features. *Not working at the moment.*
 
-# I am a user of nissy, what should I do?
+## F.A.Q.
+
+### I am a user of nissy, what should I do?
 
 If you are happy with using nissy as it is, you can keep using it.
 
 When nissy-fmc and nissy-classic are ready, you can chek them out too.
 
-# But I liked that nissy can do both optimal solving! Why did you split it?
+### But I liked that nissy can do both optimal solving! Why did you split it?
 
 Then I encourage you to keep using nissy-classic :-)
 
@@ -38,7 +40,7 @@ See
 [my blog post](https://sebastiano.tronto.net/blog/2023-04-10-the-big-rewrite/)
 for some reasons behind this change.
 
-# I just want to look at the code, where should I go?
+### I just want to look at the code, where should I go?
 
 If you want to check out the git repository of the version you are
 running, you probably want nissy-classic. The newer nissy-fmc will
